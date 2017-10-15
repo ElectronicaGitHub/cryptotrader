@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>crypto trader</title>
+</head>
+
+<style>
+	.each-balance {
+		margin: 10px 0;
+	}
+	.balance-info {
+		font-size: 12px;
+	}
+	.ok {
+		background: lightgreen;
+	}
+	.not-ok {
+		background: orangered;
+		color: white;
+	}
+	.each-balance-currency-pairs {
+		font-size: 11px;
+	}
+	.altcoins-container {
+	}
+	.each-altcoin {
+		margin: 5px 0;
+		font-size: 11px;
+	}
+	.closed-pairs {
+		margin-top: 50px;
+		font-size: 11px;
+	}
+	.closed-pairs .title {
+		font-size: 13px;
+	}
+	.each-closed-pair {
+		margin: 5px 0;
+	}
+	.altcoin-graph-link {
+		cursor: pointer;
+	}
+	.tradeable {
+		background: lightgreen;
+	}
+</style>
+
+<script src="libs/angular/angular.js"></script>
+<script src="libs/jquery/dist/jquery.js"></script>
+<script src="libs/highcharts/js/highcharts.js"></script>
+<link rel="stylesheet" href="libs/bootstrap/dist/css/bootstrap.css"></link>
+<link rel="stylesheet" href="libs/highcharts/css/highcharts.css"></link>
+<script src="scripts/main.js"></script>
+<body ng-app="crypto" ng-controller="main" class="container">
+	<div>
+		<button ng-click="cycle()">запустить</button>
+	</div>
+
+	<div class="balances-container col-xs-6">
+		<div class="each-balance" ng-repeat="balance in balances">
+			<div class="balance-info">
+				<b>{{ balance.currency }}</b> ({{ balance.inBTC | number:6 }} BTC / {{inRUR(balance.inBTC) | number:2}} RUR ) 
+			</div>
+			<div class="each-balance-currency-pairs">
+				<div class="each-currency-pair" ng-repeat="pair in balance.order_pairs">
+					<!-- <div>{{ pair.buy_order | json }}</div> -->
+					<!-- <div>{{ pair.sell_order | json }}</div> -->
+					<div>
+						<!-- <span>{{ pair.sell_order.inBTC | number:8 }} BTC / </span> -->
+						<!-- <span>{{ pair.buy_order.inBTC | number:8 }} BTC / </span> -->
+						<span>{{ pair.sell_order.inBTC - pair.buy_order.inBTC | number:8 }} BTC / </span>
+						<span ng-class="inRUR(pair.sell_order.inBTC - pair.buy_order.inBTC) > 0 ? 'ok' : 'not-ok'">{{ inRUR(pair.sell_order.inBTC - pair.buy_order.inBTC) | number:2 }} RUR</span>
+						<span> / </span>
+						<span ng-class="(pair.sell_order.inBTC - pair.buy_order.inBTC)/pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">
+							{{(pair.sell_order.inBTC - pair.buy_order.inBTC)/pair.buy_order.inBTC * 100 | number:4}}%
+						</span>
+						
+						<!-- <span ng-class="balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC > 0 ? 'ok' : 'not-ok'"> -->
+							<!-- [ sd: {{ balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC | number:6 }} BTC / {{ inRUR(balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC) | number:2 }} RUR ]</span> -->
+						<!-- <span ng-class="balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'"> -->
+							<!-- [ bd: {{ balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC | number:6 }} BTC / {{ inRUR(balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC) | number:2 }} RUR ]</span> -->
+						<span ng-class="balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC > 0 ? 'ok' : 'not-ok'">
+							 [ {{ inRUR(balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC) | number:2 }} RUR / </span>
+						<span ng-class="balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">
+							{{ inRUR(balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC) | number:2 }} RUR ]</span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="each-balance" ng-if="summary.inBTC">
+			<div class="balance-info">
+				<b>Итого</b>
+				<span>[ {{ summary.inBTC | number:6 }} BTC / {{ inRUR(summary.inBTC) | number:2}} RUR ]</span>
+			</div>
+		</div>
+
+		<div class="closed-pairs" ng-if="closed_orders">
+			<div class="title">закрытые сделки</div>
+
+			<div class="each-closed-pair" ng-repeat="pair in closed_orders | orderBy:'-lastModificationTime'">
+				{{ $index+1 }}. <b>{{ pair.currencyPair }}</b> / 
+				<span ng-class="pair.inBTC - pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">{{pair.inBTC - pair.buy_order.inBTC | number:6 }} BTC [ {{ inRUR(pair.inBTC - pair.buy_order.inBTC) | number:2 }} RUR]</span>
+			</div>
+			<div class="each-closed-pair">
+				<b>Итого</b> [ {{ summary.closed_ordersInBTC | number:6 }} BTC / {{ inRUR(summary.closed_ordersInBTC) | number:2 }} RUR ]
+			</div>
+			
+		</div>
+	</div>
+	<div class="altcoins-container col-xs-6">
+		<div class="each-altcoin" ng-repeat="altcoin in exchange_pairs" ng-class="{ tradeable : altcoin.tradeable }">
+			<i>{{ altcoin.rank | number:2 }}</i> <a href="https://www.livecoin.net/ru/trade/index?currencyPair={{ altcoin.symbol }}" target="_blank"><b>{{ altcoin.symbol }}</b></a> [ {{altcoin.best_ask | number : 6}} BTC | vol: {{ altcoin.volume * altcoin.best_ask | number:2 }} BTC | 
+			<!-- <span ng-class="altcoin.spread > 0 ? 'ok' : 'not-ok'">{{ altcoin.spread | number:4 }} BTC</span> | -->
+			<span ng-if="altcoin.price_change" ng-class="altcoin.price_change > 0 ? 'ok' : 'not-ok'">{{ altcoin.price_change | number:2 }}%</span> ]
+			<a class="altcoin-graph-link" ng-click="getChartData(altcoin, 5/24)">5h</a> / 
+			<a class="altcoin-graph-link" ng-click="getChartData(altcoin, 1)">1d</a> / 
+			<a class="altcoin-graph-link" ng-click="getChartData(altcoin, 2)">2d</a>
+
+			<div class="chart-info" id="chart-data-{{ altcoin.symbol }}"></div>
+		</div>
+	</div>
+</body>
+</html>
