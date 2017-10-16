@@ -4,7 +4,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 	$scope.btc_rur;
 	$scope.exchange_pairs = [];
 	$scope.summary = {};
-	$scope.closed_orders;
+	$scope.closed_pairs;
 
 	$scope.cycle = function () {
 		$http.post('/cycle').then(function (data) {
@@ -12,7 +12,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			$scope.balances = data.data.balances;
 			$scope.btc_rur = data.data.btc_rur;
 			$scope.exchange_pairs = data.data.exchange_pairs;
-			$scope.closed_orders = $scope.makeClosedPairs(data.data.closed_pairs);
+			$scope.closed_pairs = $scope.makeClosedPairs(data.data.closed_pairs);
 
 			$scope.summary.inBTC = $scope.balances.map(function (el) {
 				return el.inBTC;
@@ -20,7 +20,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 				return a + b;
 			});
 
-			$scope.summary.closed_ordersInBTC = $scope.closed_orders.map(function (el) {
+			$scope.summary.closed_pairsInBTC = $scope.closed_pairs.map(function (el) {
 				return el.inBTC - el.buy_order.inBTC;
 			}).reduce(function (a,b) {
 				return a + b;

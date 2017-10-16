@@ -95,15 +95,15 @@
 			</div>
 		</div>
 
-		<div class="closed-pairs" ng-if="closed_orders">
+		<div class="closed-pairs" ng-if="closed_pairs">
 			<div class="title">закрытые сделки</div>
 
-			<div class="each-closed-pair" ng-repeat="pair in closed_orders | orderBy:'-lastModificationTime'">
+			<div class="each-closed-pair" ng-repeat="pair in closed_pairs | orderBy:'-lastModificationTime'">
 				{{ $index+1 }}. <b>{{ pair.currencyPair }}</b> / 
 				<span ng-class="pair.inBTC - pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">{{pair.inBTC - pair.buy_order.inBTC | number:6 }} BTC [ {{ inRUR(pair.inBTC - pair.buy_order.inBTC) | number:2 }} RUR]</span>
 			</div>
 			<div class="each-closed-pair">
-				<b>Итого</b> [ {{ summary.closed_ordersInBTC | number:6 }} BTC / {{ inRUR(summary.closed_ordersInBTC) | number:2 }} RUR ]
+				<b>Итого</b> [ {{ summary.closed_pairsInBTC | number:6 }} BTC / {{ inRUR(summary.closed_pairsInBTC) | number:2 }} RUR ]
 			</div>
 			
 		</div>
