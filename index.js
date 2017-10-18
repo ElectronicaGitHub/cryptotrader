@@ -7,7 +7,7 @@ var fs = require('fs');
 var async = require('async');
 var app = express();
 
-var port = process.env.PORT || 8080;
+var port = process.env.PORT || 8888;
 
 app.engine('ejs', require('ejs-locals'));
 app.set('views', path.join(__dirname, 'views'));
