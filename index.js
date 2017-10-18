@@ -9,6 +9,10 @@ var app = express();
 
 var port = process.env.PORT || 8888;
 
+String.prototype.endsWith = String.prototype.endsWith || function(suffix) {
+    return this.indexOf(suffix, this.length - suffix.length) !== -1;
+};
+
 app.engine('ejs', require('ejs-locals'));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
