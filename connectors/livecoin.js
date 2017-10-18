@@ -11,7 +11,9 @@ function LiveCoin() {
 		ticker : '/exchange/ticker',
 		clientOrders : '/exchange/client_orders',
 		getBalance : '/payment/balances',
-		getChartData : 'https://www.livecoin.net/tradeapi/mainGraphData' // period=m15&currencyPair=BTC%2FUSD
+		getChartData : 'https://www.livecoin.net/tradeapi/mainGraphData', // period=m15&currencyPair=BTC%2FUSD
+		buyLimit : '/exchange/buylimit',
+		sellLimit : '/exchange/selllimit',
 	}
 }
 	

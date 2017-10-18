@@ -1,18 +1,32 @@
 angular.module('crypto', []).controller('main', ['$scope', '$http', function($scope, $http) {
 	console.log('hello');
-	$scope.balances = [];
+	$scope.balances;
 	$scope.btc_rur;
 	$scope.exchange_pairs = [];
 	$scope.summary = {};
-	$scope.closed_pairs;
+	$scope.closed_orders;
+	$scope.open_buy_orders;
+	// $scope.open_buy_orders_by_curr = {};
+	$scope.max_buy_order_price;
+	$scope.date_long;
+	$scope.moment = moment;
 
-	$scope.cycle = function () {
-		$http.post('/cycle').then(function (data) {
+	$scope.checkCycle = function () {
+		$http.post('/checkCycle').then(function (data) {
 			console.log('success', data.data);
 			$scope.balances = data.data.balances;
 			$scope.btc_rur = data.data.btc_rur;
 			$scope.exchange_pairs = data.data.exchange_pairs;
-			$scope.closed_pairs = $scope.makeClosedPairs(data.data.closed_pairs);
+			$scope.closed_orders = $scope.makeClosedPairs(data.data.closed_orders);
+			$scope.open_buy_orders = data.data.open_buy_orders;
+			$scope.max_buy_order_price = data.data.max_buy_order_price;
+			$scope.date_long = +new Date();
+
+			// for (let i in $scope.open_buy_orders) {
+			// 	var symbol = $scope.open_buy_orders[i].currencyPair.split('/')[0];
+			// 	$scope.open_buy_orders_by_curr[symbol] = $scope.open_buy_orders_by_curr[symbol] || [];
+			// 	$scope.open_buy_orders_by_curr[symbol].push($scope.open_buy_orders[i]);
+			// }
 
 			$scope.summary.inBTC = $scope.balances.map(function (el) {
 				return el.inBTC;
@@ -20,7 +34,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 				return a + b;
 			});
 
-			$scope.summary.closed_pairsInBTC = $scope.closed_pairs.map(function (el) {
+			$scope.summary.closed_ordersInBTC = $scope.closed_orders.map(function (el) {
 				return el.inBTC - el.buy_order.inBTC;
 			}).reduce(function (a,b) {
 				return a + b;
@@ -31,6 +45,31 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			console.log(error);
 		});
 	}
+	
+	$scope.tradeCycle = function () {
+		$http.post('/tradeCycle').then(function(data) {
+			console.log('tradeCycle', data);
+		}, function (error) {
+			console.log(error);
+		});
+	}
+
+	$scope.loopTradeCycle = function () {
+		$http.post('/loopTradeCycle').then(function(data) {
+			console.log('loopTradeCycle', data);
+		}, function (error) {
+			console.log(error);
+		});
+	}
+
+	$scope.stopLoopTradeCycle = function () {
+		$http.post('/stopLoopTradeCycle').then(function (data) {
+			console.log('stopped');
+		}, function (error) {
+			console.log('error', error);
+		});
+	}
+
 
 	$scope.makeClosedPairs = function (orders_currencies) {
 		for (let i in orders_currencies) {
@@ -65,6 +104,10 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		console.log(orders);
 
 		return orders;
+	}
+
+	$scope.exchange_pairs_filter = function (el) {
+		return el.rank > 0.2;
 	}
 
 	$scope.inRUR = function (valueinBTC) {
