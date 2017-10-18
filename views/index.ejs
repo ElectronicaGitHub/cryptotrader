@@ -38,7 +38,6 @@
 		font-size: 11px;
 	}
 	.closed-pairs {
-		margin-top: 50px;
 		font-size: 11px;
 	}
 	.title {
@@ -103,7 +102,20 @@
 
 	<div class="container">
 
-		<div class="col-xs-6">
+		<div class="closed-pairs col-xs-3" ng-if="closed_orders">
+			<div class="title">Закрытые сделки</div>
+
+			<div class="each-closed-pair">
+				<b>Итого</b> [ {{ summary.closed_ordersInBTC | number:6 }} BTC / {{ inRUR(summary.closed_ordersInBTC) | number:2 }} RUR ]
+			</div>
+			
+			<div class="each-closed-pair" ng-repeat="pair in closed_orders | orderBy:'-lastModificationTime'" ng-class="{ gold : moment(date_long).isSame(pair.lastModificationTime, 'd'), yesterday : moment(date_long).isSame(moment(pair.lastModificationTime).add(1, 'd'), 'd') }">
+				{{ $index+1 }}. <b>{{ pair.currencyPair }}</b> / 
+				<span ng-class="pair.inBTC - pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">{{pair.inBTC - pair.buy_order.inBTC | number:6 }} BTC [ {{ inRUR(pair.inBTC - pair.buy_order.inBTC) | number:2 }} RUR]</span>
+			</div>
+		</div>
+
+		<div class="col-xs-5">
 			
 			<div class="open-buy-orders" ng-if="open_buy_orders.length">
 				<div class="title">Покупка</div>
@@ -160,20 +172,8 @@
 				</div>
 			</div>
 
-			<div class="closed-pairs" ng-if="closed_orders">
-				<div class="title">Закрытые сделки</div>
-
-				<div class="each-closed-pair" ng-repeat="pair in closed_orders | orderBy:'-lastModificationTime'" ng-class="{ gold : moment(date_long).isSame(pair.lastModificationTime, 'd'), yesterday : moment(date_long).isSame(moment(pair.lastModificationTime).add(1, 'd'), 'd') }">
-					{{ $index+1 }}. <b>{{ pair.currencyPair }}</b> / 
-					<span ng-class="pair.inBTC - pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">{{pair.inBTC - pair.buy_order.inBTC | number:6 }} BTC [ {{ inRUR(pair.inBTC - pair.buy_order.inBTC) | number:2 }} RUR]</span>
-				</div>
-				<div class="each-closed-pair">
-					<b>Итого</b> [ {{ summary.closed_ordersInBTC | number:6 }} BTC / {{ inRUR(summary.closed_ordersInBTC) | number:2 }} RUR ]
-				</div>
-				
-			</div>
 		</div>
-		<div class="altcoins-container col-xs-6">
+		<div class="altcoins-container col-xs-4">
 			<div class="each-altcoin" ng-repeat="altcoin in exchange_pairs | filter:exchange_pairs_filter" ng-class="{ tradeable : altcoin.tradeable }">
 				<i>{{ altcoin.rank | number:2 }}</i> <a href="https://www.livecoin.net/ru/trade/index?currencyPair={{ altcoin.symbol }}" target="_blank"><b>{{ altcoin.symbol }}</b></a> [ {{altcoin.best_ask | number : 6}} BTC | vol: {{ altcoin.volume * altcoin.best_ask | number:2 }} BTC | 
 				<!-- <span ng-class="altcoin.spread > 0 ? 'ok' : 'not-ok'">{{ altcoin.spread | number:4 }} BTC</span> | -->
