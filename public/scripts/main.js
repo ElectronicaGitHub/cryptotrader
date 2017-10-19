@@ -1,13 +1,14 @@
 angular.module('crypto', []).controller('main', ['$scope', '$http', function($scope, $http) {
 	console.log('hello');
-	$scope.balances;
-	$scope.btc_rur;
-	$scope.exchange_pairs = [];
+
+	$scope.balances = window.balances;
+	$scope.btc_rur = window.btc_rur;
+	$scope.exchange_pairs = window.exchange_pairs || [];
 	$scope.summary = {};
-	$scope.closed_orders;
-	$scope.open_buy_orders;
+	$scope.closed_orders = makeClosedPairs(window.closed_orders);
+	$scope.open_buy_orders = window.open_buy_order;
 	// $scope.open_buy_orders_by_curr = {};
-	$scope.max_buy_order_price;
+	$scope.max_buy_order_price = window.max_buy_order_price;
 	$scope.date_long;
 	$scope.moment = moment;
 
@@ -17,7 +18,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			$scope.balances = data.data.balances;
 			$scope.btc_rur = data.data.btc_rur;
 			$scope.exchange_pairs = data.data.exchange_pairs;
-			$scope.closed_orders = $scope.makeClosedPairs(data.data.closed_orders);
+			$scope.closed_orders = makeClosedPairs(data.data.closed_orders);
 			$scope.open_buy_orders = data.data.open_buy_orders;
 			$scope.max_buy_order_price = data.data.max_buy_order_price;
 			$scope.date_long = +new Date();
@@ -45,7 +46,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			console.log(error);
 		});
 	}
-	
+
 	$scope.tradeCycle = function () {
 		$http.post('/tradeCycle').then(function(data) {
 			console.log('tradeCycle', data);
@@ -71,7 +72,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 	}
 
 
-	$scope.makeClosedPairs = function (orders_currencies) {
+	function makeClosedPairs(orders_currencies) {
 		for (let i in orders_currencies) {
 			let obj = { sell : [], buy : []};
 			for (let k in orders_currencies[i]) {

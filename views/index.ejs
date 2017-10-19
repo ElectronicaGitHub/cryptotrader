@@ -79,6 +79,15 @@
 
 </style>
 
+<script>
+	window.closed_orders = <%- JSON.stringify(closed_orders) %>;
+	window.exchange_pairs = <%- JSON.stringify(exchange_pairs) %>;
+	window.max_buy_order_price = <%- JSON.stringify(max_buy_order_price) %>;
+	window.open_buy_orders = <%- JSON.stringify(open_buy_orders) %>;
+	window.btc_rur = <%- JSON.stringify(btc_rur) %>;
+	window.balances = <%- JSON.stringify(balances) %>;
+</script>
+
 <script src="libs/angular/angular.js"></script>
 <script src="libs/jquery/dist/jquery.js"></script>
 <script src="libs/highcharts/js/highcharts.js"></script>
@@ -116,7 +125,6 @@
 		</div>
 
 		<div class="col-xs-5">
-			
 			<div class="open-buy-orders" ng-if="open_buy_orders.length">
 				<div class="title">Покупка</div>
 				<div ng-repeat="order in open_buy_orders">

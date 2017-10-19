@@ -1,0 +1,42 @@
+2017-10-19 10:15:50 | Node app is running on port 8888 
+2017-10-19 10:16:32 | Node app is running on port 8888 
+2017-10-19 10:16:54 | await time 578.171617584303 
+2017-10-19 10:16:54 | await time 986.455857520923 
+2017-10-19 10:16:54 | getTicker 
+2017-10-19 10:16:58 | getTicker ok 
+2017-10-19 10:16:59 | getBalance 
+2017-10-19 10:16:59 | getBalance ok 
+2017-10-19 10:17:00 | getClientOrders 
+2017-10-19 10:17:01 | getClientOrders ok 
+2017-10-19 10:17:01 | pairs_data undefined 
+2017-10-19 10:17:45 | Node app is running on port 8888 
+2017-10-19 10:17:53 | await time 881.4014425734058 
+2017-10-19 10:17:53 | await time 746.3544852798805 
+2017-10-19 10:17:53 | getTicker 
+2017-10-19 10:17:55 | getTicker ok 
+2017-10-19 10:17:55 | getBalance 
+2017-10-19 10:17:56 | getBalance ok 
+2017-10-19 10:17:57 | getClientOrders 
+2017-10-19 10:17:58 | getClientOrders ok 
+2017-10-19 10:17:58 | pairs_data undefined 
+2017-10-19 10:19:20 | Node app is running on port 8888 
+2017-10-19 10:20:35 | Node app is running on port 8888 
+2017-10-19 10:22:09 | Node app is running on port 8888 
+2017-10-19 10:23:28 | Node app is running on port 8888 
+2017-10-19 10:23:59 | Node app is running on port 8888 
+2017-10-19 10:24:21 | Node app is running on port 8888 
+2017-10-19 10:24:34 | Node app is running on port 8888 
+2017-10-19 10:24:42 | Node app is running on port 8888 
+2017-10-19 10:24:50 | Node app is running on port 8888 
+2017-10-19 10:24:58 | Node app is running on port 8888 
+2017-10-19 10:25:37 | Node app is running on port 8888 
+2017-10-19 10:25:43 | Node app is running on port 8888 
+2017-10-19 10:25:49 | await time 613.1237136432901 
+2017-10-19 10:25:49 | await time 703.9474749471992 
+2017-10-19 10:25:49 | getTicker 
+2017-10-19 10:25:50 | getTicker ok 
+2017-10-19 10:25:50 | getBalance 
+2017-10-19 10:25:51 | getBalance ok 
+2017-10-19 10:25:52 | getClientOrders 
+2017-10-19 10:25:53 | getClientOrders ok 
+2017-10-19 10:25:53 | pairs_data undefined 

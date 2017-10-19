@@ -3,15 +3,35 @@ var path = require('path');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
 var log = require('./configs/logger')(module);
-var fs = require('fs');
 var async = require('async');
 var app = express();
+var fs = require('fs');
+var util = require('util');
+var log_file = fs.createWriteStream(__dirname + '/out.log', {flags : 'a'});
+var log_stdout = process.stdout;
 
 var port = process.env.PORT || 8888;
 
 String.prototype.endsWith = String.prototype.endsWith || function(suffix) {
     return this.indexOf(suffix, this.length - suffix.length) !== -1;
 };
+
+console.log = function(d) {
+	var array = Array.prototype.slice.call(arguments, 0);
+	array.splice(0, 0, UTILS.getTime() + ' |');
+	array.push('\n');
+	log_file.write(util.format.apply(null, array));
+	log_stdout.write(util.format.apply(null, array));
+};
+
+var UTILS = {
+	getTime : function () {
+		return new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+	},
+	makeId : function () {
+	    return Math.random().toString(36).substring(7);
+	}
+}
 
 app.engine('ejs', require('ejs-locals'));
 app.set('views', path.join(__dirname, 'views'));
@@ -443,7 +463,14 @@ function getOrders(next) {
 
 
 app.get('/', function (req, res, next) {
-	res.render('index', {balances : GLOBAL__balances, btc_rur : btc_rur});
+	res.render('index', {
+		balances : GLOBAL__balances || [],
+		closed_orders : closed_orders,
+		exchange_pairs : GLOBAL__exchange_pairs || [],
+		max_buy_order_price : max_buy_order_price,
+		btc_rur : btc_rur || {},
+		open_buy_orders : open_buy_orders || []
+	});
 });
 
 app.post('/getChartData', function (req, res, next) {
@@ -481,6 +508,10 @@ app.post('/checkCycle', function (req, res, next) {
 			open_buy_orders : open_buy_orders
 		});
 	});
+});
+
+app.get('/log', function (req, res, next) {
+    res.sendfile('out.log');
 });
 
 app.listen(port, function() {
