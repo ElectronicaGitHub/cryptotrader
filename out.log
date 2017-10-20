@@ -237,3 +237,18 @@
 2017-10-20 00:33:05 | getClientOrders 
 2017-10-20 00:33:06 | getClientOrders ok 
 2017-10-20 00:33:06 | pairs_data undefined 
+2017-10-20 00:33:43 | Node app is running on port 8888 
+2017-10-20 00:33:47 | loopTradeCycle STARTED 
+2017-10-20 00:33:47 | getTicker 
+2017-10-20 00:33:49 | getTicker ok 
+2017-10-20 00:33:49 | getBalance 
+2017-10-20 00:33:50 | getBalance ok 
+2017-10-20 00:33:51 | getClientOrders 
+2017-10-20 00:33:52 | getClientOrders ok 
+2017-10-20 00:33:52 | pairs_data undefined 
+2017-10-20 00:33:52 | [] 
+2017-10-20 00:33:52 | undefined 
+2017-10-20 00:33:54 | sellCycle [] 
+2017-10-20 00:33:56 | buyCycle [] 
+2017-10-20 00:33:56 | trade ended 
+2017-10-20 00:34:29 | Node app is running on port 8888 

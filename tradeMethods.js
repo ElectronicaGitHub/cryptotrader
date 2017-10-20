@@ -25,7 +25,7 @@ TradeMethods.prototype.randomTime = function (min, max) {
 }
 
 TradeMethods.prototype.getTicker = function(callback) {
-	console.log('getTicker');
+	// console.log('getTicker'); 
 	unirest.get(this.exchange.baseUrl + this.exchange.urls.ticker).end(function(response) {
 		// console.log('response', response.body);
 		callback(response.body);
@@ -61,7 +61,7 @@ TradeMethods.prototype.sellLimit = function (currencyPair, price, quantity, call
 }
 
 TradeMethods.prototype.getBalance = function(data, callback) {
-	console.log('getBalance');
+	// console.log('getBalance');
 	var req_data = this.prepareRequestData(data);
 	var url = this.exchange.baseUrl + this.exchange.urls.getBalance + '?' + req_data.url_data;
 	unirest.get(url, req_data.headers).end(function(response) {
@@ -83,7 +83,7 @@ TradeMethods.prototype.getChartData = function (period, currencyPair, callback) 
 }
 
 TradeMethods.prototype.getClientOrders = function (data, callback) {
-	console.log('getClientOrders');
+	// console.log('getClientOrders');
 	var req_data = this.prepareRequestData(data);
 	var url = this.exchange.baseUrl + this.exchange.urls.clientOrders + '?' + req_data.url_data;
 	// console.log(url);
