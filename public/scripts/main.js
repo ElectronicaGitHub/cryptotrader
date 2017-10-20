@@ -6,11 +6,17 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 	$scope.exchange_pairs = window.exchange_pairs || [];
 	$scope.summary = {};
 	$scope.closed_orders = makeClosedPairs(window.closed_orders);
-	$scope.open_buy_orders = window.open_buy_order;
+	$scope.open_buy_orders = window.open_buy_orders;
 	// $scope.open_buy_orders_by_curr = {};
 	$scope.max_buy_order_price = window.max_buy_order_price;
 	$scope.date_long;
 	$scope.moment = moment;
+
+	if ($scope.balances.length && $scope.closed_orders.length) {
+		calcSummaries();
+	}
+
+	$scope.view = null; // buy_and_sell
 
 	$scope.checkCycle = function () {
 		$http.post('/checkCycle').then(function (data) {
@@ -29,21 +35,26 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			// 	$scope.open_buy_orders_by_curr[symbol].push($scope.open_buy_orders[i]);
 			// }
 
-			$scope.summary.inBTC = $scope.balances.map(function (el) {
-				return el.inBTC;
-			}).reduce(function (a,b) {
-				return a + b;
-			});
+			calcSummaries();
 
-			$scope.summary.closed_ordersInBTC = $scope.closed_orders.map(function (el) {
-				return el.inBTC - el.buy_order.inBTC;
-			}).reduce(function (a,b) {
-				return a + b;
-			});
 
 
 		}, function (error) {
 			console.log(error);
+		});
+	}
+
+	function calcSummaries() {
+		$scope.summary.inBTC = $scope.balances.map(function (el) {
+			return el.inBTC;
+		}).reduce(function (a,b) {
+			return a + b;
+		});
+
+		$scope.summary.closed_ordersInBTC = $scope.closed_orders.map(function (el) {
+			return el.inBTC - el.buy_order.inBTC;
+		}).reduce(function (a,b) {
+			return a + b;
 		});
 	}
 

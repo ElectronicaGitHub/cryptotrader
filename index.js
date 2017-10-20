@@ -213,7 +213,7 @@ var tradeCycle = function (callback) {
 		trader.wrapWait(sellCycle, 2000, 2500),
 		trader.wrapWait(buyCycle, 2000, 2500)
 	], function (error, data) {
-		console.log('trade ended', data);
+		console.log('trade ended');
 	});
 
 	callback();

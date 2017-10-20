@@ -15,7 +15,6 @@ TradeMethods.prototype.useExchange = function(exchange) {
 
 TradeMethods.prototype.wrapWait = function(fn, min, max) {
 	var time = this.randomTime(min, max);
-	console.log('await time', time);
 	return setTimeout.bind(null, fn, time);
 }
 
