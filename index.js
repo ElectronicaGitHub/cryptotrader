@@ -308,10 +308,7 @@ function getPairsData(next) {
 				el.tradeable = true;
 			}
 			return el.symbol.endsWith('/BTC') && el.rank > 0 && el.rank < 20 && isFinite(el.rank);
-		})
-		// .filter(function (el) {
-		// 	return el.rank > 0.2;
-		// });
+		});
 
 		next(null);
 	});
@@ -461,6 +458,9 @@ function getOrders(next) {
 // составляем список тех чем можно банчить вообще
 // выставляем лимитный на покупку этих пар с лучшим bid
 
+loopTradeCycle(function () {
+	
+});
 
 app.get('/', function (req, res, next) {
 	res.render('index', {
