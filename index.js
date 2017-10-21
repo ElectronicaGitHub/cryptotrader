@@ -201,7 +201,7 @@ function makeBuyAndSellData(next) {
 			return el != 'BTC';
 		});
 
-		return _curr_arr.indexOf(currencyName) == -1 && !open_buy_orders_by_curr[el.symbol] && el.rank >= 0.4;
+		return _curr_arr.indexOf(currencyName) == -1 && !open_buy_orders_by_curr[el.symbol] && el.rank >= 0.8;
 	});
 
 
