@@ -434,9 +434,9 @@ function getOrders(next) {
 	});
 }
 
-// loopTradeCycle(function () {
+loopTradeCycle(function () {
 	
-// });
+});
 
 app.get('/', function (req, res, next) {
 	res.render('index', {
