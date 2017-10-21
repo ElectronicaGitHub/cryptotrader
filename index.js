@@ -296,21 +296,16 @@ function buyCycle(next) {
 }
 
 function buyEachPair(pair, next) {
-	// console.log('buyEachPair', pair);
-	// var sell_price = pair.buy_order.price / 100 * 106;
 	var pair_name = pair.symbol;
 	var buy_price = pair.best_bid;
-
 	var value = (max_buy_order_price / buy_price).toFixed(8);
-	// console.log('bought with', pair.buy_order.price);
-	// console.log('lets try sell with', sell_price, 'for inBTC',  sell_price * pair.value);
-	// console.log('pair_name', pair_name);
+
 	console.log('buyEachPair', pair_name, buy_price, value);
+
 	trader.buyLimit(pair_name, buy_price.toFixed(5), value, function (data, error) {
 		console.log(data, 'error', error);
 		next(null);
 	});
-	// next(null);
 }
 
 
@@ -333,6 +328,8 @@ function getCurrenciesData(next) {
 			}
 			return el.symbol.endsWith('/BTC') && el.rank > 0 && el.rank < 20 && isFinite(el.rank);
 		});
+
+		_exchange_pairs = null;
 
 		next(null);
 	});
@@ -358,6 +355,8 @@ function getBalance(next) {
 
 			return balance_currency;
 		});
+
+		data = null;
 
 		next(null);		
 	});
@@ -415,6 +414,8 @@ function getOrders(next) {
 			}
 			return el;
 		});
+
+		API_ORDERS = null;
 
 		next(null);
 	});
