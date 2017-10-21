@@ -280,9 +280,19 @@ function cancelEachOrder(order, next) {
 
 function buyCycle(next) {
 
-	console.log('buyCycle', able_to_buy_pairs.map(function (el) {
-		return el.symbol;
-	}));
+	// console.log('buyCycle', able_to_buy_pairs.map(function (el) {
+	// 	return el.symbol;
+	// }));
+
+	var btc_value = GLOBAL__available_balances.filter(function (el) {
+		return el.currency == 'BTC';
+	})[0].value;
+
+	if (btc_value < max_buy_order_price) {
+		console.log('btc value is too low', btc_value + ' BTC');
+		next(null);
+		return;		
+	}
 
 	var work_buy_pairs = able_to_buy_pairs.slice(0, 6);
 	
@@ -313,7 +323,8 @@ function getCurrenciesData(next) {
 	trader.getTicker(function(_exchange_pairs) {
 
 		_exchange_pairs = _exchange_pairs.map(function(el) {
-			el.rank = getRank(el.best_ask, el.best_bid, getInBTC(el.volume, el.best_ask));
+			// el.rank = getRank(el.best_ask, el.best_bid, getInBTC(el.volume, el.best_ask));
+			el.rank = getRank(el.best_ask, el.best_bid, el.volume);
 			return el;
 		});
 		_exchange_pairs = _.sortBy(_exchange_pairs, ['rank']).reverse();
@@ -323,10 +334,12 @@ function getCurrenciesData(next) {
 		})[0];
 
 		GLOBAL__exchange_pairs = _exchange_pairs.filter(function(el) {
-			if (el.volume * el.best_ask > 4) {
-				el.tradeable = true;
-			}
-			return el.symbol.endsWith('/BTC') && el.rank > 0 && el.rank < 20 && isFinite(el.rank);
+			// if (el.volume * el.best_ask > 4) {
+				if (el.best_ask > 1000 * satoshi) {
+					el.tradeable = true;
+				}
+			// }
+			return el.symbol.endsWith('/BTC') && el.rank > 0 && isFinite(el.rank);
 		});
 
 		_exchange_pairs = null;
@@ -421,9 +434,9 @@ function getOrders(next) {
 	});
 }
 
-loopTradeCycle(function () {
+// loopTradeCycle(function () {
 	
-});
+// });
 
 app.get('/', function (req, res, next) {
 	res.render('index', {

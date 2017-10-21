@@ -95,6 +95,9 @@
 		background: darkgoldenrod;
 		color: white;
 	}
+	.content {
+		margin-top: 10px;
+	}
 
 </style>
 
@@ -132,7 +135,7 @@
 		<div class="toggle-panel-button col-xs-6" ng-class="{ selected : view == 'buy_and_sell'}" ng-click="view = 'buy_and_sell'">Продажи</div>
 	</div>
 
-	<div class="container">
+	<div class="container content">
 
 		<div class="closed-pairs col-xs-12 col-sm-3" ng-if="closed_orders && (!view || view == 'closed')">
 			<div class="title">Закрытые сделки</div>
@@ -157,11 +160,21 @@
 					 <span>{{ inRUR(order.price * order.quantity) | number:2 }} RUR</span> ]
 				</div>
 			</div>
+
+
 			<div class="balances-container" ng-if="balances">	
 				<div class="title">Баланс</div>
+				<div class="each-balance" ng-if="summary.inBTC">
+					<div class="balance-info">
+						<b>Итого</b>
+						<span>[ {{ summary.inBTC | number:6 }} BTC </span> 
+						/ 
+						<span class="orange">{{ inRUR(summary.inBTC) | number:2}} RUR</span> ]
+					</div>
+				</div>
 				<div class="each-balance" ng-repeat="balance in balances" ng-class="{ colored : !balance.order_pairs }">
 					<div class="balance-info">
-						<b>{{ balance.currency }}</b> [ 
+						<a href="https://www.livecoin.net/ru/trade/index?currencyPair={{ balance.currency }}/BTC" target="_blank"><b>{{ balance.currency }}</b></a> [ 
 						<span>{{ balance.inBTC | number:6 }} BTC </span> 
 						/ 
 						<span>{{ inRUR(balance.inBTC) | number:2 }} RUR </span> ]
@@ -192,14 +205,6 @@
 
 						</div>
 					</div>
-				</div>
-			</div>
-			<div class="each-balance" ng-if="summary.inBTC">
-				<div class="balance-info">
-					<b>Итого</b>
-					<span>[ {{ summary.inBTC | number:6 }} BTC </span> 
-					/ 
-					<span class="orange">{{ inRUR(summary.inBTC) | number:2}} RUR</span> ]
 				</div>
 			</div>
 
