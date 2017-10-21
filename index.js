@@ -421,6 +421,10 @@ function getOrders(next) {
 	});
 }
 
+loopTradeCycle(function () {
+	
+});
+
 app.get('/', function (req, res, next) {
 	res.render('index', {
 		balances : GLOBAL__total_balances || [],
