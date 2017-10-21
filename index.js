@@ -26,7 +26,7 @@ console.log = function(d) {
 
 var UTILS = {
 	getTime : function () {
-		return new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+		return new Date((+new Date() + ( 3 * 60 * 60 * 1000))).toISOString().replace(/T/, ' ').replace(/\..+/, '');
 	},
 	makeId : function () {
 	    return Math.random().toString(36).substring(7);
@@ -72,20 +72,19 @@ var trader = new tradeMethods();
 var exchange__LiveCoin = new connector__LiveCoin();
 
 var btc_rur;
-var GLOBAL__balances;
+var GLOBAL__total_balances;
 var GLOBAL__exchange_pairs;
 var GLOBAL__tradeable_exchange_pairs;
-var GLOBAL_available_balances;
-var closed_orders = {};
-var buy_orders;
+var GLOBAL__available_balances;
+var closed_orders_by_curr = {};
+var closed_orders;
 var open_buy_orders;
-var sell_orders;
+var open_sell_orders;
 var closed_buy_orders;
 var koef = 10;
 var exchange_fee = 0.2;
 var max_buy_order_price = 0.00015;
-var sell_orders_by_curr = {};
-var buy_orders_by_curr = {};
+var open_sell_orders_by_curr = {};
 var open_buy_orders_by_curr = {};
 var closed_buy_orders_by_curr = {};
 var able_to_sell_pairs;
@@ -121,9 +120,9 @@ var stopLoopTradeCycle = function (callback) {
 
 var checkCycle = function (callback) {
 	async.waterfall([
-		getPairsData,
+		getCurrenciesData,
 		trader.wrapWait(getBalance),
-		trader.wrapWait(getOrders)
+		trader.wrapWait(getOrders),
 	], function (error, pairs_data) {
 		console.log('pairs_data', pairs_data);
 		callback();
@@ -132,35 +131,52 @@ var checkCycle = function (callback) {
 
 var tradeCycle = function (callback) {
 
+	makeBuyAndSellData();
+
+	// console.log(able_to_buy_pairs.map(function (el) {
+	// 	return [el.symbol];
+	// }));
+	// console.log(able_to_buy_pairs);
+	// console.log(able_to_sell_pairs);
+
+	async.waterfall([
+		trader.wrapWait(cancelOpenBuyOrdersCycle, 2000, 2500),
+
+		trader.wrapWait(getCurrenciesData, 2000, 2500),
+		trader.wrapWait(getOrders, 2000, 2500),
+		trader.wrapWait(makeBuyAndSellData, 2000, 2500),
+
+		trader.wrapWait(sellCycle, 2000, 2500),
+		trader.wrapWait(buyCycle, 2000, 2500),
+
+		trader.wrapWait(checkCycle, 2000, 2500)
+	], function (error, data) {
+		console.log('trade ended');
+	});
+
+	callback();
+}
+
+function makeBuyAndSellData(next) {
+
 	GLOBAL__tradeable_exchange_pairs = GLOBAL__exchange_pairs.filter(function (el) {
 		return el.tradeable;
 	});
 
 	able_to_buy_pairs = GLOBAL__tradeable_exchange_pairs.map(function (el) {
-		var our_ask_price = (el.best_ask * (100 + exchange_fee) / 100) * ((100 + koef) / 100) / 100 * (100 + exchange_fee);
-		var quantity = max_buy_order_price / el.best_ask;
 
-		ret = { 
-			symbol : el.symbol,
-			best_ask : el.best_ask,
-			best_bid : el.best_bid,
-			our_ask_price : our_ask_price,
-			profit : quantity * (our_ask_price - el.best_ask),
-			profitInRUR : quantity * (our_ask_price - el.best_ask) * btc_rur.best_ask + ' RUR',
-			quantity : quantity,
-			rank: el.rank
-		}
+		el.quantity = max_buy_order_price / el.best_ask;
 
-		if (closed_orders[el.symbol]) {
-			ret.success_counts = closed_orders[el.symbol].filter(function (el) {
+		if (closed_orders_by_curr[el.symbol]) {
+			el.success_counts = closed_orders_by_curr[el.symbol].filter(function (el) {
 				return el.type == 'LIMIT_SELL';
 			}).length;
 		}
-		if (sell_orders_by_curr[el.symbol]) {
-			ret.in_trade = sell_orders_by_curr[el.symbol] && sell_orders_by_curr[el.symbol].length;
+		if (open_sell_orders_by_curr[el.symbol]) {
+			el.in_trade = open_sell_orders_by_curr[el.symbol] && open_sell_orders_by_curr[el.symbol].length;
 		}
 
-		return ret;
+		return el;
 	});
 
 	able_to_buy_pairs = able_to_buy_pairs.filter(function (el) {
@@ -171,7 +187,7 @@ var tradeCycle = function (callback) {
 	.filter(function (el) {
 		var value; 
 		var currencyName = el.symbol.split('/')[0];
-		var currency = GLOBAL__balances.filter(function (_curr) {
+		var currency = GLOBAL__total_balances.filter(function (_curr) {
 			return _curr.currency == currencyName;
 		})[0];
 		if (currency) {
@@ -179,7 +195,7 @@ var tradeCycle = function (callback) {
 		}
 		// return !open_buy_orders_by_curr[el.symbol] && !value;
 		// return !open_buy_orders_by_curr[el.symbol];
-		var _curr_arr = GLOBAL_available_balances.map(function (el) {
+		var _curr_arr = GLOBAL__available_balances.map(function (el) {
 			return el.currency;
 		}).filter(function (el) {
 			return el != 'BTC';
@@ -189,9 +205,8 @@ var tradeCycle = function (callback) {
 	});
 
 
-	able_to_sell_pairs = GLOBAL_available_balances.filter(function (el) {
+	able_to_sell_pairs = GLOBAL__available_balances.filter(function (el) {
 		if (closed_buy_orders_by_curr[el.currency + '/BTC']) {
-			console.log(closed_buy_orders_by_curr[el.currency + '/BTC']);
 			el.buy_order = closed_buy_orders_by_curr[el.currency + '/BTC'].filter(function (_curr) {
 				return _curr.quantity == el.value;
 			})[0];
@@ -203,20 +218,8 @@ var tradeCycle = function (callback) {
 		return el.currency != 'BTC';
 	});
 
-	console.log(able_to_buy_pairs.map(function (el) {
-		return [el.symbol];
-	}));
-	// console.log(able_to_buy_pairs);
-	// console.log(able_to_sell_pairs);
+	if (next) next();
 
-	async.waterfall([
-		trader.wrapWait(sellCycle, 2000, 2500),
-		trader.wrapWait(buyCycle, 2000, 2500)
-	], function (error, data) {
-		console.log('trade ended');
-	});
-
-	callback();
 }
 
 function sellCycle(next) {
@@ -246,6 +249,30 @@ function sellEachPair(pair, next) {
 	console.log('lets try sell with', sell_price, 'for inBTC',  sell_price * pair.value);
 	console.log('pair_name', pair_name);
 	trader.sellLimit(pair_name, sell_price, pair.value, function (data, error) {
+		console.log(data, 'error', error);
+		next(null);
+	});
+}
+
+function cancelOpenBuyOrdersCycle(next) {
+	console.log('cancelOpenBuyOrdersCycle pairs', open_buy_orders.length);
+
+	async.eachSeries(open_buy_orders, function (order, serie_callback) {
+
+		trader.wrapWait(cancelEachOrder.bind(null, order, serie_callback), 2000, 2500)();
+
+	}, function (error, data) {
+		next(null);
+	});
+}
+
+function cancelEachOrder(order, next) {
+	var id = order.id;
+	var currencyPair = order.currencyPair;
+
+	console.log('cancelEachOrder', id, currencyPair);
+
+	trader.cancelLimit(currencyPair, id, function (data, error) {
 		console.log(data, 'error', error);
 		next(null);
 	});
@@ -286,24 +313,21 @@ function buyEachPair(pair, next) {
 	// next(null);
 }
 
-function getPairsData(next) {
-	trader.getTicker(function(exchange_pairs) {
 
-		exchange_pairs = exchange_pairs.map(function(el) {
+function getCurrenciesData(next) {
+	trader.getTicker(function(_exchange_pairs) {
+
+		_exchange_pairs = _exchange_pairs.map(function(el) {
 			el.rank = getRank(el.best_ask, el.best_bid, getInBTC(el.volume, el.best_ask));
-			el.spread = el.min_ask - el.max_bid;
-			el.spread_rel = (el.min_ask - el.max_bid)/el.max_bid;
-			el.our_ask_price = (el.best_ask * (100 + exchange_fee) / 100) * ((100 + koef) / 100) / 100 * (100 + exchange_fee);
 			return el;
 		});
+		_exchange_pairs = _.sortBy(_exchange_pairs, ['rank']).reverse();
 
-		exchange_pairs = _.sortBy(exchange_pairs, ['rank']).reverse();
-
-		btc_rur = exchange_pairs.filter(function(el) {
+		btc_rur = _exchange_pairs.filter(function(el) {
 			return el.symbol == 'BTC/RUR';
 		})[0];
 
-		GLOBAL__exchange_pairs = exchange_pairs.filter(function(el) {
+		GLOBAL__exchange_pairs = _exchange_pairs.filter(function(el) {
 			if (el.volume * el.best_ask > 4) {
 				el.tradeable = true;
 			}
@@ -316,22 +340,18 @@ function getPairsData(next) {
 
 function getBalance(next) {
 	trader.getBalance({}, function (data) {
-		GLOBAL_available_balances = data.filter(function (el) {
-			return el.value != 0 && (el.type == 'available');
-		});
-		GLOBAL__balances = data.filter(function (el) {
-			return el.value != 0 && (el.type == 'total');
-		});
+		GLOBAL__available_balances = data.available;
+		GLOBAL__total_balances = data.total;
 
-		GLOBAL__balances = GLOBAL__balances.map(function (balance_currency) {
-			var a = GLOBAL__exchange_pairs.filter(function (pair) {
-				return balance_currency.currency == pair.cur;
+		GLOBAL__total_balances = GLOBAL__total_balances.map(function (balance_currency) {
+			var _pair = GLOBAL__exchange_pairs.filter(function (pair) {
+				return balance_currency.currency == pair.currency;
 			});
-			var b = a[0]; var c;
-			if (b) { 
-				c = b.best_ask;
-					balance_currency.inBTC = getInBTC(balance_currency.value, c);
-					balance_currency.best_ask = c;
+			var _pair_best_ask_for_calc;
+			if (_pair[0]) { 
+				_pair_best_ask_for_calc = _pair[0].best_ask;
+					balance_currency.inBTC = getInBTC(balance_currency.value, _pair_best_ask_for_calc);
+					balance_currency.best_ask = _pair_best_ask_for_calc;
 			 } else {
 				balance_currency.inBTC = balance_currency.value;
 			 }
@@ -345,77 +365,47 @@ function getBalance(next) {
 
 function getOrders(next) {
 	trader.getClientOrders({}, function (API_ORDERS) {
-		sell_orders = API_ORDERS.data.filter(function (el) {
-			return el.type == 'LIMIT_SELL' && el.orderStatus == 'OPEN';
-		});
-		_closed_orders = API_ORDERS.data.filter(function (el) {
-			return el.orderStatus == 'EXECUTED';
-		});
-		buy_orders = API_ORDERS.data.filter(function (el) {
-			return el.type == 'LIMIT_BUY' && el.orderStatus == 'EXECUTED';
-		});
-		open_buy_orders = API_ORDERS.data.filter(function (el) {
-			return el.type == 'LIMIT_BUY' && el.orderStatus == 'OPEN';
-		});
-		closed_buy_orders = API_ORDERS.data.filter(function (el) {
-			return el.type == 'LIMIT_BUY' && el.orderStatus == 'EXECUTED';
-		});
-
-		closed_orders = {};
-		sell_orders_by_curr = {};
-		buy_orders_by_curr = {};
+		
+		open_sell_orders_by_curr = {};
 		open_buy_orders_by_curr = {};
 		closed_buy_orders_by_curr = {};
+		closed_orders_by_curr = {};
 
-		for (var i in sell_orders) {
-			sell_orders_by_curr[sell_orders[i].currencyPair] = sell_orders_by_curr[sell_orders[i].currencyPair] || [];
-			sell_orders_by_curr[sell_orders[i].currencyPair].push({
-				quantity : sell_orders[i].quantity,
-				price : sell_orders[i].price,
-				inBTC : sell_orders[i].quantity * sell_orders[i].price,
-				lastModificationTime : sell_orders[i].lastModificationTime
-			});
+		closed_orders = API_ORDERS.closed_orders;
+		for (var k in closed_orders) {
+			closed_orders_by_curr[closed_orders[k].currencyPair] = closed_orders_by_curr[closed_orders[k].currencyPair] || [];
+			closed_orders_by_curr[closed_orders[k].currencyPair].push(closed_orders[k]);	
 		}
 
+		open_sell_orders = API_ORDERS.open_sell_orders;
+		for (var i in open_sell_orders) {
+			open_sell_orders_by_curr[open_sell_orders[i].currencyPair] = open_sell_orders_by_curr[open_sell_orders[i].currencyPair] || [];
+			open_sell_orders_by_curr[open_sell_orders[i].currencyPair].push(open_sell_orders[i]);
+		}
+
+		open_buy_orders = API_ORDERS.open_buy_orders;
 		for (var i in open_buy_orders) {
 			open_buy_orders_by_curr[open_buy_orders[i].currencyPair] = open_buy_orders_by_curr[open_buy_orders[i].currencyPair] || [];
-			open_buy_orders_by_curr[open_buy_orders[i].currencyPair].push({
-				quantity : open_buy_orders[i].quantity,
-				price : open_buy_orders[i].price,
-				inBTC : open_buy_orders[i].quantity * open_buy_orders[i].price,
-				lastModificationTime : open_buy_orders[i].lastModificationTime
-			});
+			open_buy_orders_by_curr[open_buy_orders[i].currencyPair].push(open_buy_orders[i]);
 		}
 
+		closed_buy_orders = API_ORDERS.closed_buy_orders;
 		for (var i in closed_buy_orders) {
 			closed_buy_orders_by_curr[closed_buy_orders[i].currencyPair] = closed_buy_orders_by_curr[closed_buy_orders[i].currencyPair] || [];
-			closed_buy_orders_by_curr[closed_buy_orders[i].currencyPair].push({
-				quantity : closed_buy_orders[i].quantity,
-				price : closed_buy_orders[i].price,
-				inBTC : closed_buy_orders[i].quantity * closed_buy_orders[i].price,
-				lastModificationTime : closed_buy_orders[i].lastModificationTime
-			});
+			closed_buy_orders_by_curr[closed_buy_orders[i].currencyPair].push(closed_buy_orders[i]);
 		}
 
-		for (var i in buy_orders) {
-			buy_orders_by_curr[buy_orders[i].currencyPair] = buy_orders_by_curr[buy_orders[i].currencyPair] || [];
-			var new_buy_order = buy_orders[i];
-			new_buy_order.inBTC = buy_orders[i].quantity * buy_orders[i].price;
-
-			buy_orders_by_curr[buy_orders[i].currencyPair].push(new_buy_order);
-		}
-
-		GLOBAL__balances = GLOBAL__balances.map(function (el) {
-			var _sell_orders = sell_orders_by_curr[el.currency + '/BTC'];
-			var _buy_orders = buy_orders_by_curr[el.currency + '/BTC'];
+		GLOBAL__total_balances = GLOBAL__total_balances.map(function (el) {
+			var _open_sell_orders = open_sell_orders_by_curr[el.currency + '/BTC'];
 			var _open_buy_orders = open_buy_orders_by_curr[el.currency + '/BTC'];
+			var _closed_buy_orders = closed_buy_orders_by_curr[el.currency + '/BTC'];
 
-			if (_sell_orders) {
+			if (_open_sell_orders) {
 				el.order_pairs = [];
-				for (var i in _sell_orders) {
+				for (var i in _open_sell_orders) {
 					var _pair = {
-						buy_order : _buy_orders[i],
-						sell_order : _sell_orders[i]
+						buy_order : _closed_buy_orders[i],
+						sell_order : _open_sell_orders[i]
 					}
 					if (_open_buy_orders) {
 						_pair.open_order = _open_buy_orders[i];
@@ -426,46 +416,14 @@ function getOrders(next) {
 			return el;
 		});
 
-		for (var k in _closed_orders) {
-			closed_orders[_closed_orders[k].currencyPair] = closed_orders[_closed_orders[k].currencyPair] || [];
-			closed_orders[_closed_orders[k].currencyPair].push({
-				currencyPair : _closed_orders[k].currencyPair,
-				quantity : _closed_orders[k].quantity,
-				price : _closed_orders[k].price,
-				type : _closed_orders[k].type,
-				inBTC : _closed_orders[k].quantity * _closed_orders[k].price,
-				lastModificationTime : _closed_orders[k].lastModificationTime
-			});	
-		}
-
 		next(null);
 	});
 }
 
-// авторизация
-// запрашиваем наши открытые ордера
-// закрываем открытые ордера
-
-
-// запрос баланса
-// выгодно ли нам выставить наш купленный актив по рынку маржа процент + биржа ~0.4% ?
-// да  => то выставляем его с лучшим ask
-// нет => прошло ли время что его уже можно продать как провальный?
-//     да  => продаем лучшим ask
-//     нет => ждём
-
-// получаем ранк по парам
-// составляем список тех чем можно банчить вообще
-// выставляем лимитный на покупку этих пар с лучшим bid
-
-loopTradeCycle(function () {
-	
-});
-
 app.get('/', function (req, res, next) {
 	res.render('index', {
-		balances : GLOBAL__balances || [],
-		closed_orders : closed_orders,
+		balances : GLOBAL__total_balances || [],
+		closed_orders : closed_orders_by_curr,
 		exchange_pairs : GLOBAL__exchange_pairs || [],
 		max_buy_order_price : max_buy_order_price,
 		btc_rur : btc_rur || {},
@@ -500,8 +458,8 @@ app.post('/tradeCycle', function (req, res, next) {
 app.post('/checkCycle', function (req, res, next) {
 	checkCycle(function () {
 		res.json({
-			balances : GLOBAL__balances,
-			closed_orders : closed_orders,
+			balances : GLOBAL__total_balances,
+			closed_orders : closed_orders_by_curr,
 			exchange_pairs : GLOBAL__exchange_pairs,
 			max_buy_order_price : max_buy_order_price,
 			btc_rur : btc_rur,

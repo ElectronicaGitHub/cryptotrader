@@ -24,17 +24,6 @@ TradeMethods.prototype.randomTime = function (min, max) {
     return Math.random() * (max - min) + min;
 }
 
-TradeMethods.prototype.getTicker = function(callback) {
-	// console.log('getTicker'); 
-	unirest.get(this.exchange.baseUrl + this.exchange.urls.ticker).end(function(response) {
-		// console.log('response', response.body);
-		callback(response.body);
-		console.log('getTicker ok');
-	}, function(error) {
-		console.log(error);
-	});
-};
-
 TradeMethods.prototype.buyLimit = function (currencyPair, price, quantity, callback) {
 	var url = this.exchange.baseUrl + this.exchange.urls.buyLimit;
 	var data = { currencyPair : currencyPair, price : price, quantity : quantity };
@@ -60,13 +49,42 @@ TradeMethods.prototype.sellLimit = function (currencyPair, price, quantity, call
 	});
 }
 
+TradeMethods.prototype.cancelLimit = function (currencyPair, orderId, callback) {
+	var url = this.exchange.baseUrl + this.exchange.urls.cancelLimit;
+	var data = { currencyPair : currencyPair, orderId : orderId };
+	var req_data = this.prepareRequestData(data);
+
+	unirest.post(url, req_data.headers, data).end(function (response) {
+		callback(response.body);
+	}, function (error) {
+		console.log('sellLimit error', error);
+		callback(null, error);
+	});
+}
+
+TradeMethods.prototype.getTicker = function(callback) {
+	// console.log('getTicker'); 
+	var self = this;
+	unirest.get(this.exchange.baseUrl + this.exchange.urls.ticker).end(function(response) {
+
+		callback(self.exchange.pipes.makeCurrencies(response.body));
+
+		console.log('getTicker ok');
+	}, function(error) {
+		console.log(error);
+	});
+};
+
 TradeMethods.prototype.getBalance = function(data, callback) {
 	// console.log('getBalance');
+	var self = this;
 	var req_data = this.prepareRequestData(data);
 	var url = this.exchange.baseUrl + this.exchange.urls.getBalance + '?' + req_data.url_data;
 	unirest.get(url, req_data.headers).end(function(response) {
+
+		callback(self.exchange.pipes.makeBalances(response.body));
+		
 		console.log('getBalance ok');
-		callback(response.body);
 	}, function(error) {
 		console.log(error);
 	});
@@ -79,17 +97,18 @@ TradeMethods.prototype.getChartData = function (period, currencyPair, callback) 
 		callback(response.body);
 	}, function (error) {
 		console.log(error);
-	})
+	});
 }
 
 TradeMethods.prototype.getClientOrders = function (data, callback) {
-	// console.log('getClientOrders');
+
+	var self = this;
 	var req_data = this.prepareRequestData(data);
 	var url = this.exchange.baseUrl + this.exchange.urls.clientOrders + '?' + req_data.url_data;
-	// console.log(url);
+
 	unirest.get(url, req_data.headers).end(function (response) {
 		console.log('getClientOrders ok');
-		callback(response.body);
+		callback(self.exchange.pipes.makeOrders(response.body));
 	}, function (error) {
 		console.log(error);
 	});
