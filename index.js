@@ -1,3 +1,4 @@
+var loopTradeOnStart = false;
 var express = require('express');
 var path = require('path');
 var logger = require('morgan');
@@ -180,9 +181,13 @@ function makeBuyAndSellData(next) {
 	});
 
 	able_to_buy_pairs = able_to_buy_pairs.filter(function (el) {
-		return ((el.in_trade < 2 || !el.in_trade)
-			&& el.success_counts > 0)
-			|| (!el.success_counts && !el.in_trade)
+		return el.success_counts > 0 || (!el.success_counts && !el.in_trade);
+	})
+	.filter(function (el) {
+		return el.in_trade < 2 || !el.in_trade;
+	})
+	.filter(function (el) {
+		return el.rank >= 0.8;
 	})
 	.filter(function (el) {
 		var value; 
@@ -201,9 +206,8 @@ function makeBuyAndSellData(next) {
 			return el != 'BTC';
 		});
 
-		return _curr_arr.indexOf(currencyName) == -1 && !open_buy_orders_by_curr[el.symbol] && el.rank >= 0.8;
+		return _curr_arr.indexOf(currencyName) == -1 && !open_buy_orders_by_curr[el.symbol];
 	});
-
 
 	able_to_sell_pairs = GLOBAL__available_balances.filter(function (el) {
 		if (closed_buy_orders_by_curr[el.currency + '/BTC']) {
@@ -294,7 +298,7 @@ function buyCycle(next) {
 		return;		
 	}
 
-	var work_buy_pairs = able_to_buy_pairs.slice(0, 6);
+	var work_buy_pairs = able_to_buy_pairs.slice(0, 5);
 	
 	async.eachSeries(work_buy_pairs, function (pair, serie_callback) {
 
@@ -434,9 +438,9 @@ function getOrders(next) {
 	});
 }
 
-loopTradeCycle(function () {
-	
-});
+if (loopTradeOnStart) {
+	loopTradeCycle(function () {});
+}
 
 app.get('/', function (req, res, next) {
 	res.render('index', {
