@@ -82,7 +82,6 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		});
 	}
 
-
 	function makeClosedPairs(orders_currencies) {
 		for (let i in orders_currencies) {
 			let obj = { sell : [], buy : []};

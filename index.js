@@ -141,15 +141,14 @@ var tradeCycle = function (callback) {
 	// console.log(able_to_sell_pairs);
 
 	async.waterfall([
-		trader.wrapWait(cancelOpenBuyOrdersCycle, 2000, 2500),
+		// trader.wrapWait(cancelOpenBuyOrdersCycle, 2000, 2500),
 
-		trader.wrapWait(getCurrenciesData, 2000, 2500),
-		trader.wrapWait(getOrders, 2000, 2500),
+		// trader.wrapWait(getCurrenciesData, 2000, 2500),
+		// trader.wrapWait(getOrders, 2000, 2500),
+
 		trader.wrapWait(makeBuyAndSellData, 2000, 2500),
-
 		trader.wrapWait(sellCycle, 2000, 2500),
 		trader.wrapWait(buyCycle, 2000, 2500),
-
 		trader.wrapWait(checkCycle, 2000, 2500)
 	], function (error, data) {
 		console.log('trade ended');
@@ -184,10 +183,10 @@ function makeBuyAndSellData(next) {
 		return el.success_counts > 0 || (!el.success_counts && !el.in_trade);
 	})
 	.filter(function (el) {
-		return el.in_trade < 2 || !el.in_trade;
+		return el.in_trade < 1 || !el.in_trade;
 	})
 	.filter(function (el) {
-		return el.rank >= 0.8;
+		return el.rank >= 5000;
 	})
 	.filter(function (el) {
 		var value; 
@@ -243,6 +242,7 @@ function sellCycle(next) {
 function sellEachPair(pair, next) {
 	console.log(pair);
 	if (!pair.buy_order) {
+		console.log('pair hasnt buy order', closed_buy_orders_by_curr[pair.currency + '/BTC']);
 		next(null);
 		return;
 	}
@@ -284,9 +284,9 @@ function cancelEachOrder(order, next) {
 
 function buyCycle(next) {
 
-	// console.log('buyCycle', able_to_buy_pairs.map(function (el) {
-	// 	return el.symbol;
-	// }));
+	console.log('buyCycle', able_to_buy_pairs.map(function (el) {
+		return el.symbol;
+	}));
 
 	var btc_value = GLOBAL__available_balances.filter(function (el) {
 		return el.currency == 'BTC';
