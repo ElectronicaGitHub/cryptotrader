@@ -1075,3 +1075,10 @@
 2017-10-23 18:18:37 | getBalance ok 
 2017-10-23 18:18:41 | getClientOrders ok 
 2017-10-23 18:18:41 | pairs_data undefined 
+2017-10-23 18:36:15 | Node app is running on port 8888 
+2017-10-23 18:37:44 | Node app is running on port 8888 
+2017-10-23 18:37:54 | Node app is running on port 8888 
+2017-10-23 18:38:05 | getTicker ok 
+2017-10-23 18:38:07 | getBalance ok 
+2017-10-23 18:38:12 | getClientOrders ok 
+2017-10-23 18:38:12 | pairs_data undefined 
