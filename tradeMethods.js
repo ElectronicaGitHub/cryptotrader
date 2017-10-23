@@ -25,117 +25,25 @@ TradeMethods.prototype.randomTime = function (min, max) {
 }
 
 TradeMethods.prototype.buyLimit = function (currencyPair, price, quantity, callback) {
-	var url = this.exchange.baseUrl + this.exchange.urls.buyLimit;
-	var data = { currencyPair : currencyPair, price : price, quantity : quantity };
-	var req_data = this.prepareRequestData(data);
-
-	unirest.post(url, req_data.headers, data).end(function (response) {
-		callback(response.body);
-	}, function (error) {
-		console.log(error);
-		callback(null, error);
-	});
+	this.exchange.methods.buyLimit(currencyPair, price, quantity, callback);
 }
-
 TradeMethods.prototype.sellLimit = function (currencyPair, price, quantity, callback) {
-	var url = this.exchange.baseUrl + this.exchange.urls.sellLimit;
-	var data = { currencyPair : currencyPair, price : price, quantity : quantity };
-	var req_data = this.prepareRequestData(data);
-	unirest.post(url, req_data.headers, data).end(function (response) {
-		callback(response.body);
-	}, function (error) {
-		console.log('sellLimit error', error);
-		callback(null, error);
-	});
+	this.exchange.methods.sellLimit(currencyPair, price, quantity, callback);
 }
-
 TradeMethods.prototype.cancelLimit = function (currencyPair, orderId, callback) {
-	var url = this.exchange.baseUrl + this.exchange.urls.cancelLimit;
-	var data = { currencyPair : currencyPair, orderId : orderId };
-	var req_data = this.prepareRequestData(data);
-
-	unirest.post(url, req_data.headers, data).end(function (response) {
-		callback(response.body);
-	}, function (error) {
-		console.log('sellLimit error', error);
-		callback(null, error);
-	});
+	this.exchange.methods.cancelLimit(currencyPair, price, quantity, callback);
 }
-
 TradeMethods.prototype.getTicker = function(callback) {
-	// console.log('getTicker'); 
-	var self = this;
-	unirest.get(this.exchange.baseUrl + this.exchange.urls.ticker).end(function(response) {
-
-		callback(self.exchange.pipes.makeCurrencies(response.body));
-
-		console.log('getTicker ok');
-	}, function(error) {
-		console.log(error);
-	});
-};
-
+	this.exchange.methods.getTicker(callback);
+}
 TradeMethods.prototype.getBalance = function(data, callback) {
-	// console.log('getBalance');
-	var self = this;
-	var req_data = this.prepareRequestData(data);
-	var url = this.exchange.baseUrl + this.exchange.urls.getBalance + '?' + req_data.url_data;
-	unirest.get(url, req_data.headers).end(function(response) {
-
-		callback(self.exchange.pipes.makeBalances(response.body));
-		
-		console.log('getBalance ok');
-	}, function(error) {
-		console.log(error);
-	});
-};
-
-TradeMethods.prototype.getChartData = function (period, currencyPair, callback) {
-	var url = this.exchange.urls.getChartData + '?' + 'period=' + period + '&currencyPair=' + encodeURIComponent(currencyPair);
-	// console.log(url);
-	unirest.get(url).end(function (response) {
-		callback(response.body);
-	}, function (error) {
-		console.log(error);
-	});
+	this.exchange.methods.getBalance(data, callback);
 }
-
 TradeMethods.prototype.getClientOrders = function (data, callback) {
-
-	var self = this;
-	var req_data = this.prepareRequestData(data);
-	var url = this.exchange.baseUrl + this.exchange.urls.clientOrders + '?' + req_data.url_data;
-
-	unirest.get(url, req_data.headers).end(function (response) {
-		console.log('getClientOrders ok');
-		callback(self.exchange.pipes.makeOrders(response.body));
-	}, function (error) {
-		console.log(error);
-	});
+	this.exchange.methods.getClientOrders(data, callback);
 }
-
-TradeMethods.prototype.prepareRequestData = function (data) {
-
-	str = [];
-	
-	for (var i in data) {
-		str.push(i + '=' + encodeURIComponent(data[i]));
-	};
-	
-	// uri_str = str.join('&');
-	uri_str = str.join('&');
-
-	// console.log('str', str);
-	// console.log('uri_str', uri_str);
-
-	headers = {
-		'Api-Key' : this.exchange.key,
-		'Sign' : hmac256(uri_str, this.exchange.secretKey).toString(crypto.enc.hex).toUpperCase()
-	}
-
-	// console.log(headers);
-
-	return {headers : headers, url_data : uri_str}
+TradeMethods.prototype.getChartData = function (period, currencyPair, callback) {
+	this.exchange.methods.getBalance(period, currencyPair, callback);
 }
 
 module.exports = TradeMethods;

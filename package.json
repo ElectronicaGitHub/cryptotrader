@@ -13,6 +13,7 @@
     "crypto-js": "^3.1.9-1",
     "ejs-locals": "^1.0.2",
     "lodash": "^4.17.4",
+    "node-bittrex-api": "^0.7.6",
     "winston": "^2.4.0"
   }
 }

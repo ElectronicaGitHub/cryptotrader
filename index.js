@@ -1,4 +1,4 @@
-var loopTradeOnStart = true;
+var loopTradeOnStart = false;
 var express = require('express');
 var path = require('path');
 var logger = require('morgan');
@@ -49,6 +49,7 @@ var _ = require('lodash');
 var tradeMethods = require('./tradeMethods');
 
 var connector__LiveCoin = require('./connectors/livecoin');
+var connector__Bittrex = require('./connectors/bittrex');
 
 // var coinsLookup = ['STEEM', 'LSK', 'CRBIT', 'WAVES', 'GOLOS', 'MONA', 'LTC', 'CURE'];
 var coinsLookup = ['MONA'];
@@ -71,8 +72,12 @@ var getInBTC = function(value, exchange_rate) {
 
 var trader = new tradeMethods();
 var exchange__LiveCoin = new connector__LiveCoin();
+var exchange__Bittrex = new connector__Bittrex();
 
-var btc_rur;
+trader.useExchange(exchange__LiveCoin);
+// trader.useExchange(exchange__Bittrex);
+
+var btc_usd;
 var GLOBAL__total_balances;
 var GLOBAL__exchange_pairs;
 var GLOBAL__tradeable_exchange_pairs;
@@ -84,16 +89,15 @@ var open_sell_orders;
 var closed_buy_orders;
 var koef = 10;
 var exchange_fee = 0.2;
-var max_buy_order_price = 0.00015;
+// var max_buy_order_price = 50000 * satoshi;
+// var max_buy_order_price = 0.00015;
 var open_sell_orders_by_curr = {};
 var open_buy_orders_by_curr = {};
 var closed_buy_orders_by_curr = {};
 var able_to_sell_pairs;
 var able_to_buy_pairs;
 var interval;
-var trade_cycle_time = 1000 * 60 * 5;
-
-trader.useExchange(exchange__LiveCoin);
+var trade_cycle_time = 1000 * 60 * 10;
 
 var loopTradeCycle = function (callback) {
 	console.log('loopTradeCycle STARTED');
@@ -165,7 +169,7 @@ function makeBuyAndSellData(next) {
 
 	able_to_buy_pairs = GLOBAL__tradeable_exchange_pairs.map(function (el) {
 
-		el.quantity = max_buy_order_price / el.best_ask;
+		el.quantity = trader.exchange.max_buy_order_price / el.best_ask;
 
 		if (closed_orders_by_curr[el.symbol]) {
 			el.success_counts = closed_orders_by_curr[el.symbol].filter(function (el) {
@@ -186,7 +190,7 @@ function makeBuyAndSellData(next) {
 		return el.in_trade < 1 || !el.in_trade;
 	})
 	.filter(function (el) {
-		return el.rank >= 5000;
+		return el.rank >= 5000 && isFinite(el.rank);
 	})
 	.filter(function (el) {
 		var value; 
@@ -240,19 +244,26 @@ function sellCycle(next) {
 }
 
 function sellEachPair(pair, next) {
-	console.log(pair);
+
+	console.log('sellEachPair', pair);
+
 	if (!pair.buy_order) {
 		console.log('pair hasnt buy order', closed_buy_orders_by_curr[pair.currency + '/BTC']);
 		next(null);
 		return;
 	}
 	// var symbols_after_comma = pair.buy_order.price.toString().length - 2;
-	var sell_price = (pair.buy_order.price / 100 * 106).toFixed(8);
+	var sell_price = (pair.buy_order.price / 100 * 106);
 	var pair_name = pair.currency + '/BTC';
+
+	if (sell_price * pair.value < trader.exchange.max_buy_order_price) {
+		sell_price = trader.exchange.max_buy_order_price / pair.value;
+	}
+
 	console.log('bought with', pair.buy_order.price);
-	console.log('lets try sell with', sell_price, 'for inBTC',  sell_price * pair.value);
+	console.log('lets try sell', pair.value, 'with', sell_price, 'for inBTC',  sell_price * pair.value);
 	console.log('pair_name', pair_name);
-	trader.sellLimit(pair_name, sell_price, pair.value, function (data, error) {
+	trader.sellLimit(pair_name, sell_price.toFixed(8), pair.value, function (data, error) {
 		console.log(data, 'error', error);
 		next(null);
 	});
@@ -292,7 +303,7 @@ function buyCycle(next) {
 		return el.currency == 'BTC';
 	})[0].value;
 
-	if (btc_value < max_buy_order_price) {
+	if (btc_value < trader.exchange.max_buy_order_price) {
 		console.log('btc value is too low', btc_value + ' BTC');
 		next(null);
 		return;		
@@ -312,11 +323,10 @@ function buyCycle(next) {
 function buyEachPair(pair, next) {
 	var pair_name = pair.symbol;
 	var buy_price = pair.best_bid;
-	var value = (max_buy_order_price / buy_price).toFixed(8);
+	var value = ((trader.exchange.max_buy_order_price * 102 / 100) / buy_price);
 
-	console.log('buyEachPair', pair_name, buy_price, value);
-
-	trader.buyLimit(pair_name, buy_price.toFixed(5), value, function (data, error) {
+	// trader.buyLimit(pair_name, buy_price.toFixed(5), value, function (data, error) {
+	trader.buyLimit(pair_name, buy_price.toFixed(8), value.toFixed(8), function (data, error) {
 		console.log(data, 'error', error);
 		next(null);
 	});
@@ -327,14 +337,13 @@ function getCurrenciesData(next) {
 	trader.getTicker(function(_exchange_pairs) {
 
 		_exchange_pairs = _exchange_pairs.map(function(el) {
-			// el.rank = getRank(el.best_ask, el.best_bid, getInBTC(el.volume, el.best_ask));
 			el.rank = getRank(el.best_ask, el.best_bid, el.volume);
 			return el;
 		});
 		_exchange_pairs = _.sortBy(_exchange_pairs, ['rank']).reverse();
 
-		btc_rur = _exchange_pairs.filter(function(el) {
-			return el.symbol == 'BTC/RUR';
+		btc_usd = _exchange_pairs.filter(function(el) {
+			return el.symbol == 'BTC/' + trader.exchange.usdName;
 		})[0];
 
 		GLOBAL__exchange_pairs = _exchange_pairs.filter(function(el) {
@@ -343,7 +352,7 @@ function getCurrenciesData(next) {
 					el.tradeable = true;
 				}
 			// }
-			return el.symbol.endsWith('/BTC') && el.rank > 0 && isFinite(el.rank);
+			return el.symbol.endsWith('/BTC');
 		});
 
 		_exchange_pairs = null;
@@ -447,8 +456,8 @@ app.get('/', function (req, res, next) {
 		balances : GLOBAL__total_balances || [],
 		closed_orders : closed_orders_by_curr,
 		exchange_pairs : GLOBAL__exchange_pairs || [],
-		max_buy_order_price : max_buy_order_price,
-		btc_rur : btc_rur || {},
+		max_buy_order_price : trader.exchange.max_buy_order_price,
+		btc_usd : btc_usd || {},
 		open_buy_orders : open_buy_orders || []
 	});
 });
@@ -483,8 +492,8 @@ app.post('/checkCycle', function (req, res, next) {
 			balances : GLOBAL__total_balances,
 			closed_orders : closed_orders_by_curr,
 			exchange_pairs : GLOBAL__exchange_pairs,
-			max_buy_order_price : max_buy_order_price,
-			btc_rur : btc_rur,
+			max_buy_order_price : trader.exchange.max_buy_order_price,
+			btc_usd : btc_usd,
 			open_buy_orders : open_buy_orders
 		});
 	});

@@ -106,7 +106,7 @@
 	window.exchange_pairs = <%- JSON.stringify(exchange_pairs) %>;
 	window.max_buy_order_price = <%- JSON.stringify(max_buy_order_price) %>;
 	window.open_buy_orders = <%- JSON.stringify(open_buy_orders) %>;
-	window.btc_rur = <%- JSON.stringify(btc_rur) %>;
+	window.btc_usd = <%- JSON.stringify(btc_usd) %>;
 	window.balances = <%- JSON.stringify(balances) %>;
 </script>
 
@@ -126,8 +126,9 @@
 				<button class="btn btn-xs btn-primary" ng-click="tradeCycle()">ПРОТОРГОВАТЬСЯ</button>
 				<button class="btn btn-xs btn-success" ng-click="loopTradeCycle()">ТОРГОВАТЬ</button>
 				<button class="btn btn-xs btn-danger" ng-click="stopLoopTradeCycle()">ПЕРЕСТАТЬ ТОРГОВАТЬ</button>
+				<a href="/log" target="_blank"><button class="btn btn-xs btn-primary">ЛОГ</button></a>
 			</div>
-			<div class="panel-info" ng-if="btc_rur.best_ask">min buy price : {{ max_buy_order_price }} BTC / {{ btc_rur.best_ask * max_buy_order_price | number:2 }} RUR</div>
+			<div class="panel-info" ng-if="btc_usd.best_ask">min buy price : {{ max_buy_order_price }} BTC / {{ btc_usd.best_ask * max_buy_order_price | number:2 }} USD</div>
 		</div>
 	</div>
 	<div class="toggle-panel visible-xs">
@@ -141,12 +142,12 @@
 			<div class="title">Закрытые сделки</div>
 
 			<div class="each-closed-pair">
-				<b>Итого</b> [ {{ summary.closed_ordersInBTC | number:6 }} BTC / {{ inRUR(summary.closed_ordersInBTC) | number:2 }} RUR ]
+				<b>Итого</b> [ {{ summary.closed_ordersInBTC | number:6 }} BTC / {{ inUSD(summary.closed_ordersInBTC) | number:2 }} USD ]
 			</div>
 			
 			<div class="each-closed-pair" ng-repeat="pair in closed_orders | orderBy:'-lastModificationTime'" ng-class="{ gold : moment(date_long).isSame(pair.lastModificationTime, 'd'), yesterday : moment(date_long).isSame(moment(pair.lastModificationTime).add(1, 'd'), 'd') }">
 				{{ $index+1 }}. <b>{{ pair.currencyPair }}</b> / 
-				<span ng-class="pair.inBTC - pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">{{pair.inBTC - pair.buy_order.inBTC | number:6 }} BTC [ {{ inRUR(pair.inBTC - pair.buy_order.inBTC) | number:2 }} RUR]</span>
+				<span ng-class="pair.inBTC - pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">{{pair.inBTC - pair.buy_order.inBTC | number:6 }} BTC [ {{ inUSD(pair.inBTC - pair.buy_order.inBTC) | number:2 }} USD]</span>
 			</div>
 		</div>
 
@@ -157,7 +158,7 @@
 					<b>{{ order.currencyPair }}</b> [ 
 					<span>{{ order.price * order.quantity | number:6 }} BTC</span>
 					 / 
-					 <span>{{ inRUR(order.price * order.quantity) | number:2 }} RUR</span> ]
+					 <span>{{ inUSD(order.price * order.quantity) | number:2 }} USD</span> ]
 				</div>
 			</div>
 
@@ -169,7 +170,7 @@
 						<b>Итого</b>
 						<span>[ {{ summary.inBTC | number:6 }} BTC </span> 
 						/ 
-						<span class="orange">{{ inRUR(summary.inBTC) | number:2}} RUR</span> ]
+						<span class="orange">{{ inUSD(summary.inBTC) | number:2}} USD</span> ]
 					</div>
 				</div>
 				<div class="each-balance" ng-repeat="balance in balances" ng-class="{ colored : !balance.order_pairs }">
@@ -177,7 +178,7 @@
 						<a href="https://www.livecoin.net/ru/trade/index?currencyPair={{ balance.currency }}/BTC" target="_blank"><b>{{ balance.currency }}</b></a> [ 
 						<span>{{ balance.inBTC | number:6 }} BTC </span> 
 						/ 
-						<span>{{ inRUR(balance.inBTC) | number:2 }} RUR </span> ]
+						<span>{{ inUSD(balance.inBTC) | number:2 }} USD </span> ]
 					</div>
 					<div class="each-balance-currency-pairs">
 						<div class="each-currency-pair" ng-repeat="pair in balance.order_pairs">
@@ -187,20 +188,20 @@
 								<!-- <span>{{ pair.sell_order.inBTC | number:8 }} BTC / </span> -->
 								<!-- <span>{{ pair.buy_order.inBTC | number:8 }} BTC / </span> -->
 								<span>{{ pair.sell_order.inBTC - pair.buy_order.inBTC | number:8 }} BTC / </span>
-								<span ng-class="inRUR(pair.sell_order.inBTC - pair.buy_order.inBTC) > 0 ? 'ok' : 'not-ok'">{{ inRUR(pair.sell_order.inBTC - pair.buy_order.inBTC) | number:2 }} RUR</span>
+								<span ng-class="inUSD(pair.sell_order.inBTC - pair.buy_order.inBTC) > 0 ? 'ok' : 'not-ok'">{{ inUSD(pair.sell_order.inBTC - pair.buy_order.inBTC) | number:2 }} USD</span>
 								<span> / </span>
 								<span ng-class="(pair.sell_order.inBTC - pair.buy_order.inBTC)/pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">
 									{{(pair.sell_order.inBTC - pair.buy_order.inBTC)/pair.buy_order.inBTC * 100 | number:2}}%
 								</span>
 								
 								<!-- <span ng-class="balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC > 0 ? 'ok' : 'not-ok'"> -->
-									<!-- [ sd: {{ balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC | number:6 }} BTC / {{ inRUR(balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC) | number:2 }} RUR ]</span> -->
+									<!-- [ sd: {{ balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC | number:6 }} BTC / {{ inUSD(balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC) | number:2 }} USD ]</span> -->
 								<!-- <span ng-class="balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'"> -->
-									<!-- [ bd: {{ balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC | number:6 }} BTC / {{ inRUR(balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC) | number:2 }} RUR ]</span> -->
+									<!-- [ bd: {{ balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC | number:6 }} BTC / {{ inUSD(balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC) | number:2 }} USD ]</span> -->
 								<span ng-class="balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC > 0 ? 'ok' : 'not-ok'">
-									 [ {{ inRUR(balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC) | number:2 }} RUR / </span>
+									 [ {{ inUSD(balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC) | number:2 }} USD / </span>
 								<span ng-class="balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">
-									{{ inRUR(balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC) | number:2 }} RUR ]</span>
+									{{ inUSD(balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC) | number:2 }} USD ]</span>
 							</div>
 
 						</div>

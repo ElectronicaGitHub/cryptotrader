@@ -2,7 +2,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 	console.log('hello');
 
 	$scope.balances = window.balances;
-	$scope.btc_rur = window.btc_rur;
+	$scope.btc_usd = window.btc_usd;
 	$scope.exchange_pairs = window.exchange_pairs || [];
 	$scope.summary = {};
 	$scope.closed_orders = makeClosedPairs(window.closed_orders);
@@ -22,7 +22,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		$http.post('/checkCycle').then(function (data) {
 			console.log('success', data.data);
 			$scope.balances = data.data.balances;
-			$scope.btc_rur = data.data.btc_rur;
+			$scope.btc_usd = data.data.btc_usd;
 			$scope.exchange_pairs = data.data.exchange_pairs;
 			$scope.closed_orders = makeClosedPairs(data.data.closed_orders);
 			$scope.open_buy_orders = data.data.open_buy_orders;
@@ -50,12 +50,14 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		}).reduce(function (a,b) {
 			return a + b;
 		});
-
-		$scope.summary.closed_ordersInBTC = $scope.closed_orders.map(function (el) {
-			return el.inBTC - el.buy_order.inBTC;
-		}).reduce(function (a,b) {
-			return a + b;
-		});
+		
+		if ($scope.closed_orders.length) {
+			$scope.summary.closed_ordersInBTC = $scope.closed_orders.map(function (el) {
+				return el.inBTC - el.buy_order.inBTC;
+			}).reduce(function (a,b) {
+				return a + b;
+			});
+		}
 	}
 
 	$scope.tradeCycle = function () {
@@ -121,8 +123,8 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		return el.rank > 0.2;
 	}
 
-	$scope.inRUR = function (valueinBTC) {
-		return valueinBTC * $scope.btc_rur.best_ask;
+	$scope.inUSD = function (valueinBTC) {
+		return valueinBTC * $scope.btc_usd.best_ask;
 	}
 
 	$scope.getChartData = function (altcoin, days) {
