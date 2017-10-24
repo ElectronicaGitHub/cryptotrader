@@ -53,7 +53,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		
 		if ($scope.closed_orders.length) {
 			$scope.summary.closed_ordersInBTC = $scope.closed_orders.map(function (el) {
-				return el.inBTC - el.buy_order.inBTC;
+				return el.inBTC - (el.buy_order ? el.buy_order.inBTC : 0);
 			}).reduce(function (a,b) {
 				return a + b;
 			});
