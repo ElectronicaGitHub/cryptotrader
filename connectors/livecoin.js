@@ -18,7 +18,7 @@ function LiveCoin() {
 
 	this.urls = {
 		ticker : '/exchange/ticker',
-		clientOrders : '/exchange/client_orders',
+		orders : '/exchange/client_orders',
 		getBalance : '/payment/balances',
 		getChartData : 'https://www.livecoin.net/tradeapi/mainGraphData', // period=m15&currencyPair=BTC%2FUSD
 		buyLimit : '/exchange/buylimit',
@@ -51,9 +51,9 @@ function LiveCoin() {
 				console.log(error);
 			});
 		},
-		getClientOrders : function (data, callback) {
+		getOrders : function (data, callback) {
 			var req_data = self.misc.prepareRequestData(data);
-			var url = self.baseUrl + self.urls.clientOrders + '?' + req_data.url_data;
+			var url = self.baseUrl + self.urls.orders + '?' + req_data.url_data;
 
 			unirest.get(url, req_data.headers).end(function (response) {
 				console.log('getClientOrders ok');

@@ -1,58 +1,80 @@
 angular.module('crypto', []).controller('main', ['$scope', '$http', function($scope, $http) {
 	console.log('hello');
 
-	$scope.balances = window.balances;
-	$scope.btc_usd = window.btc_usd;
-	$scope.exchange_pairs = window.exchange_pairs || [];
-	$scope.summary = {};
-	$scope.closed_orders = makeClosedPairs(window.closed_orders);
-	$scope.open_buy_orders = window.open_buy_orders;
-	// $scope.open_buy_orders_by_curr = {};
-	$scope.max_buy_order_price = window.max_buy_order_price;
+	$scope.setTraderSelected = function(trader) {
+		$scope.selectedTrader = trader;
+	}
+
+	$scope.bot = window.bot;
+
+	console.log($scope.bot);
+
+	if ($scope.bot) {
+		$scope.setTraderSelected($scope.bot.TRADERS[0]);
+
+		for (var trader of $scope.bot.TRADERS) {
+			trader.closed_orders = makeClosedPairs(trader.closed_orders_by_curr);
+			calcSummaries(trader);
+		}
+	}
+
+
+	// $scope.balances = window.balances;
+	// $scope.btc_usd = window.btc_usd;
+	// $scope.exchange_pairs = window.exchange_pairs || [];
+	// $scope.summary = {};
+	// $scope.closed_orders = makeClosedPairs(window.closed_orders);
+	// $scope.open_buy_orders = window.open_buy_orders;
+	// // $scope.open_buy_orders_by_curr = {};
+	// $scope.max_buy_order_price = window.max_buy_order_price;
 	$scope.date_long;
 	$scope.moment = moment;
 
-	if ($scope.balances.length && $scope.closed_orders.length) {
-		calcSummaries();
-	}
+	// if ($scope.balances && $scope.balances.length && $scope.closed_orders && $scope.closed_orders.length) {
+	// 	calcSummaries();
+	// }
 
 	$scope.view = null; // buy_and_sell
 
 	$scope.checkCycle = function () {
 		$http.post('/checkCycle').then(function (data) {
 			console.log('success', data.data);
-			$scope.balances = data.data.balances;
-			$scope.btc_usd = data.data.btc_usd;
-			$scope.exchange_pairs = data.data.exchange_pairs;
-			$scope.closed_orders = makeClosedPairs(data.data.closed_orders);
-			$scope.open_buy_orders = data.data.open_buy_orders;
-			$scope.max_buy_order_price = data.data.max_buy_order_price;
+
+			$scope.bot = data.data.bot;
+			$scope.setTraderSelected($scope.bot.TRADERS[0]);
+
+			console.log($scope.bot);
+
+			// $scope.balances = data.data.balances;
+			// $scope.btc_usd = data.data.btc_usd;
+			// $scope.exchange_pairs = data.data.exchange_pairs;
+			// $scope.closed_orders = makeClosedPairs(data.data.closed_orders);
+			// $scope.open_buy_orders = data.data.open_buy_orders;
+			// $scope.max_buy_order_price = data.data.max_buy_order_price;
 			$scope.date_long = +new Date();
 
-			// for (let i in $scope.open_buy_orders) {
-			// 	var symbol = $scope.open_buy_orders[i].currencyPair.split('/')[0];
-			// 	$scope.open_buy_orders_by_curr[symbol] = $scope.open_buy_orders_by_curr[symbol] || [];
-			// 	$scope.open_buy_orders_by_curr[symbol].push($scope.open_buy_orders[i]);
-			// }
-
-			calcSummaries();
-
-
+			for (var trader of $scope.bot.TRADERS) {
+				trader.closed_orders = makeClosedPairs(trader.closed_orders_by_curr);
+				calcSummaries(trader);
+			}
 
 		}, function (error) {
 			console.log(error);
 		});
 	}
 
-	function calcSummaries() {
-		$scope.summary.inBTC = $scope.balances.map(function (el) {
-			return el.inBTC;
-		}).reduce(function (a,b) {
-			return a + b;
-		});
+	function calcSummaries(trader) {
+		trader.summary = {};
+		if (trader.total_balances) {
+			trader.summary.inBTC = trader.total_balances.map(function (el) {
+				return el.inBTC;
+			}).reduce(function (a,b) {
+				return a + b;
+			});
+		}
 		
-		if ($scope.closed_orders.length) {
-			$scope.summary.closed_ordersInBTC = $scope.closed_orders.map(function (el) {
+		if (trader.closed_orders_by_curr) {
+			trader.summary.closed_ordersInBTC = trader.closed_orders.map(function (el) {
 				return el.inBTC - (el.buy_order ? el.buy_order.inBTC : 0);
 			}).reduce(function (a,b) {
 				return a + b;
@@ -123,8 +145,8 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		return el.rank > 0.2;
 	}
 
-	$scope.inUSD = function (valueinBTC) {
-		return valueinBTC * $scope.btc_usd.best_ask;
+	$scope.inUSD = function (trader, valueinBTC) {
+		return valueinBTC * trader.btc_usd.best_ask;
 	}
 
 	$scope.getChartData = function (altcoin, days) {

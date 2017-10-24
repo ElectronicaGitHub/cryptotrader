@@ -5,7 +5,7 @@ function Bittrex() {
 
 	var self = this;
 
-	this.name = 'LiveCoin';
+	this.name = 'Bittrex';
 
 	this.key = 'f791e840f2474fa9a6c81265f21b9c87'; // Api-key
 	this.secretKey = 'cb96f00f09c64f239d9d9d3de2933218'; // Sign
@@ -46,7 +46,7 @@ function Bittrex() {
 				callback(self.pipes.makeBalances(data));
 			});
 		},
-		getClientOrders : function (data, callback) {
+		getOrders : function (data, callback) {
 			bittrexAPI.getopenorders({}, function (data, err) {
 				if (err) {
 					console.log(err);
@@ -80,7 +80,7 @@ function Bittrex() {
 			console.log(data, quantity * price);
 			bittrexAPI.buylimit(data, function (data, err) {
 				if (err) {
-					console.log(err);
+					// console.log(err);
 					return callback(err);
 				}
 				callback();
@@ -95,18 +95,28 @@ function Bittrex() {
 			console.log(data, quantity * price);
 			bittrexAPI.selllimit(data, function (data, err) {
 				if (err) {
-					console.log(err);
+					// console.log(err);
 					return callback(err);
 				}
 				callback();
 			});
 		},
 		cancelLimit : function (currencyPair, orderId, callback) {
+			var data = {
+				uuid : orderId
+			}
+			bittrexAPI.cancel(data, function (data, err) {
+				if (err) {
+					return callback(err);
+				}
+				callback();
+			});
 		}
 	}
 
 	this.pipes = {
 		makeBalances : function (data) {
+
 			data = data.result.map(function (el) {
 				return {
 					currency : el.Currency,
@@ -115,24 +125,21 @@ function Bittrex() {
 				}
 			});
 
-			available = data.filter(function (el) {
-				return el.available != 0;
-			}).map(function (el) {
-				el.type = 'available';
-				el.value = el.available;
-				return el;
-			});
-			total = data.filter(function (el) {
-				return el.total != 0;
-			}).map(function (el) {
-				el.type = 'total';
-				el.value = el.total;
-				return el;
-			});
-
 			return {
-				total : total,
-				available : available
+				total : data.filter(function (el) {
+					return el.total != 0;
+				}).map(function (el) {
+					el.type = 'total';
+					el.value = el.total;
+					return el;
+				}),
+				available : data.filter(function (el) {
+					return el.available != 0;
+				}).map(function (el) {
+					el.type = 'available';
+					el.value = el.available;
+					return el;
+				})
 			}
 
 			// return data;
