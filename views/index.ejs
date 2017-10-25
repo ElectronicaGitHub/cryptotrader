@@ -160,6 +160,12 @@
 						/ 
 						<span class="orange">{{ inUSD(trader, trader.summary.inBTC) | number:2}} USD</span> ]
 					</span>
+
+					<span class="balance-info" ng-class="trader.summary.today_incomeInBTC > 0 ? 'ok' : 'not-ok'">
+						<span> [ {{ trader.summary.today_incomeInBTC | number:6 }} BTC</span>
+						/
+						<span> {{ inUSD(trader, trader.summary.today_incomeInBTC) | number:2 }} USD ]</span>
+					</span>
 				</div>
 
 				<div class="panel-info" ng-if="trader.btc_usd.best_ask">min buy price : {{ trader.exchange.max_buy_order_price }} BTC / {{ trader.btc_usd.best_ask * trader.exchange.max_buy_order_price | number:2 }} USD</div>
@@ -221,15 +227,19 @@
 									<span ng-class="(pair.sell_order.inBTC - pair.buy_order.inBTC)/pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">
 										{{(pair.sell_order.inBTC - pair.buy_order.inBTC)/pair.buy_order.inBTC * 100 | number:2}}%
 									</span>
-									
-									<!-- <span ng-class="balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC > 0 ? 'ok' : 'not-ok'"> -->
-										<!-- [ sd: {{ balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC | number:6 }} BTC / {{ inUSD(trader, balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC) | number:2 }} USD ]</span> -->
-									<!-- <span ng-class="balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'"> -->
-										<!-- [ bd: {{ balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC | number:6 }} BTC / {{ inUSD(trader, balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC) | number:2 }} USD ]</span> -->
-									<span ng-class="balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC > 0 ? 'ok' : 'not-ok'">
-										 [ {{ inUSD(trader, balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC) | number:2 }} USD / </span>
+
+									<!-- <span ng-class="balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC > 0 ? 'ok' : 'not-ok'">
+										 [ {{ inUSD(trader, balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC) | number:2 }} USD / </span> -->
+
 									<span ng-class="balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">
-										{{ inUSD(trader, balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC) | number:2 }} USD ]</span>
+										[ {{ inUSD(trader, balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC) | number:2 }} USD </span>
+
+									<span> / </span>
+
+									<span ng-class="(balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC)/pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">
+										{{(balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC)/pair.buy_order.inBTC * 100 | number:2}}% ]
+									</span>
+
 								</div>
 
 							</div>

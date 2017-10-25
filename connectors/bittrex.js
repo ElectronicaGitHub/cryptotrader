@@ -16,7 +16,9 @@ function Bittrex() {
 	});
 
 	this.usdName = 'USDT';
-	this.max_buy_order_price = 0.0005;
+	this.min_buy_order_price = 0.0005;
+	this.max_buy_order_price = 0.0006;
+	this.stop_loss_koef = 5;
 
 	this.formatter = {
 		makeCurrencyName : function (currencyName) {
@@ -83,7 +85,7 @@ function Bittrex() {
 					// console.log(err);
 					return callback(err);
 				}
-				callback();
+				callback(data);
 			});
 		},
 		sellLimit : function (currencyPair, price, quantity, callback) {
@@ -98,7 +100,7 @@ function Bittrex() {
 					// console.log(err);
 					return callback(err);
 				}
-				callback();
+				callback(data);
 			});
 		},
 		cancelLimit : function (currencyPair, orderId, callback) {
@@ -109,7 +111,7 @@ function Bittrex() {
 				if (err) {
 					return callback(err);
 				}
-				callback();
+				callback(data);
 			});
 		}
 	}

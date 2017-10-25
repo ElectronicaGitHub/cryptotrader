@@ -6,6 +6,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 	}
 
 	$scope.bot = window.bot;
+	$scope.date_long = +new Date();
 
 	console.log($scope.bot);
 
@@ -18,21 +19,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		}
 	}
 
-
-	// $scope.balances = window.balances;
-	// $scope.btc_usd = window.btc_usd;
-	// $scope.exchange_pairs = window.exchange_pairs || [];
-	// $scope.summary = {};
-	// $scope.closed_orders = makeClosedPairs(window.closed_orders);
-	// $scope.open_buy_orders = window.open_buy_orders;
-	// // $scope.open_buy_orders_by_curr = {};
-	// $scope.max_buy_order_price = window.max_buy_order_price;
-	$scope.date_long;
 	$scope.moment = moment;
-
-	// if ($scope.balances && $scope.balances.length && $scope.closed_orders && $scope.closed_orders.length) {
-	// 	calcSummaries();
-	// }
 
 	$scope.view = null; // buy_and_sell
 
@@ -44,14 +31,6 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			$scope.setTraderSelected($scope.bot.TRADERS[0]);
 
 			console.log($scope.bot);
-
-			// $scope.balances = data.data.balances;
-			// $scope.btc_usd = data.data.btc_usd;
-			// $scope.exchange_pairs = data.data.exchange_pairs;
-			// $scope.closed_orders = makeClosedPairs(data.data.closed_orders);
-			// $scope.open_buy_orders = data.data.open_buy_orders;
-			// $scope.max_buy_order_price = data.data.max_buy_order_price;
-			$scope.date_long = +new Date();
 
 			for (var trader of $scope.bot.TRADERS) {
 				trader.closed_orders = makeClosedPairs(trader.closed_orders_by_curr);
@@ -73,12 +52,27 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			});
 		}
 		
-		if (trader.closed_orders_by_curr) {
+		if (trader.closed_orders.length) {
 			trader.summary.closed_ordersInBTC = trader.closed_orders.map(function (el) {
 				return el.inBTC - (el.buy_order ? el.buy_order.inBTC : 0);
 			}).reduce(function (a,b) {
 				return a + b;
 			});
+
+			var today = trader.closed_orders.filter(function (el) {
+				return moment($scope.date_long).isSame(el.lastModificationTime, 'd');
+			});
+
+			if (today.length) {
+				trader.summary.today_incomeInBTC = today.map(function (el) {
+					return el.inBTC - (el.buy_order ? el.buy_order.inBTC : 0);
+				}).reduce(function (a, b) {
+					return a + b;
+				});
+			} else {
+				trader.summary.today_incomeInBTC = 0;
+			}
+
 		}
 	}
 
@@ -120,9 +114,11 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			}
 
 			for (let j in obj.sell) {
-				obj.sell[j].buy_order = obj.buy.filter(function (el) {
+				var buy_order = obj.buy.filter(function (el) {
 					return el.quantity == obj.sell[j].quantity;
-				})[0];
+				})[0] || obj.buy[0];
+
+				obj.sell[j].buy_order = buy_order;
 			}
 			delete obj.buy;
 

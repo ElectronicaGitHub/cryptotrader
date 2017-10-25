@@ -83,15 +83,6 @@ TRADER.closed_buy_orders_by_curr = {};
 TRADER.able_to_sell_pairs = [];
 TRADER.able_to_buy_pairs = [];
 
-TRADER.stopLossSellCycle = function (callback) {
-	// цикл бежим по всем валютам
-		// если цена относительно цены покупки опустилась на должный уровень
-		// продаем данную валюту
-	// конец цикла
-
-	// выход из функции
-}
-
 
 TRADER.prototype.checkCycle = function (callback) {
 
@@ -115,7 +106,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 
 	console.log('tradeCycle:', this.exchange.name);
 
-	this.makeBuyAndSellData();
+	// this.makeBuyAndSellData();
 
 	async.waterfall([
 		self.wrapWait(self.cancelOpenBuyOrdersCycle.bind(self), 2000, 2500),
@@ -125,6 +116,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 
 		self.wrapWait(self.sellCycle.bind(self), 2000, 2500),
 		self.wrapWait(self.buyCycle.bind(self), 2000, 2500),
+		self.wrapWait(self.stopLossSellCycle.bind(self), 2000, 2500),
 		self.wrapWait(self.checkCycle.bind(self), 2000, 2500)
 	], function (error, data) {
 		console.log('trade ended');
@@ -232,11 +224,10 @@ TRADER.prototype.WRAPPER__getBalance = function (next) {
 			var _pair = self.exchange_pairs.filter(function (pair) {
 				return balance_currency.currency == pair.currency;
 			});
-			var _pair_best_ask_for_calc;
 			if (_pair[0]) { 
-				_pair_best_ask_for_calc = _pair[0].best_ask;
-					balance_currency.inBTC = UTILS.getInBTC(balance_currency.value, _pair_best_ask_for_calc);
-					balance_currency.best_ask = _pair_best_ask_for_calc;
+				balance_currency.inBTC = UTILS.getInBTC(balance_currency.value, _pair[0].best_ask);
+				balance_currency.best_ask = _pair[0].best_ask;
+				balance_currency.best_bid = _pair[0].best_bid;
 			 } else {
 				balance_currency.inBTC = balance_currency.value;
 			 }
@@ -326,56 +317,75 @@ BOT.prototype.removeFromTraders = function (elN) {
 }
 
 var bot = new BOT();
-bot.addToTraders('Bittrex');
 bot.addToTraders('LiveCoin');
+bot.addToTraders('Bittrex');
 
 
 if (loopTradeOnStart) {
 	bot.loopTradeCycle(function () {});
 }
 
-// bot.start(function (data) {
-// 	console.log('bot ends check cycle');
-// });
+TRADER.prototype.stopLossSellCycle = function (callback) {
+	console.log('stopLossSellCycle:', this.exchange.name); 
 
-// var trader = new TRADER();
-// var exchange__LiveCoin = new connector__LiveCoin();
-// var EXCHANGES.Bittrex = new connector__Bittrex();
+	var self = this;
 
-// trader.useExchange(exchange__LiveCoin);
-// trader.useExchange(EXCHANGES.Bittrex);
+	var stop_loss_orders = [];
 
-// var checkCycle = function (callback) {
-// 	async.waterfall([
-// 		getCurrenciesData,
-// 		trader.wrapWait(getClientBalance),
-// 		trader.wrapWait(getOrders),
-// 	], function (error, pairs_data) {
-// 		console.log('pairs_data', pairs_data);
-// 		callback();
-// 	});
-// }
+	for ( var i in this.open_sell_orders) {
+		var each_open_sell_order = this.open_sell_orders[i];
+		// console.log('each_open_sell_order', each_open_sell_order.currencyPair, each_open_sell_order.quantity);
 
-// var tradeCycle = function (callback) {
+		var closed_buy_order = this.closed_buy_orders.filter(function (el) {
+			return el.currencyPair == each_open_sell_order.currencyPair && el.quantity == each_open_sell_order.quantity;
+		})[0];
+		if (!closed_buy_order) {
+			closed_buy_order = closed_buy_orders_for_this_curr = this.closed_buy_orders.filter(function (el) {
+				return el.currencyPair == each_open_sell_order.currencyPair;
+			})[0];
+		}
+		var currency = this.total_balances.filter(function (el) {
+			return each_open_sell_order.currencyPair.split('/')[0] == el.currency;
+		})[0];
 
-// 	makeBuyAndSellData();
+		if (closed_buy_order && currency) {
+			var diff = currency.best_ask * closed_buy_order.quantity - closed_buy_order.inBTC;
+			var diff_perc = (diff / closed_buy_order.inBTC) * 100;
 
-// 	async.waterfall([
-// 		// trader.wrapWait(cancelOpenBuyOrdersCycle, 2000, 2500),
+			if (diff_perc < -this.exchange.stop_loss_koef) {
 
-// 		// trader.wrapWait(getCurrenciesData, 2000, 2500),
-// 		// trader.wrapWait(getOrders, 2000, 2500),
+				stop_loss_orders.push({
+					id : each_open_sell_order.id, 
+					currencyPair : each_open_sell_order.currencyPair, 
+					sellPrice : currency.best_bid,
+					quantity : each_open_sell_order.quantity,
+					inBTC : currency.best_ask * closed_buy_order.quantity
+				});
+			}
+		}
+	}
 
-// 		trader.wrapWait(makeBuyAndSellData, 2000, 2500),
-// 		trader.wrapWait(sellCycle, 2000, 2500),
-// 		trader.wrapWait(buyCycle, 2000, 2500),
-// 		trader.wrapWait(checkCycle, 2000, 2500)
-// 	], function (error, data) {
-// 		console.log('trade ended');
-// 	});
+	stop_loss_orders = stop_loss_orders.filter(function (el) {
+		return el.inBTC > this.min_buy_order_price;
+	});
 
-// 	callback();
-// }
+	console.log('stop_loss_orders', stop_loss_orders.map(function (el) {
+		return el.currencyPair;
+	}));
+
+	async.eachSeries(stop_loss_orders, function (order, serie_callback) {
+
+		async.waterfall([
+			self.wrapWait(self.cancelEachOrder.bind(self, order), 2000, 2500),
+			self.wrapWait(self.sellEachOrderWithPrice.bind(self, order), 2000, 2500)
+		], function (err, data) {
+			serie_callback(null);
+		});
+		
+	}, function (err, data) {
+		callback();
+	});
+}
 
 TRADER.prototype.makeBuyAndSellData = function (next) {
 
@@ -466,8 +476,7 @@ TRADER.prototype.sellCycle = function (next) {
 
 TRADER.prototype.sellEachPair = function (pair, next) {
 
-
-	console.log('sellEachPair', pair);
+	console.log('sellEachPair');
 
 	if (!pair.buy_order) {
 		console.log('pair hasnt buy order', this.closed_buy_orders_by_curr[pair.currency + '/BTC']);
@@ -486,7 +495,16 @@ TRADER.prototype.sellEachPair = function (pair, next) {
 	console.log('lets try sell', pair.value, 'with', sell_price, 'for inBTC',  sell_price * pair.value);
 	console.log('pair_name', pair_name);
 	this.sellLimit(pair_name, sell_price.toFixed(8), pair.value, function (data, error) {
-		console.log(data, 'error', error);
+		console.log(data.success, 'error', error);
+		next(null);
+	});
+}
+
+TRADER.prototype.sellEachOrderWithPrice = function (order, next) {
+	console.log('sellEachOrderWithPrice');
+
+	this.sellLimit(order.currencyPair, order.sellPrice, order.quantity, function (data, error) {
+		console.log(data.success, 'error', error);
 		next(null);
 	});
 }
