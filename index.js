@@ -106,8 +106,6 @@ TRADER.prototype.tradeCycle = function (callback) {
 
 	console.log('tradeCycle:', this.exchange.name);
 
-	// this.makeBuyAndSellData();
-
 	async.waterfall([
 		self.wrapWait(self.cancelOpenBuyOrdersCycle.bind(self), 2000, 2500),
 		self.wrapWait(self.WRAPPER__getCurrenciesData.bind(self), 2000, 2500),
@@ -332,6 +330,9 @@ TRADER.prototype.stopLossSellCycle = function (callback) {
 
 	var stop_loss_orders = [];
 
+	var stop_loss_orders_can_sell = [];
+	var stop_loss_orders_cant_sell = [];
+
 	for ( var i in this.open_sell_orders) {
 		var each_open_sell_order = this.open_sell_orders[i];
 		// console.log('each_open_sell_order', each_open_sell_order.currencyPair, each_open_sell_order.quantity);
@@ -359,21 +360,32 @@ TRADER.prototype.stopLossSellCycle = function (callback) {
 					currencyPair : each_open_sell_order.currencyPair, 
 					sellPrice : currency.best_bid,
 					quantity : each_open_sell_order.quantity,
-					inBTC : currency.best_ask * closed_buy_order.quantity
+					inBTC : currency.best_ask * closed_buy_order.quantity,
+					diffPercentage : diff_perc
 				});
 			}
 		}
 	}
 
-	stop_loss_orders = stop_loss_orders.filter(function (el) {
-		return el.inBTC > this.min_buy_order_price;
+	stop_loss_orders_can_sell = stop_loss_orders.filter(function (el) {
+		return el.inBTC > self.exchange.min_buy_order_price;
 	});
 
-	console.log('stop_loss_orders', stop_loss_orders.map(function (el) {
+	stop_loss_orders_cant_sell = stop_loss_orders.filter(function (el) {
+		return el.inBTC <= self.exchange.min_buy_order_price;
+	});
+
+	// их надо докупить сперва и потом сбагрить нахуй
+	// докупаем эти пары
+	// делаем проверку
+	// затем снова смотрим убыточные сделки
+	// продаем всю сумму на балансе по этой валюте ( все вместе с докупленным )
+
+	console.log('stop_loss_orders', stop_loss_orders_can_sell.map(function (el) {
 		return el.currencyPair;
 	}));
 
-	async.eachSeries(stop_loss_orders, function (order, serie_callback) {
+	async.eachSeries(stop_loss_orders_can_sell, function (order, serie_callback) {
 
 		async.waterfall([
 			self.wrapWait(self.cancelEachOrder.bind(self, order), 2000, 2500),
