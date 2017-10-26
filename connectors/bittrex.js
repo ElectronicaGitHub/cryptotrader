@@ -18,7 +18,7 @@ function Bittrex() {
 	this.usdName = 'USDT';
 	this.min_buy_order_price = 0.0005;
 	this.max_buy_order_price = 0.0006;
-	this.stop_loss_koef = 5;
+	this.stop_loss_koef = 4;
 
 	this.formatter = {
 		makeCurrencyName : function (currencyName) {

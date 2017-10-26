@@ -496,7 +496,7 @@ TRADER.prototype.sellEachPair = function (pair, next) {
 		return;
 	}
 	// var symbols_after_comma = pair.buy_order.price.toString().length - 2;
-	var sell_price = (pair.buy_order.price / 100 * 106);
+	var sell_price = (pair.buy_order.price / 100 * 107);
 	var pair_name = pair.currency + '/BTC';
 
 	if (sell_price * pair.value < this.exchange.max_buy_order_price) {
