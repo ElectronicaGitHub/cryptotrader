@@ -17,6 +17,7 @@ function LiveCoin() {
 	this.min_buy_order_price = 0.00015;
 	this.max_buy_order_price = 0.00025;
 	this.stop_loss_koef = 3;
+	this.profit_koef = 7;
 
 	this.urls = {
 		ticker : '/exchange/ticker',

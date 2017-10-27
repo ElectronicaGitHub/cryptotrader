@@ -95,7 +95,8 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 	$scope.saveTraderChanges = function (trader) {
 		$http.post('/saveTraderChanges', {
 			name : trader.exchange.name,
-			stop_loss_koef : trader.exchange.stop_loss_koef
+			stop_loss_koef : trader.exchange.stop_loss_koef,
+			profit_koef : trader.exchange.profit_koef
 		});
 	}
 

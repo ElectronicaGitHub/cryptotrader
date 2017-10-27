@@ -19,6 +19,7 @@ function Bittrex() {
 	this.min_buy_order_price = 0.0005;
 	this.max_buy_order_price = 0.0006;
 	this.stop_loss_koef = 3;
+	this.profit_koef = 7;
 
 	this.formatter = {
 		makeCurrencyName : function (currencyName) {

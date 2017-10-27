@@ -85,7 +85,7 @@
 		background: gold;
 	}
 	.yesterday {
-		background: lightpink;
+		background: bisque;
 	}
 	.buttons-container {
 		padding-bottom: 10px;
@@ -157,8 +157,10 @@
 	<div class="exchange-settings-panel" ng-if="selectedTrader">
 		<div class="container">
 			<div class="form-group">
-				<label for="stop loss k"></label>
+				<label for="stop loss k">stop loss k</label>
 				<input class="from-control" type="text" ng-model="selectedTrader.exchange.stop_loss_koef">
+				<label for="stop loss k">profit k</label>
+				<input class="from-control" type="text" ng-model="selectedTrader.exchange.profit_koef">
 				<button class="btn btn-xs btn-success" ng-click="saveTraderChanges(selectedTrader)">Применить</button>
 			</div>
 		</div>

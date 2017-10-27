@@ -188,7 +188,7 @@ TRADER.prototype.WRAPPER__getCurrenciesData = function (next) {
 	this.getTicker(function(_exchange_pairs) {
 
 		_exchange_pairs = _exchange_pairs.map(function(el) {
-			el.rank = UTILS.getRank(el.best_ask, el.best_bid, el.volume);
+			el.rank = UTILS.getRank(el.best_ask, el.best_bid, UTILS.getInBTC(el.volume, el.best_bid));
 			return el;
 		});
 		_exchange_pairs = _.sortBy(_exchange_pairs, ['rank']).reverse();
@@ -198,11 +198,12 @@ TRADER.prototype.WRAPPER__getCurrenciesData = function (next) {
 		})[0];
 
 		self.exchange_pairs = _exchange_pairs.filter(function(el) {
-			// if (el.volume * el.best_ask > 4) {
-				if (el.best_ask > 1000 * satoshi) {
-					el.tradeable = true;
-				}
+			// if (el.best_ask > 1000 * satoshi) {
+			// 	el.tradeable = true;
 			// }
+			if (el.rank > 1) {
+				el.tradeable = true;
+			}
 			return el.symbol.endsWith('/BTC');
 		});
 
@@ -496,7 +497,7 @@ TRADER.prototype.sellEachPair = function (pair, next) {
 		return;
 	}
 	// var symbols_after_comma = pair.buy_order.price.toString().length - 2;
-	var sell_price = (pair.buy_order.price / 100 * 107);
+	var sell_price = (pair.buy_order.price / 100 * (100 + this.exchange.profit_koef));
 	var pair_name = pair.currency + '/BTC';
 
 	if (sell_price * pair.value < this.exchange.max_buy_order_price) {
@@ -640,6 +641,7 @@ app.post('/saveTraderChanges', function (req, res, next) {
 	for (var i in bot.TRADERS) {
 		if (bot.TRADERS[i].exchange.name == data.name) {
 			bot.TRADERS[i].exchange.stop_loss_koef = data.stop_loss_koef;
+			bot.TRADERS[i].exchange.profit_koef = data.profit_koef;
 		}
 	}
 	res.json({
