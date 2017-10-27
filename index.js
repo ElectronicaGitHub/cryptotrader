@@ -201,7 +201,7 @@ TRADER.prototype.WRAPPER__getCurrenciesData = function (next) {
 			// if (el.best_ask > 1000 * satoshi) {
 			// 	el.tradeable = true;
 			// }
-			if (el.rank > 1) {
+			if (el.rank > self.exchange.ok_rank_value) {
 				el.tradeable = true;
 			}
 			return el.symbol.endsWith('/BTC');
@@ -245,6 +245,7 @@ var currenciesRankMap = {};
 var connectors = {
 	LiveCoin : require('./connectors/livecoin'),
 	Bittrex : require('./connectors/bittrex'),
+	Poloniex : require('./connectors/poloniex')
 }
 
 var BOT = function() {
@@ -318,6 +319,7 @@ BOT.prototype.removeFromTraders = function (elN) {
 var bot = new BOT();
 bot.addToTraders('LiveCoin');
 bot.addToTraders('Bittrex');
+// bot.addToTraders('Poloniex');
 
 
 if (loopTradeOnStart) {
@@ -431,7 +433,7 @@ TRADER.prototype.makeBuyAndSellData = function (next) {
 		return el.in_trade < 1 || !el.in_trade;
 	})
 	.filter(function (el) {
-		return el.rank >= 5000 && isFinite(el.rank);
+		return el.rank >= self.exchange.ok_rank_value && isFinite(el.rank);
 	})
 	.filter(function (el) {
 		var value; 
@@ -642,6 +644,7 @@ app.post('/saveTraderChanges', function (req, res, next) {
 		if (bot.TRADERS[i].exchange.name == data.name) {
 			bot.TRADERS[i].exchange.stop_loss_koef = data.stop_loss_koef;
 			bot.TRADERS[i].exchange.profit_koef = data.profit_koef;
+			bot.TRADERS[i].exchange.ok_rank_value = data.ok_rank_value;
 		}
 	}
 	res.json({

@@ -1,37 +1,35 @@
-var bittrexAPI = require('node-bittrex-api');
+var PoloniexAPI = require('../custom_libs/poloniex.js');
+
 var async = require('async');
 
-function Bittrex() {
+function Poloniex() {
 
 	var self = this;
 
-	this.name = 'Bittrex';
+	this.name = 'Poloniex';
 
-	this.key = 'f791e840f2474fa9a6c81265f21b9c87'; // Api-key
-	this.secretKey = 'cb96f00f09c64f239d9d9d3de2933218'; // Sign
+	this.key = 'D9YG7RNC-0873L17S-RFDYRPUJ-UVAVIWKM'; // Api-key
+	this.secretKey = '16ee5eb11ccf9c6adba472377090404237880090506ba18c4b80721b17feac2075a0e33459e9dbd302585023a0d9a79f337ca143052e32b98930f02df631ff34'; // Sign
 
-	bittrexAPI.options({
-	  'apikey' : this.key,
-	  'apisecret' : this.secretKey,
-	});
+	this.poloniex = new PoloniexAPI(this.key, this.secretKey);
 
 	this.usdName = 'USDT';
-	this.min_buy_order_price = 0.0005;
-	this.max_buy_order_price = 0.0006;
-	this.stop_loss_koef = 2;
-	this.profit_koef = 3;
-	this.ok_rank_value = 0.7;
+	this.min_buy_order_price = 0.00015;
+	this.max_buy_order_price = 0.00025;
+	this.stop_loss_koef = 3;
+	this.profit_koef = 5;
+	this.ok_rank_value = 0.6;
 
 	this.formatter = {
 		makeCurrencyName : function (currencyName) {
 			currencyName = currencyName.split('/')
-			return currencyName[1] + '-' + currencyName[0];
+			return currencyName[1] + '_' + currencyName[0];
 		}
 	}
 
 	this.methods = {
 		getTicker : function (callback) {
-			bittrexAPI.getmarketsummaries( function( data, err ) {
+			self.poloniex.returnTicker( function(err, data) {
 				if (err) {
 					console.log(err);
 					return callback(err);
@@ -41,7 +39,7 @@ function Bittrex() {
 			});
 		},
 		getBalance : function (data, callback) {
-			bittrexAPI.getbalances(function (data, err) {
+			self.poloniex.returnCompleteBalances(function (err, data) {
 				if (err) {
 					console.log(err);
 					return callback(err);
@@ -51,26 +49,29 @@ function Bittrex() {
 			});
 		},
 		getOrders : function (data, callback) {
-			bittrexAPI.getopenorders({}, function (data, err) {
+			self.poloniex.returnOpenOrders(function (err, data) {
 				if (err) {
 					console.log(err);
 					return callback(err);
 				}
-				var open_orders = data.result.map(function (el) {
-					el.orderStatus = 'OPEN';
-					return el;
-				});
-
-				bittrexAPI.getorderhistory({}, function (data, err) {
+				// var open_orders = data.result.map(function (el) {
+				// 	el.orderStatus = 'OPEN';
+				// 	return el;
+				// });
+				console.log('openOrders', data);
+				// 3, 4 параметры start end в longdate
+				self.poloniex.returnTradeHistory(function (err, data) {
 					if (err) {
 						console.log(err);
 						return callback(err);
 					}
-					var closed_orders = data.result.map(function (el) {
-						el.orderStatus = 'EXECUTED';
-						return el;
-					});
-					var orders = open_orders.concat(closed_orders);
+					console.log('tradeHistoryOrders', data);
+					// var closed_orders = data.result.map(function (el) {
+					// 	el.orderStatus = 'EXECUTED';
+					// 	return el;
+					// });
+					// var orders = open_orders.concat(closed_orders);
+					var orders = [];
 					callback(self.pipes.makeOrders(orders));
 				});
 			});
@@ -82,7 +83,7 @@ function Bittrex() {
 				rate : price
 			};
 			console.log(data, quantity * price);
-			bittrexAPI.buylimit(data, function (data, err) {
+			poloniexAPI.buylimit(data, function (data, err) {
 				if (err) {
 					// console.log(err);
 					return callback(err);
@@ -97,7 +98,7 @@ function Bittrex() {
 				rate : price
 			};
 			console.log(data, quantity * price);
-			bittrexAPI.selllimit(data, function (data, err) {
+			poloniexAPI.selllimit(data, function (data, err) {
 				if (err) {
 					// console.log(err);
 					return callback(err);
@@ -109,7 +110,7 @@ function Bittrex() {
 			var data = {
 				uuid : orderId
 			}
-			bittrexAPI.cancel(data, function (data, err) {
+			poloniexAPI.cancel(data, function (data, err) {
 				if (err) {
 					return callback(err);
 				}
@@ -121,11 +122,18 @@ function Bittrex() {
 	this.pipes = {
 		makeBalances : function (data) {
 
-			data = data.result.map(function (el) {
+			dataArr = [];
+			
+			for (var i in data) {
+				data[i].currency = i;
+				dataArr.push(data[i]);
+			}
+
+			data = dataArr.map(function (el) {
 				return {
-					currency : el.Currency,
-					total : el.Balance,
-					available : el.Available,
+					currency : el.currency,
+					total : +el.available + +el.onOrders,
+					available : +el.available,
 				}
 			});
 
@@ -150,19 +158,24 @@ function Bittrex() {
 
 		},
 		makeCurrencies : function (data) {
-			data = data.result;
-			// .filter(function (el) {
-			// 	return el.MarketName.startsWith('BTC-');
-			// });
+			
+			dataArr = [];
+			
+			for (var i in data) {
+				data[i].marketName = i;
+				dataArr.push(data[i]);
+			}
+
+			// console.log(dataArr);
 	
-			return data.map(function (el) {
-				var currencyName = el.MarketName.split('-');
+			return dataArr.map(function (el) {
+				var currencyName = el.marketName.split('_');
 				return {
 					symbol : currencyName[1] + '/' + currencyName[0],
-					best_ask : el.Ask,
-					best_bid : el.Bid,
+					best_ask : el.lowestAsk,
+					best_bid : el.highestBid,
 					currency : currencyName[1],
-					volume : el.Volume
+					volume : el.quoteVolume
 				}
 			});
 		},
@@ -200,4 +213,4 @@ function Bittrex() {
 	}
 }
 	
-module.exports = Bittrex;
+module.exports = Poloniex;
