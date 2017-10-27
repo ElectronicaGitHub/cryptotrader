@@ -604,12 +604,6 @@ TRADER.prototype.buyEachPair = function (pair, next) {
 
 app.get('/', function (req, res, next) {
 	res.render('index', {
-		// balances : total_balances || [],
-		// closed_orders : closed_orders_by_curr,
-		// exchange_pairs : exchange_pairs || [],
-		// max_buy_order_price : trader.exchange.max_buy_order_price,
-		// btc_usd : btc_usd || {},
-		// open_buy_orders : open_buy_orders || []
 		bot : bot
 	});
 });
@@ -637,6 +631,19 @@ app.post('/tradeCycle', function (req, res, next) {
 		res.json({
 			bot : bot
 		});
+	});
+});
+
+app.post('/saveTraderChanges', function (req, res, next) {
+	data = req.body;
+	console.log(data);
+	for (var i in bot.TRADERS) {
+		if (bot.TRADERS[i].exchange.name == data.name) {
+			bot.TRADERS[i].exchange.stop_loss_koef = data.stop_loss_koef;
+		}
+	}
+	res.json({
+		success : true
 	});
 });
 

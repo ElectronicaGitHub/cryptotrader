@@ -73,6 +73,10 @@
 		background: burlywood;
 		padding: 10px 0;
 	}
+	.exchange-settings-panel {
+		background: antiquewhite;
+		padding: 10px 0 0px;
+	}
 	.panel-info {
 		font-size: 12px;
 		margin-top: 10px;
@@ -147,6 +151,16 @@
 		<div class="container">
 			
 			<button class="btn btn-xs btn-primary" ng-click="setTraderSelected(trader)" ng-repeat="trader in bot.TRADERS">{{ trader.exchange.name }}</button>
+		</div>
+	</div>
+
+	<div class="exchange-settings-panel" ng-if="selectedTrader">
+		<div class="container">
+			<div class="form-group">
+				<label for="stop loss k"></label>
+				<input class="from-control" type="text" ng-model="selectedTrader.exchange.stop_loss_koef">
+				<button class="btn btn-xs btn-success" ng-click="saveTraderChanges(selectedTrader)">Применить</button>
+			</div>
 		</div>
 	</div>
 	
