@@ -353,18 +353,18 @@ TRADER.prototype.stopLossSellCycle = function (callback) {
 			return each_open_sell_order.currencyPair.split('/')[0] == el.currency;
 		})[0];
 
-		if (closed_buy_order && currency) {
-			var diff = currency.best_ask * closed_buy_order.quantity - closed_buy_order.inBTC;
-			var diff_perc = (diff / closed_buy_order.inBTC) * 100;
+		if (currency) {
+			var diff = currency.best_ask * each_open_sell_order.quantity - each_open_sell_order.inBTC;
+			var diff_perc = (diff / each_open_sell_order.inBTC) * 100;
 
-			if (diff_perc < -this.exchange.stop_loss_koef) {
+			if (diff_perc < -(this.exchange.stop_loss_koef + this.exchange.profit_koef)) {
 
 				stop_loss_orders.push({
 					id : each_open_sell_order.id, 
 					currencyPair : each_open_sell_order.currencyPair, 
 					sellPrice : currency.best_bid,
 					quantity : each_open_sell_order.quantity,
-					inBTC : currency.best_ask * closed_buy_order.quantity,
+					inBTC : currency.best_ask * each_open_sell_order.quantity,
 					diffPercentage : diff_perc
 				});
 			}
