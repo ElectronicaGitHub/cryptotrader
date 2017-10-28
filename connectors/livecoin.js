@@ -14,7 +14,7 @@ function LiveCoin() {
 	this.secretKey = 'nkq7D46GjFe4e4mrnxvTRVHhxge17B6J'; // Sign
 
 	this.usdName = 'USD';
-	this.min_buy_order_price = 0.00015;
+	this.min_buy_order_price = 0.00011;
 	this.max_buy_order_price = 0.00025;
 	this.stop_loss_koef = 2;
 	this.profit_koef = 3;
