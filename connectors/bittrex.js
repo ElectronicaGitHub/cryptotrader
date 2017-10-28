@@ -66,6 +66,7 @@ function Bittrex() {
 						console.log(err);
 						return callback(err);
 					}
+
 					var closed_orders = data.result.map(function (el) {
 						el.orderStatus = 'EXECUTED';
 						return el;

@@ -163,8 +163,9 @@ TRADER.prototype.WRAPPER__getOrders = function (next) {
 				el.order_pairs = [];
 
 				for (var i in self.open_sell_orders_by_curr[el.currency + '/BTC']) {
+					var _closed_orders = self.closed_buy_orders_by_curr[el.currency + '/BTC'];
 					var _pair = {
-						buy_order : self.closed_buy_orders_by_curr[el.currency + '/BTC'][i],
+						buy_order : _closed_orders && _closed_orders[i],
 						sell_order : self.open_sell_orders_by_curr[el.currency + '/BTC'][i]
 					}
 					if (self.open_buy_orders_by_curr[el.currency + '/BTC']) {
