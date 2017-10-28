@@ -71,6 +71,8 @@ function Bittrex() {
 						el.orderStatus = 'EXECUTED';
 						return el;
 					});
+
+					console.log(data.result.length);
 					var orders = open_orders.concat(closed_orders);
 					callback(self.pipes.makeOrders(orders));
 				});
