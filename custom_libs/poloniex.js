@@ -114,7 +114,7 @@ module.exports = (function() {
 
             parameters || (parameters = {});
             parameters.command = command;
-            parameters.nonce = nonce();
+            parameters.nonce = nonce() * 100;
 
             options = {
                 method: 'POST',
@@ -204,31 +204,31 @@ module.exports = (function() {
             return this._private('returnOrderTrades', parameters, callback);
         },
 
-        buy: function(currencyA, currencyB, rate, amount, callback) {
-            var parameters = {
-        		currencyPair: joinCurrencies(currencyA, currencyB),
-        		rate: rate,
-        		amount: amount
-    	    };
+        buy: function(parameters, callback) {
+         //    var parameters = {
+        	// 	currencyPair: currencyPair
+        	// 	rate: rate,
+        	// 	amount: amount
+    	    // };
 
             return this._private('buy', parameters, callback);
         },
 
-        sell: function(currencyA, currencyB, rate, amount, callback) {
-            var parameters = {
-		currencyPair: joinCurrencies(currencyA, currencyB),
-		rate: rate,
-		amount: amount
-	    };
+        sell: function(parameters, callback) {
+         //    var parameters = {
+        	// 	currencyPair: currencyPair
+        	// 	rate: rate,
+        	// 	amount: amount
+    	    // };
 
             return this._private('sell', parameters, callback);
         },
 
-        cancelOrder: function(currencyA, currencyB, orderNumber, callback) {
-            var parameters = {
-		currencyPair: joinCurrencies(currencyA, currencyB),
-		orderNumber: orderNumber
-	    };
+        cancel: function(parameters, callback) {
+         //    var parameters = {
+        	// 	currencyPair: currencyPair,
+        	// 	orderNumber: orderNumber
+    	    // };
 
             return this._private('cancelOrder', parameters, callback);
         },

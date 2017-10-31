@@ -3,13 +3,16 @@ var express = require('express');
 var path = require('path');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
+var mongoose = require('./configs/mongoose');
 var log = require('./configs/logger')(module);
+var config = require('./configs/config_file');
 var async = require('async');
 var app = express();
 var fs = require('fs');
 var util = require('util');
 var log_file = fs.createWriteStream(__dirname + '/out.log', {flags : 'a'});
 var log_stdout = process.stdout;
+var BOT = require('./bot');
 
 var port = process.env.PORT || 8888;
 
@@ -24,6 +27,11 @@ app.set('view engine', 'ejs');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
+
+mongoose.Promise = global.Promise;
+mongoose.connection.on('open', function () {
+    log.info('connected to database ' + config.get('db:name'));
+});
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -52,8 +60,6 @@ var UTILS = {
 	}
 }
 
-
-
 var TRADER = require('./tradeMethods');
 
 TRADER.btc_usd = null;
@@ -72,9 +78,6 @@ TRADER.closed_buy_orders = [];
 TRADER.koef = 10;
 TRADER.exchange_fee = 0.2;
 
-// TRADER.max_buy_order_price = 50000 * satoshi;
-// TRADER.max_buy_order_price = 0.00015;
-
 TRADER.closed_orders_by_curr = {};
 TRADER.open_sell_orders_by_curr = {};
 TRADER.open_buy_orders_by_curr = {};
@@ -91,9 +94,10 @@ TRADER.prototype.checkCycle = function (callback) {
 	console.log('checkCycle:', this.exchange.name);
 
 	async.waterfall([
-		self.WRAPPER__getCurrenciesData.bind(self),
-		self.wrapWait(self.WRAPPER__getBalance.bind(self)),
-		self.wrapWait(self.WRAPPER__getOrders.bind(self)),
+		self.wrapWait(self.getUserSummaries.bind(self)),
+		self.wrapWait(self.getUserBalances.bind(self)),
+		self.wrapWait(self.getUserOrders.bind(self)),
+		self.wrapWait(self.syncRemoteOrdersWithLocal.bind(self))
 	], function (error, pairs_data) {
 		console.log('pairs_data', self.pairs_data);
 		callback();
@@ -107,83 +111,102 @@ TRADER.prototype.tradeCycle = function (callback) {
 	console.log('tradeCycle:', this.exchange.name);
 
 	async.waterfall([
-		// self.wrapWait(self.cancelOpenBuyOrdersCycle.bind(self), 2000, 2500),
-		// self.wrapWait(self.WRAPPER__getCurrenciesData.bind(self), 2000, 2500),
-		// self.wrapWait(self.WRAPPER__getOrders.bind(self), 2000, 2500),
+		self.cancelOpenBuyOrdersCycle.bind(self),
+		self.wrapWait(self.getUserSummaries.bind(self)),
+		self.wrapWait(self.getUserOrders.bind(self)),
 		self.makeBuyAndSellData.bind(self),
 
-		self.wrapWait(self.sellCycle.bind(self), 2000, 2500),
-		self.wrapWait(self.buyCycle.bind(self), 2000, 2500),
-		self.wrapWait(self.stopLossSellCycle.bind(self), 2000, 2500),
-		self.wrapWait(self.checkCycle.bind(self), 2000, 2500)
+		self.sellCycle.bind(self),
+		self.buyCycle.bind(self),
+		self.stopLossSellCycle.bind(self),
+		self.checkCycle.bind(self)
 	], function (error, data) {
 		console.log('trade ended');
 		callback();
 	});
 }
 
-TRADER.prototype.WRAPPER__getOrders = function (next) {
+TRADER.prototype.getUserOrders = function (next) {
 	var self = this;
 	this.getOrders({}, function (API_ORDERS) {
-		
-		self.open_sell_orders_by_curr = {};
-		self.open_buy_orders_by_curr = {};
-		self.closed_buy_orders_by_curr = {};
-		self.closed_orders_by_curr = {};
 
-		self.closed_orders = API_ORDERS.closed_orders;
-		self.open_sell_orders = API_ORDERS.open_sell_orders;
-		self.open_buy_orders = API_ORDERS.open_buy_orders;
-		self.closed_buy_orders = API_ORDERS.closed_buy_orders;
 
-		for (var k in self.closed_orders) {
-			self.closed_orders_by_curr[self.closed_orders[k].currencyPair] = self.closed_orders_by_curr[self.closed_orders[k].currencyPair] || [];
-			self.closed_orders_by_curr[self.closed_orders[k].currencyPair].push(self.closed_orders[k]);	
-		}
+		self.baseConnector.findOrders({}, function (err, ORDERS_FROM_BASE) {
 
-		for (var i in self.open_sell_orders) {
-			self.open_sell_orders_by_curr[self.open_sell_orders[i].currencyPair] = self.open_sell_orders_by_curr[self.open_sell_orders[i].currencyPair] || [];
-			self.open_sell_orders_by_curr[self.open_sell_orders[i].currencyPair].push(self.open_sell_orders[i]);
-		}
+			var ORDERS = _(ORDERS_FROM_BASE)
+				.concat(API_ORDERS)
+				.groupBy("exchangeId")
+				.map(_.spread(_.merge))
+				.value();
 
-		for (var i in self.open_buy_orders) {
-			self.open_buy_orders_by_curr[self.open_buy_orders[i].currencyPair] = self.open_buy_orders_by_curr[self.open_buy_orders[i].currencyPair] || [];
-			self.open_buy_orders_by_curr[self.open_buy_orders[i].currencyPair].push(self.open_buy_orders[i]);
-		}
+			self.open_sell_orders = ORDERS.filter(function (el) {
+				return el.type == 'LIMIT_SELL' && el.orderStatus == 'OPEN';
+			});
+			self.open_buy_orders = ORDERS.filter(function (el) {
+				return el.type == 'LIMIT_BUY' && el.orderStatus == 'OPEN';
+			});
+			self.closed_buy_orders = ORDERS.filter(function (el) {
+				return el.type == 'LIMIT_BUY' && (el.orderStatus == 'EXECUTED' || el.orderStatus == 'PARTIALLY_FILLED_AND_CANCELLED');
+			});
+			self.closed_orders = ORDERS.filter(function (el) {
+				return el.orderStatus == 'EXECUTED' || el.orderStatus == 'PARTIALLY_FILLED_AND_CANCELLED';
+			});
 
-		for (var i in self.closed_buy_orders) {
-			self.closed_buy_orders_by_curr[self.closed_buy_orders[i].currencyPair] = self.closed_buy_orders_by_curr[self.closed_buy_orders[i].currencyPair] || [];
-			self.closed_buy_orders_by_curr[self.closed_buy_orders[i].currencyPair].push(self.closed_buy_orders[i]);
-		}
+			self.open_sell_orders_by_curr = {};
+			self.open_buy_orders_by_curr = {};
+			self.closed_buy_orders_by_curr = {};
+			self.closed_orders_by_curr = {};
 
-		self.total_balances = self.total_balances.map(function (el) {
-
-			if (self.open_sell_orders_by_curr[el.currency + '/BTC']) {
-				
-				el.order_pairs = [];
-
-				for (var i in self.open_sell_orders_by_curr[el.currency + '/BTC']) {
-					var _closed_orders = self.closed_buy_orders_by_curr[el.currency + '/BTC'];
-					var _pair = {
-						buy_order : _closed_orders && _closed_orders[i],
-						sell_order : self.open_sell_orders_by_curr[el.currency + '/BTC'][i]
-					}
-					if (self.open_buy_orders_by_curr[el.currency + '/BTC']) {
-						_pair.open_order = self.open_buy_orders_by_curr[el.currency + '/BTC'][i];
-					}
-					el.order_pairs.push(_pair);
-				}
+			for (var k in self.closed_orders) {
+				self.closed_orders_by_curr[self.closed_orders[k].currencyPair] = self.closed_orders_by_curr[self.closed_orders[k].currencyPair] || [];
+				self.closed_orders_by_curr[self.closed_orders[k].currencyPair].push(self.closed_orders[k]);	
 			}
-			return el;
+
+			for (var i in self.open_sell_orders) {
+				self.open_sell_orders_by_curr[self.open_sell_orders[i].currencyPair] = self.open_sell_orders_by_curr[self.open_sell_orders[i].currencyPair] || [];
+				self.open_sell_orders_by_curr[self.open_sell_orders[i].currencyPair].push(self.open_sell_orders[i]);
+			}
+
+			for (var i in self.open_buy_orders) {
+				self.open_buy_orders_by_curr[self.open_buy_orders[i].currencyPair] = self.open_buy_orders_by_curr[self.open_buy_orders[i].currencyPair] || [];
+				self.open_buy_orders_by_curr[self.open_buy_orders[i].currencyPair].push(self.open_buy_orders[i]);
+			}
+
+			for (var i in self.closed_buy_orders) {
+				self.closed_buy_orders_by_curr[self.closed_buy_orders[i].currencyPair] = self.closed_buy_orders_by_curr[self.closed_buy_orders[i].currencyPair] || [];
+				self.closed_buy_orders_by_curr[self.closed_buy_orders[i].currencyPair].push(self.closed_buy_orders[i]);
+			}
+
+			self.total_balances = self.total_balances.map(function (el) {
+
+				if (self.open_sell_orders_by_curr[el.currency + '/BTC']) {
+					
+					el.order_pairs = [];
+
+					for (var i in self.open_sell_orders_by_curr[el.currency + '/BTC']) {
+						var _closed_orders = self.closed_buy_orders_by_curr[el.currency + '/BTC'];
+						var _pair = {
+							buy_order : _closed_orders && _closed_orders[i],
+							sell_order : self.open_sell_orders_by_curr[el.currency + '/BTC'][i]
+						}
+						if (self.open_buy_orders_by_curr[el.currency + '/BTC']) {
+							_pair.open_order = self.open_buy_orders_by_curr[el.currency + '/BTC'][i];
+						}
+						el.order_pairs.push(_pair);
+					}
+				}
+				return el;
+			});
+
+			ORDERS = null;
+
+			next(null);
 		});
-
-		API_ORDERS = null;
-
-		next(null);
+		
 	});
 }
 
-TRADER.prototype.WRAPPER__getCurrenciesData = function (next) {
+TRADER.prototype.getUserSummaries = function (next) {
 
 	var self = this;
 	this.getTicker(function(_exchange_pairs) {
@@ -199,12 +222,14 @@ TRADER.prototype.WRAPPER__getCurrenciesData = function (next) {
 		})[0];
 
 		self.exchange_pairs = _exchange_pairs.filter(function(el) {
-			// if (el.best_ask > 1000 * satoshi) {
-			// 	el.tradeable = true;
-			// }
-			if (el.rank > self.exchange.ok_rank_value) {
+			ex1 = el.rank > self.exchange.ok_rank_value;
+			ex2 = el.best_ask > 10000 * satoshi;
+			ex3 = ((el.best_ask - el.best_bid)/el.best_bid) * 100 > self.exchange.ok_spread_value;
+
+			if (ex1 && ex2 && ex3) {
 				el.tradeable = true;
 			}
+
 			return el.symbol.endsWith('/BTC');
 		});
 
@@ -214,7 +239,7 @@ TRADER.prototype.WRAPPER__getCurrenciesData = function (next) {
 	});
 }
 
-TRADER.prototype.WRAPPER__getBalance = function (next) {
+TRADER.prototype.getUserBalances = function (next) {
 	var self = this;
 	this.getBalance({}, function (data) {
 		self.available_balances = data.available;
@@ -243,92 +268,9 @@ TRADER.prototype.WRAPPER__getBalance = function (next) {
 
 var satoshi = 0.00000001;
 var currenciesRankMap = {};
-var connectors = {
-	LiveCoin : require('./connectors/livecoin'),
-	Bittrex : require('./connectors/bittrex'),
-	Poloniex : require('./connectors/poloniex')
-}
-
-var BOT = function() {
-	this.TRADERS = [];
-	this.trade_cycle_time = 1000 * 60 * 10;
-}
-
-BOT.prototype.checkCycle = function (callback) {
-
-	async.eachSeries(this.TRADERS, function (trader, next) {
-		trader.checkCycle(next);
-		// trader.tradeCycle(next);
-
-	}, function (err, data) {
-		callback(null);
-	});
-}
-
-BOT.prototype.tradeCycle = function (callback) {
-	console.log('bot trade cycle');
-	async.eachSeries(this.TRADERS, function (trader, next) {
-		trader.tradeCycle(next);
-		// trader.tradeCycle(next);
-
-	}, function (err, data) {
-		callback(null);
-	});
-}
-
-BOT.prototype.loopTradeCycle = function (callback) {
-	console.log('loopTradeCycle STARTED');
-
-	var self = this;
-
-	run();
-
-	interval = setInterval(run, this.trade_cycle_time);
-
-	function run() {
-		async.eachSeries(self.TRADERS, function (trader, next) {
-			async.waterfall([
-				trader.checkCycle.bind(trader),
-				trader.tradeCycle.bind(trader)
-			], function (error, data) {
-				next(null);
-			});
-		}, function (err, data) {
-		});
-	}
-
-	callback('ok');
-}
-
-BOT.prototype.stopLoopTradeCycle = function (callback) {
-	console.log('loopTradeCycle STOPPED');
-	clearInterval(interval);
-	callback('ok');
-}
-
-
-BOT.prototype.addToTraders = function (exchangeName) {
-	var tr = new TRADER();
-	tr.useExchange(new connectors[exchangeName]());
-	this.TRADERS.push(tr);
-}
-
-BOT.prototype.removeFromTraders = function (elN) {
-	this.TRADERS.splice(elN, 1);
-}
-
-var bot = new BOT();
-bot.addToTraders('LiveCoin');
-bot.addToTraders('Bittrex');
-// bot.addToTraders('Poloniex');
-
-
-if (loopTradeOnStart) {
-	bot.loopTradeCycle(function () {});
-}
 
 TRADER.prototype.stopLossSellCycle = function (callback) {
-	console.log('stopLossSellCycle:', this.exchange.name); 
+	console.log('Цикл стоп-лосс продаж:', this.exchange.name); 
 
 	var self = this;
 
@@ -353,18 +295,18 @@ TRADER.prototype.stopLossSellCycle = function (callback) {
 			return each_open_sell_order.currencyPair.split('/')[0] == el.currency;
 		})[0];
 
-		if (currency) {
-			var diff = currency.best_ask * each_open_sell_order.quantity - each_open_sell_order.inBTC;
-			var diff_perc = (diff / each_open_sell_order.inBTC) * 100;
+		if (closed_buy_order && currency) {
+			var diff = currency.best_ask * closed_buy_order.quantity - closed_buy_order.inBTC;
+			var diff_perc = (diff / closed_buy_order.inBTC) * 100;
 
-			if (diff_perc < -(this.exchange.stop_loss_koef + this.exchange.profit_koef)) {
+			if (diff_perc < -this.exchange.stop_loss_koef) {
 
 				stop_loss_orders.push({
-					id : each_open_sell_order.id, 
+					exchangeId : each_open_sell_order.exchangeId, 
 					currencyPair : each_open_sell_order.currencyPair, 
 					sellPrice : currency.best_bid,
 					quantity : each_open_sell_order.quantity,
-					inBTC : currency.best_ask * each_open_sell_order.quantity,
+					inBTC : currency.best_ask * closed_buy_order.quantity,
 					diffPercentage : diff_perc
 				});
 			}
@@ -385,15 +327,15 @@ TRADER.prototype.stopLossSellCycle = function (callback) {
 	// затем снова смотрим убыточные сделки
 	// продаем всю сумму на балансе по этой валюте ( все вместе с докупленным )
 
-	console.log('stop_loss_orders', stop_loss_orders_can_sell.map(function (el) {
+	console.log('Стоп-лосс ордера на продажу:', stop_loss_orders_can_sell.map(function (el) {
 		return el.currencyPair;
 	}));
 
 	async.eachSeries(stop_loss_orders_can_sell, function (order, serie_callback) {
 
 		async.waterfall([
-			self.wrapWait(self.cancelEachOrder.bind(self, order), 2000, 2500),
-			self.wrapWait(self.sellEachOrderWithPrice.bind(self, order), 2000, 2500)
+			self.wrapWait(self.cancelOrder.bind(self, order)),
+			self.wrapWait(self.sellOrderWithPrice.bind(self, order))
 		], function (err, data) {
 			serie_callback(null);
 		});
@@ -483,23 +425,25 @@ TRADER.prototype.sellCycle = function (next) {
 
 	async.eachSeries(self.able_to_sell_pairs, function (pair, serie_callback) {
 
-		self.wrapWait(self.sellEachPair.bind(self, pair, serie_callback), 2000, 2500)();
+		self.wrapWait(self.sellPairWithProfit.bind(self, pair, serie_callback))();
 		
 	}, function(error, data) {
 		next(null);
 	});
 }
 
-TRADER.prototype.sellEachPair = function (pair, next) {
+TRADER.prototype.sellPairWithProfit = function (pair, next) {
 
-	console.log('sellEachPair');
+	var self = this;
+
+	console.log('sellPairWithProfit');
 
 	if (!pair.buy_order) {
 		console.log('pair hasnt buy order', this.closed_buy_orders_by_curr[pair.currency + '/BTC']);
 		next(null);
 		return;
 	}
-	// var symbols_after_comma = pair.buy_order.price.toString().length - 2;
+
 	var sell_price = (pair.buy_order.price / 100 * (100 + this.exchange.profit_koef));
 	var pair_name = pair.currency + '/BTC';
 
@@ -507,21 +451,51 @@ TRADER.prototype.sellEachPair = function (pair, next) {
 		sell_price = this.exchange.max_buy_order_price / pair.value;
 	}
 
-	console.log('bought with', pair.buy_order.price);
-	console.log('lets try sell', pair.value, 'with', sell_price, 'for inBTC',  sell_price * pair.value);
-	console.log('pair_name', pair_name);
-	this.sellLimit(pair_name, sell_price.toFixed(8), pair.value, function (data, error) {
-		console.log(data.success, 'error', error);
-		next(null);
+	// console.log('bought with', pair.buy_order.price);
+	// console.log('lets try sell', pair.value, 'with', sell_price, 'for inBTC',  sell_price * pair.value);
+	// console.log('pair_name', pair_name);
+	this.sellLimit(pair_name, +sell_price.toFixed(8), pair.value, function (error, data) {
+		if (error) {
+			console.log('Ошибка выставления ордера на продажу', error);
+			next(null);
+		} else {
+			console.log('Ордер на продажу успешно выставлен', pair_name, 'по цене', sell_price);
+			self.baseConnector.saveOrder({
+				exchangeId : data.exchangeId,
+				type : 'LIMIT_SELL',
+				orderStatus : 'OPEN'
+			}, function (err, data) {
+				if (!err) console.log('Ордер сохранен в базу');
+				else console.log('Ошибка сохранения в базу');
+
+				next(null);
+			});		
+		}
 	});
 }
 
-TRADER.prototype.sellEachOrderWithPrice = function (order, next) {
-	console.log('sellEachOrderWithPrice');
+TRADER.prototype.sellOrderWithPrice = function (order, next) {
+	console.log('sellOrderWithPrice');
 
-	this.sellLimit(order.currencyPair, order.sellPrice, order.quantity, function (data, error) {
-		console.log(data.success, 'error', error);
-		next(null);
+	var self = this;
+
+	this.sellLimit(order.currencyPair, order.sellPrice, order.quantity, function (error, data) {
+		if (error) {
+			console.log('Ошибка выставления ордера на продажу', error);
+			next(null);
+		} else {
+			console.log('Ордер на продажу успешно выставлен', order.currencyPair, 'по цене', order.sellPrice);
+			self.baseConnector.saveOrder({
+				exchangeId : data.exchangeId,
+				type : 'LIMIT_SELL',
+				orderStatus : 'OPEN'
+			}, function (err, data) {
+				if (!err) console.log('Ордер сохранен в базу');
+				else console.log('Ошибка сохранения в базу');
+
+				next(null);
+			});		
+		}
 	});
 }
 
@@ -533,22 +507,32 @@ TRADER.prototype.cancelOpenBuyOrdersCycle = function (next) {
 
 	async.eachSeries(self.open_buy_orders, function (order, serie_callback) {
 
-		self.wrapWait(self.cancelEachOrder.bind(self, order, serie_callback), 2000, 2500)();
+		self.wrapWait(self.cancelOrder.bind(self, order, serie_callback))();
 
 	}, function (error, data) {
 		next(null);
 	});
 }
 
-TRADER.prototype.cancelEachOrder = function (order, next) {
-	var id = order.id;
+TRADER.prototype.cancelOrder = function (order, next) {
+	var id = order.exchangeId;
 	var currencyPair = order.currencyPair;
+	var self = this;
 
-	console.log('cancelEachOrder', id, currencyPair);
+	console.log('cancelOrder', id, currencyPair);
 
-	this.cancelLimit(currencyPair, id, function (data, error) {
-		console.log('success', data.success, 'error', error);
-		next(null);
+	this.cancelLimit(currencyPair, id, function (error, data) {
+		console.log('DEBUG!!!', error, data);
+		if (error) {
+			console.log('Ошибка отмены ордера');
+		} else {
+			self.baseConnector.removeOrder(order.exchangeId, function (err, data) {
+				if (!err) console.log('Ордер успешно удален');
+				else console.log('Ошибка отмены ордера', err);
+
+				next(null);
+			});
+		}
 	});
 }
 
@@ -574,37 +558,77 @@ TRADER.prototype.buyCycle = function (next) {
 	
 	async.eachSeries(work_buy_pairs, function (pair, serie_callback) {
 
-		self.wrapWait(self.buyEachPair.bind(self, pair, serie_callback), 2000, 2500)();
+		self.wrapWait(self.buyPair.bind(self, pair, serie_callback))();
 
 	}, function (error, data) {
 		next(null);
 	});
 }
 
-TRADER.prototype.buyEachPair = function (pair, next) {
+TRADER.prototype.buyPair = function (pair, next) {
+	var self = this;
 	var pair_name = pair.symbol;
-	var buy_price = pair.best_bid;
-	var value = ((self.exchange.max_buy_order_price * 101 / 100) / buy_price);
+	var buy_price = +pair.best_bid;
+	var value = +((self.exchange.max_buy_order_price * 101 / 100) / buy_price);
 
 	if (this.btc_value < self.exchange.max_buy_order_price) {
-		console.log('btc value is too low', this.btc_value + ' BTC');
+		console.log('слишком мало валюты для покупки', this.btc_value + ' BTC');
 		next(null);
 		return;		
 	}
 
-	// trader.buyLimit(pair_name, buy_price.toFixed(5), value, function (data, error) {
-	this.buyLimit(pair_name, buy_price.toFixed(8), value.toFixed(8), function (data, error) {
-		if (!error) {
+	this.buyLimit(pair_name, buy_price.toFixed(8), value.toFixed(8), function (error, data) {
+		console.log('DEBUG!!!', error, data);
+		if (error) {
+			console.log('Ошибка выставления ордера на покупку', error);
+			next(null);
+		} else {
+			console.log('Выставлен ордер на покупку', pair_name, 'по цене', buy_price, '. Объем в валюте', buy_price * value);
 			self.btc_value -= buy_price * value;
+			self.baseConnector.saveOrder({
+				exchangeId : data.exchangeId,
+				type : 'LIMIT_BUY',
+				orderStatus : 'OPEN'
+			}, function (err, data) {
+				if (!err) console.log('Ордер сохранен в базу');
+				else console.log('Ошибка сохранения в базу');
+
+				next(null);
+			});
 		}
-		console.log('success', data.success, 'error', error);
-		next(null);
+
 	});
 }
 
-// if (loopTradeOnStart) {
-// 	loopTradeCycle(function () {});
-// }
+TRADER.prototype.syncRemoteOrdersWithLocal = function (next) {
+	var self = this;
+
+	self.baseConnector.updateOpenOrders(self.closed_orders, function (err, data) {
+		if (err) console.log('Ошибка синхронизации ордеров', err);
+		else {
+			console.log('Синхронизация успешно завершена');
+		}
+		next(null);
+	})
+}
+
+// ГОТОВО !!!
+// выставили ордер на покупку
+// сохранили orderStatus = OPEN
+
+// ГОТОВО !!!
+// бежим по всем что сохранены опен
+// если статус поменян то ставим orderStatus = EXECUTED
+// бежим по всем открытым селл ордрам и смотрим закрылись ли они
+
+// ГОТОВО !!!
+// отменяем все выставленные на продажу, удаляем их из базы по ид
+
+// 
+// выставляем ордер на продажу сохраняем его в нем ид покупочного buyOrderId
+// если квикселим то заменяем тот ордер новым оставляя buyOrderId
+
+
 
 app.get('/', function (req, res, next) {
 	res.render('index', {
@@ -646,6 +670,7 @@ app.post('/saveTraderChanges', function (req, res, next) {
 			bot.TRADERS[i].exchange.stop_loss_koef = data.stop_loss_koef;
 			bot.TRADERS[i].exchange.profit_koef = data.profit_koef;
 			bot.TRADERS[i].exchange.ok_rank_value = data.ok_rank_value;
+			bot.TRADERS[i].exchange.ok_spread_value = data.ok_spread_value;
 		}
 	}
 	res.json({
@@ -668,3 +693,13 @@ app.get('/log', function (req, res, next) {
 app.listen(port, function() {
     console.log('Node app is running on port', port);
 });
+
+
+var bot = new BOT();
+bot.addToTraders('LiveCoin');
+bot.addToTraders('Bittrex');
+bot.addToTraders('Poloniex');
+
+if (loopTradeOnStart) {
+	bot.loopTradeCycle(function () {});
+}

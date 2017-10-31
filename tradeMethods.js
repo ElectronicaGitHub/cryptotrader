@@ -14,6 +14,8 @@ TRADER.prototype.useExchange = function(exchange) {
 };
 
 TRADER.prototype.wrapWait = function(fn, min, max) {
+	min = min || this.exchange.min_req_interval;
+	max = max || this.exchange.max_req_interval;
 	var time = this.randomTime(min, max);
 	return setTimeout.bind(null, fn, time);
 }

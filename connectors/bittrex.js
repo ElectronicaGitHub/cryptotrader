@@ -18,10 +18,12 @@ function Bittrex() {
 	this.usdName = 'USDT';
 	this.min_buy_order_price = 0.0005;
 	this.max_buy_order_price = 0.0006;
-	this.stop_loss_koef = 2;
+	this.stop_loss_koef = 5;
 	this.profit_koef = 3;
 	this.ok_rank_value = 0.7;
-
+	this.min_req_interval = 300;
+	this.max_req_interval = 500
+	this.ok_spread_value = 0.4;
 	this.formatter = {
 		makeCurrencyName : function (currencyName) {
 			currencyName = currencyName.split('/')
@@ -90,7 +92,10 @@ function Bittrex() {
 					// console.log(err);
 					return callback(err);
 				}
-				callback(data);
+				callback(null, {
+					success : data.success,
+					exchangeId : data.result.uuid
+				});
 			});
 		},
 		sellLimit : function (currencyPair, price, quantity, callback) {
@@ -105,7 +110,10 @@ function Bittrex() {
 					// console.log(err);
 					return callback(err);
 				}
-				callback(data);
+				callback(null, {
+					success : data.success,
+					exchangeId : data.result.uuid
+				});
 			});
 		},
 		cancelLimit : function (currencyPair, orderId, callback) {
@@ -116,7 +124,7 @@ function Bittrex() {
 				if (err) {
 					return callback(err);
 				}
-				callback(data);
+				callback(null);
 			});
 		}
 	}
@@ -174,7 +182,8 @@ function Bittrex() {
 			data = data.map(function (el) {
 				var currencyName = el.Exchange.split('-');
 				return {
-					id : el.OrderUuid,
+					exchangeId : el.OrderUuid,
+					exchangeName : self.name,
 					currencyPair : currencyName[1] + '/' + currencyName[0],
 					quantity : el.Quantity,
 					price : el.Limit,
@@ -185,20 +194,7 @@ function Bittrex() {
 				}
 			});
 
-			return {
-				open_sell_orders : data.filter(function (el) {
-					return el.type == 'LIMIT_SELL' && el.orderStatus == 'OPEN';
-				}),
-				open_buy_orders : data.filter(function (el) {
-					return el.type == 'LIMIT_BUY' && el.orderStatus == 'OPEN';
-				}),
-				closed_buy_orders : data.filter(function (el) {
-					return el.type == 'LIMIT_BUY' && el.orderStatus == 'EXECUTED';
-				}),
-				closed_orders : data.filter(function (el) {
-					return el.orderStatus == 'EXECUTED';
-				})
-			}
+			return data;
 		}
 	}
 }

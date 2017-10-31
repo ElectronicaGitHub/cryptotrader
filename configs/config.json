@@ -1,10 +1,10 @@
 {
 	"port" : 8080,
 	"db": {
-		"name" : "fifa"
+		"name" : "cryptotrader"
 	},
 	"mongoose" :  {
-		"uri" : "mongodb://localhost/fifa",
+		"uri" : "mongodb://localhost/cryptotrader",
 		"options" : {
 			"server" : {
 				"socketOptions" : {
@@ -21,7 +21,7 @@
 		}
 	},
 	"session" : {
-		"secret" : "fifa",
+		"secret" : "cryptotrader",
 		"key" : "sid",
 		"cookie" : {
 			"path" : "/",

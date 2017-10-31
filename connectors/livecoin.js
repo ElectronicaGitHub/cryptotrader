@@ -16,9 +16,12 @@ function LiveCoin() {
 	this.usdName = 'USD';
 	this.min_buy_order_price = 0.00011;
 	this.max_buy_order_price = 0.00025;
-	this.stop_loss_koef = 2;
+	this.stop_loss_koef = 5;
 	this.profit_koef = 3;
 	this.ok_rank_value = 0.5;
+	this.min_req_interval = 1000;
+	this.max_req_interval = 1500;
+	this.ok_spread_value = 0.4;
 
 	this.urls = {
 		ticker : '/exchange/ticker',
@@ -38,29 +41,32 @@ function LiveCoin() {
 
 	this.methods = {
 		getTicker : function (callback) {
+			console.log('Получение рынка');
 			unirest.get(self.baseUrl + self.urls.ticker).end(function(response) {
+				console.log('Получение рынка ок');
 				callback(self.pipes.makeCurrencies(response.body));
-				console.log('getTicker ok');
 			}, function(error) {
 				console.log(error);
 			});
 		},
 		getBalance : function (data, callback) {
+			console.log('Получение баланса');
 			var req_data = self.misc.prepareRequestData(data);
 			var url = self.baseUrl + self.urls.getBalance + '?' + req_data.url_data;
 			unirest.get(url, req_data.headers).end(function(response) {
+				console.log('Получение баланса ок');
 				callback(self.pipes.makeBalances(response.body));
-				console.log('getBalance ok');
 			}, function(error) {
 				console.log(error);
 			});
 		},
 		getOrders : function (data, callback) {
+			console.log('Получение ордеров');
 			var req_data = self.misc.prepareRequestData(data);
 			var url = self.baseUrl + self.urls.orders + '?' + req_data.url_data;
 
 			unirest.get(url, req_data.headers).end(function (response) {
-				console.log('getClientOrders ok');
+				console.log('Получение ордеров ок');
 				callback(self.pipes.makeOrders(response.body));
 			}, function (error) {
 				console.log(error);
@@ -72,10 +78,14 @@ function LiveCoin() {
 			var req_data = self.misc.prepareRequestData(data);
 
 			unirest.post(url, req_data.headers, data).end(function (response) {
-				callback(response.body);
-			}, function (error) {
-				console.log(error);
-				callback(null, error);
+				if (response.body.success) {
+					callback(null, {
+						success : response.body.success,
+						exchangeId : response.body.orderId
+					});
+				} else {
+					callback(response.body);
+				}
 			});
 		},
 		sellLimit : function (currencyPair, price, quantity, callback) {
@@ -83,10 +93,14 @@ function LiveCoin() {
 			var data = { currencyPair : currencyPair, price : price, quantity : quantity };
 			var req_data = self.misc.prepareRequestData(data);
 			unirest.post(url, req_data.headers, data).end(function (response) {
-				callback(response.body);
-			}, function (error) {
-				console.log('sellLimit error', error);
-				callback(null, error);
+				if (response.body.success) {
+					callback(null, {
+						success : response.body.success,
+						exchangeId : response.body.orderId
+					});
+				} else {
+					callback(response.body);
+				}
 			});
 		},
 		cancelLimit : function (currencyPair, orderId, callback) {
@@ -95,10 +109,13 @@ function LiveCoin() {
 			var req_data = self.misc.prepareRequestData(data);
 
 			unirest.post(url, req_data.headers, data).end(function (response) {
-				callback(response.body);
-			}, function (error) {
-				console.log('sellLimit error', error);
-				callback(null, error);
+				if (response.body.success) {
+					callback(null, {
+						success : response.body.success
+					});
+				} else {
+					callback(response.body);
+				}
 			});
 		},
 		getChartData : function (period, currencyPair, callback) {
@@ -167,7 +184,8 @@ function LiveCoin() {
 
 			data = data.data.map(function (el) {
 				return {
-					id : el.id,
+					exchangeId : el.id,
+					exchangeName : self.name,
 					currencyPair : el.currencyPair,
 					quantity : el.quantity,
 					price : el.price,
@@ -178,20 +196,7 @@ function LiveCoin() {
 				}
 			});
 
-			return {
-				open_sell_orders : data.filter(function (el) {
-					return el.type == 'LIMIT_SELL' && el.orderStatus == 'OPEN';
-				}),
-				open_buy_orders : data.filter(function (el) {
-					return el.type == 'LIMIT_BUY' && el.orderStatus == 'OPEN';
-				}),
-				closed_buy_orders : data.filter(function (el) {
-					return el.type == 'LIMIT_BUY' && (el.orderStatus == 'EXECUTED' || el.orderStatus == 'PARTIALLY_FILLED_AND_CANCELLED');
-				}),
-				closed_orders : data.filter(function (el) {
-					return el.orderStatus == 'EXECUTED' || el.orderStatus == 'PARTIALLY_FILLED_AND_CANCELLED';
-				})
-			}
+			return data;
 		}
 	}
 }

@@ -8,8 +8,8 @@ function Poloniex() {
 
 	this.name = 'Poloniex';
 
-	this.key = 'D9YG7RNC-0873L17S-RFDYRPUJ-UVAVIWKM'; // Api-key
-	this.secretKey = '16ee5eb11ccf9c6adba472377090404237880090506ba18c4b80721b17feac2075a0e33459e9dbd302585023a0d9a79f337ca143052e32b98930f02df631ff34'; // Sign
+	this.key = 'RRHZ462K-8AMMIPKL-UDNEAHM6-0K6K8ZWP'; // Api-key
+	this.secretKey = '10a502b157bf5e98f922b29f9a7653548061f43fb512efd1d32ced212b8cc56ae875ef98b0d864206106eb9e87b19cfd3de2bac580d2204763c69339f203f72d'; // Sign
 
 	this.poloniex = new PoloniexAPI(this.key, this.secretKey);
 
@@ -19,6 +19,9 @@ function Poloniex() {
 	this.stop_loss_koef = 3;
 	this.profit_koef = 5;
 	this.ok_rank_value = 0.6;
+	this.min_req_interval = 300;
+	this.max_req_interval = 500;
+	this.ok_spread_value = 0.4;
 
 	this.formatter = {
 		makeCurrencyName : function (currencyName) {
@@ -34,7 +37,7 @@ function Poloniex() {
 					console.log(err);
 					return callback(err);
 				}
-				console.log('getTicker');
+				console.log('Получение рынка');
 				callback(self.pipes.makeCurrencies(data));
 			});
 		},
@@ -44,7 +47,7 @@ function Poloniex() {
 					console.log(err);
 					return callback(err);
 				}
-				console.log('getBalance');
+				console.log('Получение баланса ок');
 				callback(self.pipes.makeBalances(data));
 			});
 		},
@@ -54,67 +57,79 @@ function Poloniex() {
 					console.log(err);
 					return callback(err);
 				}
-				// var open_orders = data.result.map(function (el) {
-				// 	el.orderStatus = 'OPEN';
-				// 	return el;
-				// });
-				console.log('openOrders', data);
+				open_orders = [];
+				for (var i in data) {
+					open_orders = open_orders.concat(data[i].map(function (el) {
+						el.orderStatus = 'OPEN';
+						el.currencyPair = i;	
+						return el;
+					}));
+				}
 				// 3, 4 параметры start end в longdate
 				self.poloniex.returnTradeHistory(function (err, data) {
 					if (err) {
 						console.log(err);
 						return callback(err);
 					}
-					console.log('tradeHistoryOrders', data);
-					// var closed_orders = data.result.map(function (el) {
-					// 	el.orderStatus = 'EXECUTED';
-					// 	return el;
-					// });
-					// var orders = open_orders.concat(closed_orders);
-					var orders = [];
-					callback(self.pipes.makeOrders(orders));
+
+					closed_orders = [];
+					for (var i in data) {
+						closed_orders = closed_orders.concat(data[i].map(function (el) {
+							el.orderStatus = 'EXECUTED';
+							el.currencyPair = i;
+							return el;
+						}));
+					}
+
+					all_orders = open_orders.concat(closed_orders);
+					callback(self.pipes.makeOrders(all_orders));
 				});
 			});
 		},
 		buyLimit : function (currencyPair, price, quantity, callback) {
 			var data = {
-				market : self.formatter.makeCurrencyName(currencyPair),
-				quantity : quantity,
+				currencyPair : self.formatter.makeCurrencyName(currencyPair),
+				amount : quantity,
 				rate : price
 			};
-			console.log(data, quantity * price);
-			poloniexAPI.buylimit(data, function (data, err) {
+			self.poloniex.buy(data, function (err, data) {
 				if (err) {
 					// console.log(err);
 					return callback(err);
 				}
-				callback(data);
+				callback(null, {
+					success : data.success,
+					exchangeId : data.orderNumber
+				});
 			});
 		},
 		sellLimit : function (currencyPair, price, quantity, callback) {
 			var data = {
-				market : self.formatter.makeCurrencyName(currencyPair),
-				quantity : quantity,
+				currencyPair : self.formatter.makeCurrencyName(currencyPair),
+				amount : quantity,
 				rate : price
 			};
-			console.log(data, quantity * price);
-			poloniexAPI.selllimit(data, function (data, err) {
+			self.poloniex.sell(data, function (err, data) {
 				if (err) {
 					// console.log(err);
 					return callback(err);
 				}
-				callback(data);
+				callback(null, {
+					success : data.success,
+					exchangeId : data.orderNumber
+				});
 			});
 		},
 		cancelLimit : function (currencyPair, orderId, callback) {
 			var data = {
-				uuid : orderId
+				orderNumber : orderId,
+				currencyPair : self.formatter.makeCurrencyName(currencyPair)
 			}
-			poloniexAPI.cancel(data, function (data, err) {
+			self.poloniex.cancel(data, function (err, data) {
 				if (err) {
 					return callback(err);
 				}
-				callback(data);
+				callback(null);
 			});
 		}
 	}
@@ -181,34 +196,42 @@ function Poloniex() {
 		},
 		makeOrders : function (data) {
 
+			// { orderNumber: '26043399684',
+			 //       type: 'buy',
+			 //       rate: '0.00033222',
+			 //       startingAmount: '0.33110589',
+			 //       amount: '0.33110589',
+			 //       total: '0.00010999',
+			 //       date: '2017-10-31 03:11:03',
+			 //       margin: 0 }
+
+			 // { globalTradeID: 249295992,
+				 //       tradeID: '1779693',
+				 //       date: '2017-10-31 03:16:34',
+				 //       rate: '0.00035288',
+				 //       amount: '0.31172069',
+				 //       total: '0.00010999',
+				 //       fee: '0.00250000',
+				 //       orderNumber: '26044246836',
+				 //       type: 'buy',
+				 //       category: 'exchange' }
+
 			data = data.map(function (el) {
-				var currencyName = el.Exchange.split('-');
+				var currencyName = el.currencyPair.split('_');
 				return {
-					id : el.OrderUuid,
+					exchangeId : el.orderNumber,
+					exchangeName : self.name,
 					currencyPair : currencyName[1] + '/' + currencyName[0],
-					quantity : el.Quantity,
-					price : el.Limit,
-					type : el.OrderType,
-					inBTC : el.Quantity * el.Limit,
+					quantity : el.amount,
+					price : el.rate,
+					type : el.type == 'buy' ? 'LIMIT_BUY' : 'LIMIT_SELL',
+					inBTC : el.total,
 					orderStatus : el.orderStatus,
-					lastModificationTime : +new Date(el.Closed || el.Opened)
+					lastModificationTime : +new Date(el.date)
 				}
 			});
 
-			return {
-				open_sell_orders : data.filter(function (el) {
-					return el.type == 'LIMIT_SELL' && el.orderStatus == 'OPEN';
-				}),
-				open_buy_orders : data.filter(function (el) {
-					return el.type == 'LIMIT_BUY' && el.orderStatus == 'OPEN';
-				}),
-				closed_buy_orders : data.filter(function (el) {
-					return el.type == 'LIMIT_BUY' && el.orderStatus == 'EXECUTED';
-				}),
-				closed_orders : data.filter(function (el) {
-					return el.orderStatus == 'EXECUTED';
-				})
-			}
+			return data;
 		}
 	}
 }

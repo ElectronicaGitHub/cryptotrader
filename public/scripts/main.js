@@ -97,7 +97,8 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			name : trader.exchange.name,
 			stop_loss_koef : trader.exchange.stop_loss_koef,
 			profit_koef : trader.exchange.profit_koef,
-			ok_rank_value : trader.exchange.ok_rank_value
+			ok_rank_value : trader.exchange.ok_rank_value,
+			ok_spread_value : trader.exchange.ok_spread_value
 		});
 	}
 
