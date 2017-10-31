@@ -5,7 +5,7 @@ var connectors = {
 	Bittrex : require('./connectors/bittrex'),
 	Poloniex : require('./connectors/poloniex')
 }
-var BaseConnector = require('./BaseConnector');
+var BaseConnector = require('./baseConnector');
 
 var BOT = function() {
 	this.TRADERS = [];

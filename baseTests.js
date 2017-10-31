@@ -1,6 +1,6 @@
 var mongoose = require('./configs/mongoose');
 var log = require('./configs/logger')(module);
-var BaseConnector = require('./BaseConnector');
+var BaseConnector = require('./baseConnector');
 var config = require('./configs/config_file');
 var async = require('async');
 _ = require('lodash');
