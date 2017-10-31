@@ -704,8 +704,8 @@ app.listen(port, function() {
 
 
 var bot = new BOT();
-// bot.addToTraders('LiveCoin');
-// bot.addToTraders('Bittrex');
+bot.addToTraders('LiveCoin');
+bot.addToTraders('Bittrex');
 bot.addToTraders('Poloniex');
 
 if (loopTradeOnStart) {
