@@ -118,14 +118,14 @@ TRADER.prototype.tradeCycle = function (callback) {
 	console.log('tradeCycle:', this.exchange.name);
 
 	async.waterfall([
-		// self.cancelOpenBuyOrdersCycle.bind(self),
-		// self.wrapWait(self.getUserSummaries.bind(self)),
-		// self.wrapWait(self.getUserOrders.bind(self)),
+		self.cancelOpenBuyOrdersCycle.bind(self),
+		self.wrapWait(self.getUserSummaries.bind(self)),
+		self.wrapWait(self.getUserOrders.bind(self)),
 		self.makeBuyAndSellData.bind(self),
 
 		self.sellCycle.bind(self),
-		// self.buyCycle.bind(self),
-		// self.stopLossSellCycle.bind(self),
+		self.buyCycle.bind(self),
+		self.stopLossSellCycle.bind(self),
 		self.checkCycle.bind(self)
 	], function (error, data) {
 		console.log('trade ended');
