@@ -24,6 +24,8 @@ function Bittrex() {
 	this.min_req_interval = 300;
 	this.max_req_interval = 500
 	this.ok_spread_value = 0.4;
+	this.exchange_fee = 0.25;
+	
 	this.formatter = {
 		makeCurrencyName : function (currencyName) {
 			currencyName = currencyName.split('/')

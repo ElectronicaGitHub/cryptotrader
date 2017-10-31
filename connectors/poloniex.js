@@ -16,12 +16,13 @@ function Poloniex() {
 	this.usdName = 'USDT';
 	this.min_buy_order_price = 0.00015;
 	this.max_buy_order_price = 0.00025;
-	this.stop_loss_koef = 3;
-	this.profit_koef = 5;
+	this.stop_loss_koef = 5;
+	this.profit_koef = 3;
 	this.ok_rank_value = 0.6;
 	this.min_req_interval = 300;
 	this.max_req_interval = 500;
 	this.ok_spread_value = 0.4;
+	this.exchange_fee = 0.25;
 
 	this.formatter = {
 		makeCurrencyName : function (currencyName) {

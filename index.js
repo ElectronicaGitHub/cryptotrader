@@ -75,9 +75,6 @@ TRADER.open_buy_orders = [];
 TRADER.open_sell_orders = [];
 TRADER.closed_buy_orders = [];
 
-TRADER.koef = 10;
-TRADER.exchange_fee = 0.2;
-
 TRADER.closed_orders_by_curr = {};
 TRADER.open_sell_orders_by_curr = {};
 TRADER.open_buy_orders_by_curr = {};
@@ -411,6 +408,16 @@ TRADER.prototype.makeBuyAndSellData = function (next) {
 		return el.currency != 'BTC';
 	});
 
+	// for (var i in self.able_to_sell_pairs) {
+
+	// 	var p = self.able_to_sell_pairs[i];
+
+	// 	console.log('пара', p.currency, 'была куплена', p.buy_order.price);
+	// 	var sell_price = (pair.buy_order.price / 100 * (100 + this.exchange.profit_koef));
+	// 	console.log('продаем за', pair.price);
+	// 	console.log('было', p.buy_order.price * p.value, 'стало ', p.price * p.value);
+	// }
+
 	if (next) next();
 
 }
@@ -444,7 +451,8 @@ TRADER.prototype.sellPairWithProfit = function (pair, next) {
 		return;
 	}
 
-	var sell_price = (pair.buy_order.price / 100 * (100 + this.exchange.profit_koef));
+	var tax = pair.buy_order.price * ( 2 * this.exchange.exchange_fee);
+	var sell_price = (pair.buy_order.price / 100 * (100 + this.exchange.profit_koef)) + tax;
 	var pair_name = pair.currency + '/BTC';
 
 	if (sell_price * pair.value < this.exchange.max_buy_order_price) {
@@ -696,8 +704,8 @@ app.listen(port, function() {
 
 
 var bot = new BOT();
-bot.addToTraders('LiveCoin');
-bot.addToTraders('Bittrex');
+// bot.addToTraders('LiveCoin');
+// bot.addToTraders('Bittrex');
 bot.addToTraders('Poloniex');
 
 if (loopTradeOnStart) {
