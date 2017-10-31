@@ -7,6 +7,7 @@ function TRADER() {
 		min : 500,
 		max : 1000
 	}
+	this.active = true;
 }
 
 TRADER.prototype.useExchange = function(exchange) {	

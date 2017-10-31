@@ -65,7 +65,7 @@
 		padding-bottom: 20px;
 		overflow: hidden;
 	}
-	.exchanges-panel button {
+	.exchanges-panel .button-wrapper {
 		margin-right: 10px;
 		margin-top: 10px;
 	}
@@ -118,6 +118,38 @@
 	}
 	.each-bot-panel {
 	}
+	.each-currency-pair {
+		position: relative;
+		transition: background 0.2s;
+		background: aliceblue;
+		padding: 2px;
+	}
+	.each-currency-pair.removed {
+		background: coral
+	}
+	.close-button {
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 18px;
+		height: 18px;
+		cursor: pointer;
+		text-align: center;
+		line-height: 18px;
+	}
+	.close-button:hover {
+		background: coral;
+	}
+	.toggler {
+		position: relative;
+		left: -5px;
+		border-bottom-left-radius: 0 !important;
+		border-top-left-radius: 0 !important;
+	}
+	.pre-toggler {
+		border-bottom-right-radius: 0 !important;
+		border-top-right-radius: 0 !important;
+	}
 
 </style>
 
@@ -149,8 +181,13 @@
 
 	<div class="exchanges-panel" ng-if="bot">
 		<div class="container">
+
+			<span ng-repeat="trader in bot.TRADERS" class="button-wrapper button-group">
+				<button class="btn btn-xs pre-toggler" ng-class="{ 'btn-primary' : trader.active, 'btn-gray' : !trader.active }" ng-click="setTraderSelected(trader)">{{ trader.exchange.name }}</button>
+				<button ng-click="toggleExchange(trader)" ng-class="{ 'btn-danger' : trader.active, 'btn-success' : !trader.active}" class="btn btn-xs toggler">IOI</button>
+				
+			</span>
 			
-			<button class="btn btn-xs btn-primary" ng-click="setTraderSelected(trader)" ng-repeat="trader in bot.TRADERS">{{ trader.exchange.name }}</button>
 		</div>
 	</div>
 
@@ -235,7 +272,7 @@
 							<span>{{ inUSD(trader, balance.inBTC) | number:2 }} USD </span> ]
 						</div>
 						<div class="each-balance-currency-pairs">
-							<div class="each-currency-pair" ng-repeat="pair in balance.order_pairs">
+							<div class="each-currency-pair" ng-repeat="pair in balance.order_pairs" ng-class="{ removed : pair.removed }">
 								<!-- <div>{{ pair.buy_order | json }}</div> -->
 								<!-- <div>{{ pair.sell_order | json }}</div> -->
 								<div>
@@ -247,22 +284,21 @@
 									<span ng-class="(pair.sell_order.inBTC - pair.buy_order.inBTC)/pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">
 										{{(pair.sell_order.inBTC - pair.buy_order.inBTC)/pair.buy_order.inBTC * 100 | number:2}}%
 									</span>
-
 									<!-- <span ng-class="balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC > 0 ? 'ok' : 'not-ok'">
 										 [ {{ inUSD(trader, balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC) | number:2 }} USD / </span> -->
 
-									<span ng-class="balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">
-										[ {{ inUSD(trader, balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC) | number:2 }} USD </span>
-
-									<span> / </span>
-
+									<!-- <span ng-class="balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">
+										[ {{ inUSD(trader, balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC) | number:2 }} USD </span> -->
+									<!-- <span> / </span> -->
 									<span ng-class="(balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC)/pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">
 										{{(balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC)/pair.buy_order.inBTC * 100 | number:2}}% ]
 									</span>
 
 								</div>
 
+								<span ng-click="removeOrder(pair, selectedTrader.exchange.name)" class="close-button">x</span>
 							</div>
+
 						</div>
 					</div>
 				</div>

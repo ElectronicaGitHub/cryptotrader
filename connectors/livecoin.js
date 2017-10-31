@@ -22,7 +22,7 @@ function LiveCoin() {
 	this.min_req_interval = 1000;
 	this.max_req_interval = 1500;
 	this.ok_spread_value = 0.4;
-	this.exchange_fee = 0.25;
+	this.exchange_fee = 0.0025;
 
 	this.urls = {
 		ticker : '/exchange/ticker',

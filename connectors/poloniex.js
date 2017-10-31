@@ -22,7 +22,7 @@ function Poloniex() {
 	this.min_req_interval = 300;
 	this.max_req_interval = 500;
 	this.ok_spread_value = 0.4;
-	this.exchange_fee = 0.25;
+	this.exchange_fee = 0.0025;
 
 	this.formatter = {
 		makeCurrencyName : function (currencyName) {
@@ -75,11 +75,13 @@ function Poloniex() {
 
 					closed_orders = [];
 					for (var i in data) {
-						closed_orders = closed_orders.concat(data[i].map(function (el) {
-							el.orderStatus = 'EXECUTED';
-							el.currencyPair = i;
-							return el;
-						}));
+						if (data[i].map) {
+							closed_orders = closed_orders.concat(data[i].map(function (el) {
+								el.orderStatus = 'EXECUTED';
+								el.currencyPair = i;
+								return el;
+							}));
+						}
 					}
 
 					all_orders = open_orders.concat(closed_orders);

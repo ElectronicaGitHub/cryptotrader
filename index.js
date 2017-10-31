@@ -88,6 +88,11 @@ TRADER.prototype.checkCycle = function (callback) {
 
 	var self = this;
 
+	if (!this.active) {
+		console.log('Биржа неактивна', self.exchange.name);
+		return callback();
+	}
+
 	console.log('checkCycle:', this.exchange.name);
 
 	async.waterfall([
@@ -105,17 +110,22 @@ TRADER.prototype.tradeCycle = function (callback) {
 
 	var self = this;
 
+	if (!this.active) {
+		console.log('Биржа неактивна', self.exchange.name);
+		return callback();
+	}
+
 	console.log('tradeCycle:', this.exchange.name);
 
 	async.waterfall([
-		self.cancelOpenBuyOrdersCycle.bind(self),
-		self.wrapWait(self.getUserSummaries.bind(self)),
-		self.wrapWait(self.getUserOrders.bind(self)),
+		// self.cancelOpenBuyOrdersCycle.bind(self),
+		// self.wrapWait(self.getUserSummaries.bind(self)),
+		// self.wrapWait(self.getUserOrders.bind(self)),
 		self.makeBuyAndSellData.bind(self),
 
 		self.sellCycle.bind(self),
-		self.buyCycle.bind(self),
-		self.stopLossSellCycle.bind(self),
+		// self.buyCycle.bind(self),
+		// self.stopLossSellCycle.bind(self),
 		self.checkCycle.bind(self)
 	], function (error, data) {
 		console.log('trade ended');
@@ -460,7 +470,7 @@ TRADER.prototype.sellPairWithProfit = function (pair, next) {
 	}
 
 	// console.log('bought with', pair.buy_order.price);
-	// console.log('lets try sell', pair.value, 'with', sell_price, 'for inBTC',  sell_price * pair.value);
+	console.log('Выставляем ордер на продажу', pair.value, 'по цене', sell_price, 'Ожидаемый доход', (sell_price * pair.value) - (pair.buy_order.price * pair.value), 'Такса', tax);
 	// console.log('pair_name', pair_name);
 	this.sellLimit(pair_name, +sell_price.toFixed(8), pair.value, function (error, data) {
 		if (error) {
@@ -538,7 +548,7 @@ TRADER.prototype.cancelOrder = function (order, next) {
 				if (!err) console.log('Ордер успешно удален');
 				else console.log('Ошибка отмены ордера', err);
 
-				next(null);
+				next(null, data);
 			});
 		}
 	});
@@ -686,6 +696,20 @@ app.post('/saveTraderChanges', function (req, res, next) {
 	});
 });
 
+app.post('/removeOrder', function (req, res, next) {
+	data = req.body;
+	console.log(data);
+	var trader = bot.TRADERS.filter(function (el) {
+		return el.exchange.name == data.exchangeName
+	})[0];
+
+	trader.cancelLimit(data.currencyPair, data.exchangeId, function (err, data) {
+		if (err) console.log(err);
+		console.log(data);
+		res.json(data);
+	});
+});
+
 app.post('/checkCycle', function (req, res, next) {
 	bot.checkCycle(function () {
 		res.json({
@@ -694,9 +718,25 @@ app.post('/checkCycle', function (req, res, next) {
 	});
 });
 
+app.post('/toggleExchange', function (req, res, next) {
+	data = req.body;
+
+	var trader = bot.TRADERS.filter(function (el) {
+		return el.exchange.name == data.exchangeName
+	})[0];
+	
+	trader.active = !trader.active;
+
+	res.json({
+		success : true
+	});
+
+});
+
 app.get('/log', function (req, res, next) {
     res.sendfile('out.log');
 });
+
 
 app.listen(port, function() {
     console.log('Node app is running on port', port);

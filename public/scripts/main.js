@@ -7,6 +7,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 
 	$scope.bot = window.bot;
 	$scope.date_long = +new Date();
+	$scope.firstTime = true;
 
 	console.log($scope.bot);
 
@@ -28,7 +29,11 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			console.log('success', data.data);
 
 			$scope.bot = data.data.bot;
-			$scope.setTraderSelected($scope.bot.TRADERS[0]);
+
+			if ($scope.firstTime) {
+				$scope.setTraderSelected($scope.bot.TRADERS[0]);
+				$scope.firstTime = false;
+			}
 
 			console.log($scope.bot);
 
@@ -108,6 +113,32 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		}, function (error) {
 			console.log('error', error);
 		});
+	}
+
+	$scope.removeOrder = function (pair, exchangeName) {
+		$http.post('/removeOrder', { 
+			exchangeName, 
+			currencyPair : pair.sell_order.currencyPair, 
+			exchangeId : pair.sell_order.exchangeId 
+		}).then(function (data) {
+			console.log(data);
+			pair.removed = true;
+		}, function (error) {
+			console.log(error);
+		});
+	}
+
+	$scope.toggleExchange = function (trader) {
+		$http.post('/toggleExchange', {
+			exchangeName : trader.exchange.name
+		}).then(function (res) {
+
+			console.log(res);
+			trader.active = !trader.active;
+
+		}, function (err) {
+			console.log(err);
+		})
 	}
 
 	function makeClosedPairs(orders_currencies) {
