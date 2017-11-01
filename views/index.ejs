@@ -133,6 +133,11 @@
 	.each-currency-pair.removed {
 		background: coral
 	}
+	.trader-summary-counts {
+		font-size: 12px;
+	    margin-left: 5px;
+	    font-weight: bold;
+	}
 	.close-button {
 		position: absolute;
 		top: 0;
@@ -229,6 +234,7 @@
 						/
 						<span> {{ inUSD(trader, trader.summary.today_incomeInBTC) | number:2 }} USD ]</span>
 					</span>
+					<span class="trader-summary-counts"> [{{ trader.summary.pairsCount }}]</span>
 				</div>
 
 				<div class="panel-info" ng-if="trader.btc_usd.best_ask">min buy price : {{ trader.exchange.max_buy_order_price }} BTC / {{ trader.btc_usd.best_ask * trader.exchange.max_buy_order_price | number:2 }} USD</div>
@@ -244,7 +250,7 @@
 
 		<div class="container content">
 
-			<div class="closed-pairs col-xs-12 col-sm-8" ng-if="trader.closed_orders && (!view || view == 'closed')">
+			<div class="closed-pairs col-xs-12 col-sm-7" ng-if="trader.closed_orders && (!view || view == 'closed')">
 				<div class="title">Закрытые сделки</div>
 
 
@@ -254,7 +260,7 @@
 				
 				<div class="each-closed-pair" ng-repeat="pair in trader.closed_orders | orderBy:'-lastModificationTime'" ng-class="{ gold : moment(date_long).isSame(pair.lastModificationTime, 'd'), yesterday : moment(date_long).isSame(moment(pair.lastModificationTime).add(1, 'd'), 'd') }">
 					{{ $index + 1 }}. <b>{{ pair.currencyPair }}</b> / 
-					<span ng-class="(pair.buy_order.quantity * pair.price - pair.buy_order.quantity * pair.buy_order.price) > 0 ? 'ok' : 'not-ok'">{{pair.buy_order.quantity * pair.price - pair.buy_order.quantity * pair.buy_order.price | number:6 }} BTC [ {{ inUSD(trader, pair.buy_order.quantity * pair.price - pair.buy_order.quantity * pair.buy_order.price) | number:2 }} USD]</span>
+					<span ng-class="(pair.buy_order.quantity * pair.price - pair.buy_order.quantity * pair.buy_order.price) > 0 ? 'ok' : 'not-ok'">{{pair.quantity * pair.price - pair.quantity * pair.buy_order.price | number:6 }} BTC [ {{ inUSD(trader, pair.quantity * pair.price - pair.quantity * pair.buy_order.price) | number:2 }} USD]</span>
 
 					<span>{{ moment(pair.lastModificationTime).locale('ru').format('LLL') }}</span>
 
@@ -327,6 +333,7 @@
 			<div class="altcoins-container col-sm-1 hidden-xs">
 				<div class="each-altcoin" ng-repeat="altcoin in trader.exchange_pairs | filter:exchange_pairs_filter" ng-class="{ tradeable : altcoin.tradeable }">
 					<i>{{ altcoin.rank | number:2 }}</i>
+					<b>{{ altcoin.symbol }}</b>
 					<!-- <a href="https://www.livecoin.net/ru/trade/index?currencyPair={{ altcoin.symbol }}" target="_blank"><b>{{ altcoin.symbol }}</b></a> [ {{altcoin.best_ask | number : 6}} BTC | vol: {{ altcoin.volume * altcoin.best_ask | number:2 }} BTC |  -->
 					<!-- <span ng-if="altcoin.price_change" ng-class="altcoin.price_change > 0 ? 'ok' : 'not-ok'">{{ altcoin.price_change | number:2 }}%</span> ] -->
 					<!-- <a class="altcoin-graph-link" ng-click="getChartData(altcoin, 5/24)">5h</a> /  -->
