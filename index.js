@@ -139,7 +139,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 			async.series([
 				self.makeBuyAndSellData.bind(self),
 				self.quickSellCycle.bind(self),
-				self.stopLossOrQuickSellOpenedPairsCycle.bind(self, true)
+				self.closeOrdersAndSellCycle.bind(self, true)
 			], function (err, data) {
 				callback();
 			})
@@ -154,7 +154,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 				self.makeBuyAndSellData.bind(self),
 				self.sellCycle.bind(self),
 				self.buyCycle.bind(self),
-				self.stopLossOrQuickSellOpenedPairsCycle.bind(self, false),
+				self.closeOrdersAndSellCycle.bind(self, false),
 				self.checkCycle.bind(self)
 			], function (error, data) {
 				console.log('trade ended');
@@ -308,7 +308,7 @@ TRADER.prototype.getUserBalances = function (next) {
 var satoshi = 0.00000001;
 var currenciesRankMap = {};
 
-TRADER.prototype.stopLossOrQuickSellOpenedPairsCycle = function (force, callback) {
+TRADER.prototype.closeOrdersAndSellCycle = function (force, callback) {
 
 	if (!force) {
 		console.log('Цикл стоп-лосс продаж:', this.exchange.name); 
@@ -482,7 +482,7 @@ TRADER.prototype.quickSellCycle = function (next) {
 
 	async.eachSeries(self.able_to_sell_pairs, function (pair, serie_callback) {
 
-		self.wrapWait(self.sellPairWithPrice.bind(self, pair, serie_callback))();
+		self.wrapWait(self.sellPairWithProfit.bind(self, pair, true, serie_callback))();
 		
 	}, function(error, data) {
 		next(null);
@@ -499,14 +499,14 @@ TRADER.prototype.sellCycle = function (next) {
 
 	async.eachSeries(self.able_to_sell_pairs, function (pair, serie_callback) {
 
-		self.wrapWait(self.sellPairWithProfit.bind(self, pair, serie_callback))();
+		self.wrapWait(self.sellPairWithProfit.bind(self, pair, false, serie_callback))();
 		
 	}, function(error, data) {
 		next(null);
 	});
 }
 
-TRADER.prototype.sellPairWithProfit = function (pair, next) {
+TRADER.prototype.sellPairWithProfit = function (pair, quick_sell, next) {
 
 	var self = this;
 
@@ -518,9 +518,18 @@ TRADER.prototype.sellPairWithProfit = function (pair, next) {
 		return;
 	}
 
+
 	var tax = pair.buy_order.price * ( 2 * this.exchange.exchange_fee);
-	var sell_price = (pair.buy_order.price / 100 * (100 + this.exchange.profit_koef)) + tax;
 	var pair_name = pair.currency + '/BTC';
+	var sell_price;
+	var currency = this.total_balances.filter(function (el) {
+		return pair.currency == el.currency;
+	})[0];
+	if (!quick_sell) {
+		sell_price = (pair.buy_order.price / 100 * (100 + this.exchange.profit_koef)) + tax;
+	} else {
+		sell_price = currency.best_ask;
+	}
 
 	if (sell_price * pair.value < this.exchange.max_buy_order_price) {
 		sell_price = this.exchange.max_buy_order_price / pair.value;
