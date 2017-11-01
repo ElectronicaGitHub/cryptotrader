@@ -136,7 +136,12 @@ TRADER.prototype.tradeCycle = function (callback) {
 		if (isRaising) {
 
 			console.log('Валюта растет: Продаем все пары');
-			self.stopLossOrQuickSellCycle(true, callback);
+			async.waterfall([
+				self.stopLossOrQuickSellOpenedPairsCycle(self, true),
+				self.quickSellCycle.bind(self)
+			], function (err, data) {
+				callback();
+			})
 
 		} else {
 
@@ -148,7 +153,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 				self.makeBuyAndSellData.bind(self),
 				self.sellCycle.bind(self),
 				self.buyCycle.bind(self),
-				self.stopLossOrQuickSellCycle.bind(self, false),
+				self.stopLossOrQuickSellOpenedPairsCycle.bind(self, false),
 				self.checkCycle.bind(self)
 			], function (error, data) {
 				console.log('trade ended');
@@ -302,7 +307,7 @@ TRADER.prototype.getUserBalances = function (next) {
 var satoshi = 0.00000001;
 var currenciesRankMap = {};
 
-TRADER.prototype.stopLossOrQuickSellCycle = function (force, callback) {
+TRADER.prototype.stopLossOrQuickSellOpenedPairsCycle = function (force, callback) {
 
 	if (!force) {
 		console.log('Цикл стоп-лосс продаж:', this.exchange.name); 
@@ -334,6 +339,8 @@ TRADER.prototype.stopLossOrQuickSellCycle = function (force, callback) {
 			return each_open_sell_order.currencyPair.split('/')[0] == el.currency;
 		})[0];
 
+		console.log(each_open_sell_order, closed_buy_order);
+
 		if (closed_buy_order && currency) {
 			var diff = currency.best_ask * closed_buy_order.quantity - closed_buy_order.inBTC;
 			var diff_perc = (diff / closed_buy_order.inBTC) * 100;
@@ -351,8 +358,6 @@ TRADER.prototype.stopLossOrQuickSellCycle = function (force, callback) {
 			}
 		}
 	}
-
-	console.log(stop_loss_orders);
 
 	stop_loss_orders_can_sell = stop_loss_orders.filter(function (el) {
 		return el.inBTC > self.exchange.min_buy_order_price;
@@ -372,18 +377,18 @@ TRADER.prototype.stopLossOrQuickSellCycle = function (force, callback) {
 		return el.currencyPair;
 	}));
 
-	// async.eachSeries(stop_loss_orders_can_sell, function (order, serie_callback) {
+	async.eachSeries(stop_loss_orders_can_sell, function (order, serie_callback) {
 
-	// 	async.series([
-	// 		self.cancelOrder.bind(self, order),
-	// 		self.sellPairWithPrice.bind(self, order)
-	// 	], function (err, data) {
-	// 		serie_callback();
-	// 	});
+		async.series([
+			self.cancelOrder.bind(self, order),
+			self.sellPairWithPrice.bind(self, order)
+		], function (err, data) {
+			serie_callback();
+		});
 		
-	// }, function (err, data) {
-	// 	callback();
-	// });
+	}, function (err, data) {
+		callback();
+	});
 }
 
 TRADER.prototype.makeBuyAndSellData = function (next) {
@@ -464,6 +469,23 @@ TRADER.prototype.makeBuyAndSellData = function (next) {
 
 	if (next) next();
 
+}
+
+TRADER.prototype.quickSellCycle = function (next) {
+
+	var self = this;
+
+	console.log('quickSellCycle', this.able_to_sell_pairs.map(function (el) {
+		return el.currency;
+	}));
+
+	async.eachSeries(self.able_to_sell_pairs, function (pair, serie_callback) {
+
+		self.wrapWait(self.sellPairWithPrice.bind(self, pair, serie_callback))();
+		
+	}, function(error, data) {
+		next(null);
+	});
 }
 
 TRADER.prototype.sellCycle = function (next) {
