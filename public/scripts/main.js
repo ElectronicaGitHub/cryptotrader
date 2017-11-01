@@ -170,7 +170,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			for (let j in obj.sell) {
 				var buy_order = obj.buy.filter(function (el) {
 					return el.quantity == obj.sell[j].quantity;
-				})[0] || obj.buy[0];
+				})[0] || _.sortBy(obj.buy, 'lastModificationTime').reverse()[0];
 
 				obj.sell[j].buy_order = buy_order;
 			}
