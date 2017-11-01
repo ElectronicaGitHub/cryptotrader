@@ -739,7 +739,7 @@ app.post('/removeOrder', function (req, res, next) {
 		return el.exchange.name == data.exchangeName
 	})[0];
 
-	trader.cancelLimit(data.currencyPair, data.exchangeId, function (err, data) {
+	trader.cancelOrder(data, function (err, data) {
 		if (err) console.log(err);
 		console.log(data);
 		res.json(data);
