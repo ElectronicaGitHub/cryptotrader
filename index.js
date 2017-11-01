@@ -137,7 +137,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 
 			console.log('Валюта растет: Продаем все пары');
 			async.waterfall([
-				self.stopLossOrQuickSellOpenedPairsCycle(self, true),
+				self.stopLossOrQuickSellOpenedPairsCycle.bind(self, true),
 				self.quickSellCycle.bind(self)
 			], function (err, data) {
 				callback();
