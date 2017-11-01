@@ -577,15 +577,13 @@ TRADER.prototype.cancelOrder = function (order, next) {
 		console.log('DEBUG!!!', error, data);
 		if (error) {
 			console.log('Ошибка отмены ордера');
-			next(null);
-		} else {
-			self.baseConnector.removeOrder(order.exchangeId, function (err, data) {
-				if (!err) console.log('Ордер успешно удален');
-				else console.log('Ошибка отмены ордера', err);
-
-				next(null, data);
-			});
 		}
+		self.baseConnector.removeOrder(order.exchangeId, function (err, data) {
+			if (!err) console.log('Ордер успешно удален');
+			else console.log('Ошибка отмены ордера', err);
+
+			next();
+		});
 	});
 }
 
