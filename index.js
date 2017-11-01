@@ -375,7 +375,7 @@ TRADER.prototype.stopLossOrQuickSellCycle = function (force, callback) {
 			self.cancelOrder.bind(self, order),
 			self.sellPairWithPrice.bind(self, order)
 		], function (err, data) {
-			serie_callback(null);
+			serie_callback();
 		});
 		
 	}, function (err, data) {
