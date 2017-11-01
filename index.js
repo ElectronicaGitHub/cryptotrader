@@ -337,7 +337,7 @@ TRADER.prototype.stopLossOrQuickSellCycle = function (force, callback) {
 			var diff = currency.best_ask * closed_buy_order.quantity - closed_buy_order.inBTC;
 			var diff_perc = (diff / closed_buy_order.inBTC) * 100;
 
-			if (diff_perc < -this.exchange.stop_loss_koef || force) {
+			if ((diff_perc < -this.exchange.stop_loss_koef) || force) {
 
 				stop_loss_orders.push({
 					exchangeId : each_open_sell_order.exchangeId, 
