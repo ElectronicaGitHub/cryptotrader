@@ -59,7 +59,12 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		
 		if (trader.closed_orders.length) {
 			trader.summary.closed_ordersInBTC = trader.closed_orders.map(function (el) {
-				return el.inBTC - (el.buy_order ? el.buy_order.inBTC : 0);
+				var b_order = el.buy_order;
+				if (b_order) {
+					return el.price * b_order.quantity - b_order.price * b_order.qiantity;
+				} else {
+					return 0;
+				}
 			}).reduce(function (a,b) {
 				return a + b;
 			});
@@ -70,7 +75,11 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 
 			if (today.length) {
 				trader.summary.today_incomeInBTC = today.map(function (el) {
-					return el.inBTC - (el.buy_order ? el.buy_order.inBTC : 0);
+					if (b_order) {
+						return el.price * b_order.quantity - b_order.price * b_order.qiantity;
+					} else {
+						return 0;
+					}
 				}).reduce(function (a, b) {
 					return a + b;
 				});
