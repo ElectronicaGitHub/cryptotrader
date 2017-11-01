@@ -136,7 +136,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 		if (isRaising) {
 
 			console.log('Валюта растет: Продаем все пары');
-			async.waterfall([
+			async.series([
 				self.makeBuyAndSellData.bind(self),
 				self.quickSellCycle.bind(self),
 				self.stopLossOrQuickSellOpenedPairsCycle.bind(self, true)
@@ -147,7 +147,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 		} else {
 
 			console.log('Валюта падает: Стандартный прогон');
-			async.waterfall([
+			async.series([
 				self.cancelOpenBuyOrdersCycle.bind(self),
 				self.checkCycle.bind(self),
 
