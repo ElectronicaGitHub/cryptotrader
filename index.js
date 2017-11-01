@@ -340,8 +340,6 @@ TRADER.prototype.closeOrdersAndSellCycle = function (force, callback) {
 			return each_open_sell_order.currencyPair.split('/')[0] == el.currency;
 		})[0];
 
-		console.log(each_open_sell_order, closed_buy_order);
-
 		if (closed_buy_order && currency) {
 			var diff = currency.best_ask * closed_buy_order.quantity - closed_buy_order.inBTC;
 			var diff_perc = (diff / closed_buy_order.inBTC) * 100;
