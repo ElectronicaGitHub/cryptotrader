@@ -148,7 +148,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 				self.makeBuyAndSellData.bind(self),
 				self.sellCycle.bind(self),
 				self.buyCycle.bind(self),
-				self.stopLossOrQuickSellCycle.bind(self),
+				self.stopLossOrQuickSellCycle.bind(self, false),
 				self.checkCycle.bind(self)
 			], function (error, data) {
 				console.log('trade ended');
@@ -533,7 +533,7 @@ TRADER.prototype.sellPairWithPrice = function (order, next) {
 	this.sellLimit(order.currencyPair, order.sellPrice, order.quantity, function (error, data) {
 		if (error) {
 			console.log('Ошибка выставления ордера на продажу', error);
-			next(null);
+			next();
 		} else {
 			console.log('Ордер на продажу успешно выставлен', order.currencyPair, 'по цене', order.sellPrice);
 			self.baseConnector.saveOrder({
@@ -545,7 +545,7 @@ TRADER.prototype.sellPairWithPrice = function (order, next) {
 				if (!err) console.log('Ордер сохранен в базу');
 				else console.log('Ошибка сохранения в базу');
 
-				next(null);
+				next();
 			});		
 		}
 	});
