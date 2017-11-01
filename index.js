@@ -351,6 +351,8 @@ TRADER.prototype.stopLossOrQuickSellCycle = function (force, callback) {
 		}
 	}
 
+	console.log(stop_loss_orders);
+
 	stop_loss_orders_can_sell = stop_loss_orders.filter(function (el) {
 		return el.inBTC > self.exchange.min_buy_order_price;
 	});
@@ -369,18 +371,18 @@ TRADER.prototype.stopLossOrQuickSellCycle = function (force, callback) {
 		return el.currencyPair;
 	}));
 
-	async.eachSeries(stop_loss_orders_can_sell, function (order, serie_callback) {
+	// async.eachSeries(stop_loss_orders_can_sell, function (order, serie_callback) {
 
-		async.series([
-			self.cancelOrder.bind(self, order),
-			self.sellPairWithPrice.bind(self, order)
-		], function (err, data) {
-			serie_callback();
-		});
+	// 	async.series([
+	// 		self.cancelOrder.bind(self, order),
+	// 		self.sellPairWithPrice.bind(self, order)
+	// 	], function (err, data) {
+	// 		serie_callback();
+	// 	});
 		
-	}, function (err, data) {
-		callback();
-	});
+	// }, function (err, data) {
+	// 	callback();
+	// });
 }
 
 TRADER.prototype.makeBuyAndSellData = function (next) {
