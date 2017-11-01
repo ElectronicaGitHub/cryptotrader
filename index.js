@@ -93,7 +93,7 @@ TRADER.prototype.checkCycle = function (callback) {
 		return callback();
 	}
 
-	console.log('checkCycle:', this.exchange.name);
+	console.log('Цикл проверки ', this.exchange.name);
 
 	async.waterfall([
 		self.wrapWait(self.getUserSummaries.bind(self)),
@@ -101,7 +101,6 @@ TRADER.prototype.checkCycle = function (callback) {
 		self.wrapWait(self.getUserOrders.bind(self)),
 		self.wrapWait(self.syncRemoteOrdersWithLocal.bind(self))
 	], function (error, pairs_data) {
-		console.log('pairs_data', self.pairs_data);
 		callback();
 	});
 }
@@ -115,14 +114,13 @@ TRADER.prototype.tradeCycle = function (callback) {
 		return callback();
 	}
 
-	console.log('tradeCycle:', this.exchange.name);
+	console.log('Цикл торговли ', this.exchange.name);
 
 	async.waterfall([
 		self.cancelOpenBuyOrdersCycle.bind(self),
-		self.wrapWait(self.getUserSummaries.bind(self)),
-		self.wrapWait(self.getUserOrders.bind(self)),
-		self.makeBuyAndSellData.bind(self),
+		self.checkCycle.bind(self),
 
+		self.makeBuyAndSellData.bind(self),
 		self.sellCycle.bind(self),
 		self.buyCycle.bind(self),
 		self.stopLossSellCycle.bind(self),
@@ -340,9 +338,9 @@ TRADER.prototype.stopLossSellCycle = function (callback) {
 
 	async.eachSeries(stop_loss_orders_can_sell, function (order, serie_callback) {
 
-		async.waterfall([
-			self.wrapWait(self.cancelOrder.bind(self, order)),
-			self.wrapWait(self.sellOrderWithPrice.bind(self, order))
+		async.series([
+			self.cancelOrder.bind(self, order),
+			self.sellOrderWithPrice.bind(self, order)
 		], function (err, data) {
 			serie_callback(null);
 		});
@@ -476,10 +474,12 @@ TRADER.prototype.sellPairWithProfit = function (pair, next) {
 		if (error) {
 			console.log('Ошибка выставления ордера на продажу', error);
 			next(null);
+			return;
 		} else {
 			console.log('Ордер на продажу успешно выставлен', pair_name, 'по цене', sell_price);
 			self.baseConnector.saveOrder({
 				exchangeId : data.exchangeId,
+				currencyPair : pair_name,
 				type : 'LIMIT_SELL',
 				orderStatus : 'OPEN'
 			}, function (err, data) {
@@ -505,6 +505,7 @@ TRADER.prototype.sellOrderWithPrice = function (order, next) {
 			console.log('Ордер на продажу успешно выставлен', order.currencyPair, 'по цене', order.sellPrice);
 			self.baseConnector.saveOrder({
 				exchangeId : data.exchangeId,
+				currencyPair : order.currencyPair,
 				type : 'LIMIT_SELL',
 				orderStatus : 'OPEN'
 			}, function (err, data) {
@@ -543,6 +544,7 @@ TRADER.prototype.cancelOrder = function (order, next) {
 		console.log('DEBUG!!!', error, data);
 		if (error) {
 			console.log('Ошибка отмены ордера');
+			next(null);
 		} else {
 			self.baseConnector.removeOrder(order.exchangeId, function (err, data) {
 				if (!err) console.log('Ордер успешно удален');
@@ -605,6 +607,7 @@ TRADER.prototype.buyPair = function (pair, next) {
 			self.btc_value -= buy_price * value;
 			self.baseConnector.saveOrder({
 				exchangeId : data.exchangeId,
+				currencyPair : pair_name,
 				type : 'LIMIT_BUY',
 				orderStatus : 'OPEN'
 			}, function (err, data) {

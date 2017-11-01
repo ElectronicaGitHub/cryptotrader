@@ -76,7 +76,6 @@ function Bittrex() {
 						return el;
 					});
 
-					console.log(data.result.length);
 					var orders = open_orders.concat(closed_orders);
 					callback(self.pipes.makeOrders(orders));
 				});
