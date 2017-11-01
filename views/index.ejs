@@ -47,6 +47,12 @@
 	.each-closed-pair {
 		margin: 5px 0;
 	}
+	.each-closed-pair-info {
+		padding: 5px ;
+	}
+	.each-closed-pair-info p {
+		margin: 0;
+	}
 	.altcoin-graph-link {
 		cursor: pointer;
 	}
@@ -238,8 +244,9 @@
 
 		<div class="container content">
 
-			<div class="closed-pairs col-xs-12 col-sm-3" ng-if="trader.closed_orders && (!view || view == 'closed')">
+			<div class="closed-pairs col-xs-12 col-sm-8" ng-if="trader.closed_orders && (!view || view == 'closed')">
 				<div class="title">Закрытые сделки</div>
+
 
 				<div class="each-closed-pair">
 					<b>Итого</b> [ {{ trader.summary.closed_ordersInBTC | number:6 }} BTC / {{ inUSD(trader, trader.summary.closed_ordersInBTC) | number:2 }} USD ]
@@ -248,10 +255,23 @@
 				<div class="each-closed-pair" ng-repeat="pair in trader.closed_orders | orderBy:'-lastModificationTime'" ng-class="{ gold : moment(date_long).isSame(pair.lastModificationTime, 'd'), yesterday : moment(date_long).isSame(moment(pair.lastModificationTime).add(1, 'd'), 'd') }">
 					{{ $index + 1 }}. <b>{{ pair.currencyPair }}</b> / 
 					<span ng-class="(pair.buy_order.quantity * pair.price - pair.buy_order.quantity * pair.buy_order.price) > 0 ? 'ok' : 'not-ok'">{{pair.buy_order.quantity * pair.price - pair.buy_order.quantity * pair.buy_order.price | number:6 }} BTC [ {{ inUSD(trader, pair.buy_order.quantity * pair.price - pair.buy_order.quantity * pair.buy_order.price) | number:2 }} USD]</span>
+
+					<span>{{ moment(pair.lastModificationTime).locale('ru').format('LLL') }}</span>
+
+					<div class="each-closed-pair-info">
+						<p>buy 
+							<span>q: {{ pair.buy_order.quantity | number:8 }}</span>
+							<span>pr: {{ pair.buy_order.price | number:8 }}</span>
+						</p>
+						<p>sell 
+							<span>q: {{ pair.quantity | number:8 }}</span>
+							<span>pr: {{ pair.price | number:8 }}</span>
+						</p>
+					</div>
 				</div>
 			</div>
 
-			<div class="col-xs-12 col-sm-5" ng-if="!view || view == 'buy_and_sell'">
+			<div class="col-xs-12 col-sm-4" ng-if="!view || view == 'buy_and_sell'">
 				<div class="open-buy-orders" ng-if="trader.open_buy_orders.length">
 					<div class="title">Покупка</div>
 					<div ng-repeat="order in trader.open_buy_orders">
@@ -304,14 +324,14 @@
 				</div>
 
 			</div>
-			<div class="altcoins-container col-sm-4 hidden-xs">
+			<div class="altcoins-container col-sm-1 hidden-xs">
 				<div class="each-altcoin" ng-repeat="altcoin in trader.exchange_pairs | filter:exchange_pairs_filter" ng-class="{ tradeable : altcoin.tradeable }">
-					<i>{{ altcoin.rank | number:2 }}</i> <a href="https://www.livecoin.net/ru/trade/index?currencyPair={{ altcoin.symbol }}" target="_blank"><b>{{ altcoin.symbol }}</b></a> [ {{altcoin.best_ask | number : 6}} BTC | vol: {{ altcoin.volume * altcoin.best_ask | number:2 }} BTC | 
-					<!-- <span ng-class="altcoin.spread > 0 ? 'ok' : 'not-ok'">{{ altcoin.spread | number:4 }} BTC</span> | -->
-					<span ng-if="altcoin.price_change" ng-class="altcoin.price_change > 0 ? 'ok' : 'not-ok'">{{ altcoin.price_change | number:2 }}%</span> ]
-					<a class="altcoin-graph-link" ng-click="getChartData(altcoin, 5/24)">5h</a> / 
-					<a class="altcoin-graph-link" ng-click="getChartData(altcoin, 1)">1d</a> / 
-					<a class="altcoin-graph-link" ng-click="getChartData(altcoin, 2)">2d</a>
+					<i>{{ altcoin.rank | number:2 }}</i>
+					<!-- <a href="https://www.livecoin.net/ru/trade/index?currencyPair={{ altcoin.symbol }}" target="_blank"><b>{{ altcoin.symbol }}</b></a> [ {{altcoin.best_ask | number : 6}} BTC | vol: {{ altcoin.volume * altcoin.best_ask | number:2 }} BTC |  -->
+					<!-- <span ng-if="altcoin.price_change" ng-class="altcoin.price_change > 0 ? 'ok' : 'not-ok'">{{ altcoin.price_change | number:2 }}%</span> ] -->
+					<!-- <a class="altcoin-graph-link" ng-click="getChartData(altcoin, 5/24)">5h</a> /  -->
+					<!-- <a class="altcoin-graph-link" ng-click="getChartData(altcoin, 1)">1d</a> /  -->
+					<!-- <a class="altcoin-graph-link" ng-click="getChartData(altcoin, 2)">2d</a> -->
 
 					<div class="chart-info" id="chart-data-{{ altcoin.symbol }}"></div>
 				</div>

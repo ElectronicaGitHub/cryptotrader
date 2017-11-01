@@ -1,6 +1,7 @@
 var PoloniexAPI = require('../custom_libs/poloniex.js');
-
+var unirest = require('unirest');
 var async = require('async');
+var moment = require('moment');
 
 function Poloniex() {
 
@@ -134,6 +135,15 @@ function Poloniex() {
 				}
 				callback(null);
 			});
+		},
+		getChartData : function (period, currencyPair, callback) {
+			var url = 'https://poloniex.com/public?command=returnChartData&start=' + moment().subtract(2,'d').format('X') + '&end=9999999999' +  
+				'&period=300&currencyPair=' + encodeURIComponent(self.formatter.makeCurrencyName(currencyPair));
+			unirest.get(url).end(function (response) {
+				callback(null, self.pipes.makeChartData(response.body));
+			}, function (error) {
+				console.log(error);
+			});
 		}
 	}
 
@@ -235,6 +245,18 @@ function Poloniex() {
 			});
 
 			return data;
+		},
+		makeChartData : function (data) {
+			return data.map(function (el) {
+				return {
+					open : el["open"],
+				    low : el["low"],
+				    high : el["high"],
+				    close : el["close"],
+				    volume : el["volume"],
+				    timestamp : el["date"]
+				}
+			})
 		}
 	}
 }

@@ -120,10 +120,9 @@ function LiveCoin() {
 			});
 		},
 		getChartData : function (period, currencyPair, callback) {
-			var url = self.urls.getChartData + '?' + 'period=' + period + '&currencyPair=' + encodeURIComponent(currencyPair);
-			// console.log(url);
+			var url = self.urls.getChartData + '?' + 'period=m15&currencyPair=' + encodeURIComponent(currencyPair);
 			unirest.get(url).end(function (response) {
-				callback(response.body);
+				callback(null, self.pipes.makeChartData(response.body));
 			}, function (error) {
 				console.log(error);
 			});
@@ -198,6 +197,18 @@ function LiveCoin() {
 			});
 
 			return data;
+		},
+		makeChartData : function (data) {
+			var data = JSON.parse(data);
+			return data.ohlc.map(function (el) {
+				return {
+					open : el[1],
+				    low : el[2],
+				    high : el[3],
+				    close : el[4],
+				    timestamp : +new Date(el[0])
+				}
+			})
 		}
 	}
 }

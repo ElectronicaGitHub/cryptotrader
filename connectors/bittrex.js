@@ -1,5 +1,6 @@
 var bittrexAPI = require('node-bittrex-api');
 var async = require('async');
+var unirest = require('unirest');
 
 function Bittrex() {
 
@@ -127,6 +128,15 @@ function Bittrex() {
 				}
 				callback(null);
 			});
+		},
+		getChartData : function (period, currencyPair, callback) {
+			var url = 'https://bittrex.com/Api/v2.0/pub/market/GetTicks?tickInterval=fiveMin&marketName=' + encodeURIComponent(self.formatter.makeCurrencyName(currencyPair));
+			// console.log(url);
+			unirest.get(url).end(function (response) {
+				callback(null, self.pipes.makeChartData(response.body));
+			}, function (error) {
+				console.log(error);
+			});
 		}
 	}
 
@@ -196,6 +206,21 @@ function Bittrex() {
 			});
 
 			return data;
+		},
+		makeChartData : function (data) {
+
+			return data.result.map(function (el) {
+				return {
+				    open : el['O'],
+				    low : el['L'],
+				    high : el['H'],
+				    close : el['C'],
+				    volume : el['V'],
+				    timestamp : +new Date(el['T'])
+				}
+			})
+
+
 		}
 	}
 }

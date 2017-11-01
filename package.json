@@ -15,6 +15,7 @@
     "ejs-locals": "^1.0.2",
     "express": "^4.16.2",
     "lodash": "^4.17.4",
+    "moment": "^2.19.1",
     "mongoose": "^4.12.4",
     "nconf": "^0.8.5",
     "node-bittrex-api": "^0.7.6",

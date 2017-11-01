@@ -105,6 +105,8 @@ TRADER.prototype.checkCycle = function (callback) {
 	});
 }
 
+TRADER.prototype.checkBaseToFiatTrend = function (callback) {}
+
 TRADER.prototype.tradeCycle = function (callback) {
 
 	var self = this;
@@ -114,21 +116,43 @@ TRADER.prototype.tradeCycle = function (callback) {
 		return callback();
 	}
 
-	console.log('Цикл торговли ', this.exchange.name);
+	console.log('Цикл торговли', this.exchange.name);
 
-	async.waterfall([
-		self.cancelOpenBuyOrdersCycle.bind(self),
-		self.checkCycle.bind(self),
 
-		self.makeBuyAndSellData.bind(self),
-		self.sellCycle.bind(self),
-		self.buyCycle.bind(self),
-		self.stopLossSellCycle.bind(self),
-		self.checkCycle.bind(self)
-	], function (error, data) {
-		console.log('trade ended');
-		callback();
+	var check_parameter = 'close';
+
+	self.getChartData(null, 'BTC/' + this.exchange.usdName, function (err, data) {
+
+		arr = data.slice(data.length - 3);
+
+		console.log('Проверка тренда торгуемой валюты к фиату', self.exchange.name);
+		console.log('10м назад:', arr[0][check_parameter], '. 5м назад:', arr[1][check_parameter], '. Текущее значение:', arr[2][check_parameter]);
+
+		if (arr[2][check_parameter] - arr[0][check_parameter] > 0) {
+
+			console.log('Валюта растет: Продаем все пары');
+			self.stopLossOrQuickSellCycle(true, callback);
+
+		} else {
+
+			console.log('Валюта падает: Стандартный прогон');
+			async.waterfall([
+				self.cancelOpenBuyOrdersCycle.bind(self),
+				self.checkCycle.bind(self),
+
+				self.makeBuyAndSellData.bind(self),
+				self.sellCycle.bind(self),
+				self.buyCycle.bind(self),
+				self.stopLossOrQuickSellCycle.bind(self),
+				self.checkCycle.bind(self)
+			], function (error, data) {
+				console.log('trade ended');
+				callback();
+			});
+		}
+		// callback();
 	});
+
 }
 
 TRADER.prototype.getUserOrders = function (next) {
@@ -274,8 +298,13 @@ TRADER.prototype.getUserBalances = function (next) {
 var satoshi = 0.00000001;
 var currenciesRankMap = {};
 
-TRADER.prototype.stopLossSellCycle = function (callback) {
-	console.log('Цикл стоп-лосс продаж:', this.exchange.name); 
+TRADER.prototype.stopLossOrQuickSellCycle = function (force, callback) {
+
+	if (!force) {
+		console.log('Цикл стоп-лосс продаж:', this.exchange.name); 
+	} else {
+		console.log('Цикл экстренных продаж:', this.exchange.name); 
+	}
 
 	var self = this;
 
@@ -304,7 +333,7 @@ TRADER.prototype.stopLossSellCycle = function (callback) {
 			var diff = currency.best_ask * closed_buy_order.quantity - closed_buy_order.inBTC;
 			var diff_perc = (diff / closed_buy_order.inBTC) * 100;
 
-			if (diff_perc < -this.exchange.stop_loss_koef) {
+			if (diff_perc < -this.exchange.stop_loss_koef || force) {
 
 				stop_loss_orders.push({
 					exchangeId : each_open_sell_order.exchangeId, 
@@ -332,7 +361,7 @@ TRADER.prototype.stopLossSellCycle = function (callback) {
 	// затем снова смотрим убыточные сделки
 	// продаем всю сумму на балансе по этой валюте ( все вместе с докупленным )
 
-	console.log('Стоп-лосс ордера на продажу:', stop_loss_orders_can_sell.map(function (el) {
+	console.log('Ордера на продажу:', stop_loss_orders_can_sell.map(function (el) {
 		return el.currencyPair;
 	}));
 
@@ -340,7 +369,7 @@ TRADER.prototype.stopLossSellCycle = function (callback) {
 
 		async.series([
 			self.cancelOrder.bind(self, order),
-			self.sellOrderWithPrice.bind(self, order)
+			self.sellPairWithPrice.bind(self, order)
 		], function (err, data) {
 			serie_callback(null);
 		});
@@ -492,8 +521,8 @@ TRADER.prototype.sellPairWithProfit = function (pair, next) {
 	});
 }
 
-TRADER.prototype.sellOrderWithPrice = function (order, next) {
-	console.log('sellOrderWithPrice');
+TRADER.prototype.sellPairWithPrice = function (order, next) {
+	console.log('sellPairWithPrice');
 
 	var self = this;
 
