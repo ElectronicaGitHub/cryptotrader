@@ -199,16 +199,20 @@ function LiveCoin() {
 			return data;
 		},
 		makeChartData : function (data) {
-			var data = JSON.parse(data);
-			return data.ohlc.map(function (el) {
-				return {
-					open : el[1],
-				    low : el[2],
-				    high : el[3],
-				    close : el[4],
-				    timestamp : +new Date(el[0])
-				}
-			})
+			try {
+				var data = JSON.parse(data);
+				return data.ohlc.map(function (el) {
+					return {
+						open : el[1],
+					    low : el[2],
+					    high : el[3],
+					    close : el[4],
+					    timestamp : +new Date(el[0])
+					}
+				})
+			} catch(err) {
+				return null;
+			}
 		}
 	}
 }

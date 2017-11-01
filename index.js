@@ -93,7 +93,7 @@ TRADER.prototype.checkCycle = function (callback) {
 		return callback();
 	}
 
-	console.log('Цикл проверки ', this.exchange.name);
+	console.log('Цикл проверки', this.exchange.name);
 
 	async.waterfall([
 		self.wrapWait(self.getUserSummaries.bind(self)),
@@ -118,17 +118,22 @@ TRADER.prototype.tradeCycle = function (callback) {
 
 	console.log('Цикл торговли', this.exchange.name);
 
-
 	var check_parameter = 'close';
 
 	self.getChartData(null, 'BTC/' + this.exchange.usdName, function (err, data) {
 
-		arr = data.slice(data.length - 3);
+		var isRaising;
 
-		console.log('Проверка тренда торгуемой валюты к фиату', self.exchange.name);
-		console.log('10м назад:', arr[0][check_parameter], '. 5м назад:', arr[1][check_parameter], '. Текущее значение:', arr[2][check_parameter]);
+		if (!data) {
+			isRaising = false;
+		} else {
+			arr = data.slice(data.length - 3);
+			console.log('Проверка тренда торгуемой валюты к фиату', self.exchange.name);
+			console.log('10м назад:', arr[0][check_parameter], '. 5м назад:', arr[1][check_parameter], '. Текущее значение:', arr[2][check_parameter]);
+			isRaising = arr[2][check_parameter] - arr[0][check_parameter] > 0;
+		}
 
-		if (arr[2][check_parameter] - arr[0][check_parameter] > 0) {
+		if (isRaising) {
 
 			console.log('Валюта растет: Продаем все пары');
 			self.stopLossOrQuickSellCycle(true, callback);
