@@ -554,6 +554,7 @@ TRADER.prototype.sellPairWithProfit = function (pair, next) {
 TRADER.prototype.sellPairWithPrice = function (order, next) {
 	console.log('sellPairWithPrice');
 
+	console.log(order);
 	var self = this;
 
 	this.sellLimit(order.currencyPair, order.sellPrice, order.quantity, function (error, data) {
