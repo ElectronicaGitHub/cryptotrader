@@ -155,7 +155,6 @@ TRADER.prototype.tradeCycle = function (callback) {
 				callback();
 			});
 		}
-		// callback();
 	});
 
 }

@@ -48,7 +48,8 @@
 		margin: 5px 0;
 	}
 	.each-closed-pair-info {
-		padding: 5px ;
+		padding: 5px;
+		display: inline-block;
 	}
 	.each-closed-pair-info p {
 		margin: 0;
@@ -250,7 +251,7 @@
 
 		<div class="container content">
 
-			<div class="closed-pairs col-xs-12 col-sm-7" ng-if="trader.closed_orders && (!view || view == 'closed')">
+			<div class="closed-pairs col-xs-12 col-sm-6" ng-if="trader.closed_orders && (!view || view == 'closed')">
 				<div class="title">Закрытые сделки</div>
 
 
@@ -310,15 +311,25 @@
 									<span ng-class="(pair.sell_order.price * pair.sell_order.quantity - pair.buy_order.price * pair.sell_order.quantity)/pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">
 										{{(pair.sell_order.price * pair.sell_order.quantity - pair.buy_order.price * pair.sell_order.quantity)/pair.sell_order.inBTC * 100 | number:2}}%
 									</span>
+									<span ng-class="(balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC)/pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">
+										{{(balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC)/pair.buy_order.inBTC * 100 | number:2}}% ]
+									</span>
+									<span class="each-closed-pair-info">
+										<p>buy 
+											<span>q: {{ pair.buy_order.quantity | number:8 }}</span>
+											<span>pr: {{ pair.buy_order.price | number:8 }}</span>
+										</p>
+										<p>sell 
+											<span>q: {{ pair.sell_order.quantity | number:8 }}</span>
+											<span>pr: {{ pair.sell_order.price | number:8 }}</span>
+										</p>
+									</span>
 									<!-- <span ng-class="balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC > 0 ? 'ok' : 'not-ok'">
 										 [ {{ inUSD(trader, balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC) | number:2 }} USD / </span> -->
 
 									<!-- <span ng-class="balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">
 										[ {{ inUSD(trader, balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC) | number:2 }} USD </span> -->
 									<!-- <span> / </span> -->
-									<span ng-class="(balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC)/pair.buy_order.inBTC > 0 ? 'ok' : 'not-ok'">
-										{{(balance.best_ask * pair.buy_order.quantity - pair.buy_order.inBTC)/pair.buy_order.inBTC * 100 | number:2}}% ]
-									</span>
 
 								</div>
 
@@ -330,7 +341,7 @@
 				</div>
 
 			</div>
-			<div class="altcoins-container col-sm-1 hidden-xs">
+			<div class="altcoins-container col-sm-2 hidden-xs">
 				<div class="each-altcoin" ng-repeat="altcoin in trader.exchange_pairs | filter:exchange_pairs_filter" ng-class="{ tradeable : altcoin.tradeable }">
 					<i>{{ altcoin.rank | number:2 }}</i>
 					<b>{{ altcoin.symbol }}</b>
