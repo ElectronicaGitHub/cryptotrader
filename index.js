@@ -99,7 +99,8 @@ TRADER.prototype.checkCycle = function (callback) {
 		self.wrapWait(self.getUserSummaries.bind(self)),
 		self.wrapWait(self.getUserBalances.bind(self)),
 		self.wrapWait(self.getUserOrders.bind(self)),
-		self.wrapWait(self.syncRemoteOrdersWithLocal.bind(self))
+		self.makeBuyAndSellData.bind(self),
+		self.wrapWait(self.syncRemoteOrdersWithLocal.bind(self)),
 	], function (error, pairs_data) {
 		callback();
 	});
@@ -137,9 +138,11 @@ TRADER.prototype.tradeCycle = function (callback) {
 
 			console.log('Валюта растет: Продаем все пары');
 			async.series([
-				self.makeBuyAndSellData.bind(self),
+				self.closeOpenSellOrders.bind(self),
+
+				self.checkCycle.bind(self),
+
 				self.quickSellCycle.bind(self),
-				self.closeOrdersAndSellCycle.bind(self, true)
 			], function (err, data) {
 				callback();
 			})
@@ -151,7 +154,6 @@ TRADER.prototype.tradeCycle = function (callback) {
 				self.cancelOpenBuyOrdersCycle.bind(self),
 				self.checkCycle.bind(self),
 
-				self.makeBuyAndSellData.bind(self),
 				self.sellCycle.bind(self),
 				self.buyCycle.bind(self),
 				self.closeOrdersAndSellCycle.bind(self, false),
@@ -308,6 +310,23 @@ TRADER.prototype.getUserBalances = function (next) {
 var satoshi = 0.00000001;
 var currenciesRankMap = {};
 
+TRADER.prototype.closeOpenSellOrders = function (callback) {
+
+	var orders_to_close = [];
+	for (var i in this.open_sell_orders) {
+		orders_to_close.push({
+			exchangeId : each_open_sell_order.exchangeId, 
+			currencyPair : each_open_sell_order.currencyPair, 
+		});
+	}
+
+	async.eachSeries(orders_to_close, function (order, serie_callback) {
+		self.wrapWait(self.cancelOrder.bind(self, order, serie_callback))();
+	}, function (err, data) {
+		callback();
+	});
+}
+
 TRADER.prototype.closeOrdersAndSellCycle = function (force, callback) {
 
 	if (!force) {
@@ -340,20 +359,31 @@ TRADER.prototype.closeOrdersAndSellCycle = function (force, callback) {
 			return each_open_sell_order.currencyPair.split('/')[0] == el.currency;
 		})[0];
 
-		if (closed_buy_order && currency) {
-			var diff = currency.best_ask * closed_buy_order.quantity - closed_buy_order.inBTC;
-			var diff_perc = (diff / closed_buy_order.inBTC) * 100;
+		if (force && currency) {
+			stop_loss_orders.push({
+				exchangeId : each_open_sell_order.exchangeId, 
+				currencyPair : each_open_sell_order.currencyPair, 
+				sellPrice : currency.best_bid,
+				quantity : each_open_sell_order.quantity,
+				inBTC : currency.best_ask * each_open_sell_order.quantity,
+				diffPercentage : diff_perc
+			});
+		} else {
+			if (closed_buy_order && currency) {
+				var diff = currency.best_ask * closed_buy_order.quantity - closed_buy_order.inBTC;
+				var diff_perc = (diff / closed_buy_order.inBTC) * 100;
 
-			if ((diff_perc < -this.exchange.stop_loss_koef) || force) {
+				if ((diff_perc < -this.exchange.stop_loss_koef) || force) {
 
-				stop_loss_orders.push({
-					exchangeId : each_open_sell_order.exchangeId, 
-					currencyPair : each_open_sell_order.currencyPair, 
-					sellPrice : currency.best_bid,
-					quantity : each_open_sell_order.quantity,
-					inBTC : currency.best_ask * closed_buy_order.quantity,
-					diffPercentage : diff_perc
-				});
+					stop_loss_orders.push({
+						exchangeId : each_open_sell_order.exchangeId, 
+						currencyPair : each_open_sell_order.currencyPair, 
+						sellPrice : currency.best_bid,
+						quantity : each_open_sell_order.quantity,
+						inBTC : currency.best_ask * each_open_sell_order.quantity,
+						diffPercentage : diff_perc
+					});
+				}
 			}
 		}
 	}
@@ -375,6 +405,11 @@ TRADER.prototype.closeOrdersAndSellCycle = function (force, callback) {
 	console.log('Ордера на продажу:', stop_loss_orders_can_sell.map(function (el) {
 		return el.currencyPair;
 	}));
+
+	if (!stop_loss_orders_can_sell.length) {
+		callback();
+		return;
+	}
 
 	async.eachSeries(stop_loss_orders_can_sell, function (order, serie_callback) {
 
@@ -563,7 +598,6 @@ TRADER.prototype.sellPairWithProfit = function (pair, quick_sell, next) {
 TRADER.prototype.sellPairWithPrice = function (order, next) {
 	console.log('sellPairWithPrice');
 
-	console.log(order);
 	var self = this;
 
 	this.sellLimit(order.currencyPair, order.sellPrice, order.quantity, function (error, data) {
