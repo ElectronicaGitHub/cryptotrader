@@ -533,10 +533,12 @@ TRADER.prototype.sellPairWithProfit = function (pair, quick_sell, next) {
 		sell_price = this.exchange.max_buy_order_price / pair.value;
 	}
 
+	sell_price = '' + sell_price; // для правильной работы toFixed
+
 	// console.log('bought with', pair.buy_order.price);
 	console.log('Выставляем ордер на продажу', pair.value, 'по цене', sell_price, 'Ожидаемый доход', (sell_price * pair.value) - (pair.buy_order.price * pair.value), 'Такса', tax);
 	// console.log('pair_name', pair_name);
-	this.sellLimit(pair_name, +sell_price, pair.value, function (error, data) {
+	this.sellLimit(pair_name, sell_price.toFixed(8), pair.value, function (error, data) {
 		if (error) {
 			console.log('Ошибка выставления ордера на продажу', error);
 			next(null);
