@@ -358,7 +358,7 @@ TRADER.prototype.closeOrdersAndSellCycle = function (callback) {
 			closed_buy_order = closed_buy_orders_for_this_curr = this.closed_buy_orders.filter(function (el) {
 				return el.currencyPair == each_open_sell_order.currencyPair;
 			});
-			closed_buy_order = _.sortBy(closed_buy_order, ['lastModificationTime']).reverse();
+			closed_buy_order = _.sortBy(closed_buy_order, ['lastModificationTime']).reverse()[0];
 		}
 		var currency = this.total_balances.filter(function (el) {
 			return each_open_sell_order.currencyPair.split('/')[0] == el.currency;
