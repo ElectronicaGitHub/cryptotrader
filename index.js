@@ -536,11 +536,10 @@ TRADER.prototype.sellPairWithProfit = function (pair, quick_sell, next) {
 	console.log('sellPairWithProfit');
 
 	if (!pair.buy_order) {
-		console.log('pair hasnt buy order', this.closed_buy_orders_by_curr[pair.currency + '/BTC']);
+		console.log('Пара', pair.currency, 'Не ордера на покупку');
 		next(null);
 		return;
 	}
-
 
 	var tax = pair.buy_order.price * ( 2 * this.exchange.exchange_fee);
 	var pair_name = pair.currency + '/BTC';
