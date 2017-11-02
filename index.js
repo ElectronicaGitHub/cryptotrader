@@ -314,6 +314,7 @@ TRADER.prototype.closeOpenSellOrders = function (callback) {
 
 	var orders_to_close = [];
 	for (var i in this.open_sell_orders) {
+		var each_open_sell_order = this.open_sell_orders[i];
 		orders_to_close.push({
 			exchangeId : each_open_sell_order.exchangeId, 
 			currencyPair : each_open_sell_order.currencyPair, 
