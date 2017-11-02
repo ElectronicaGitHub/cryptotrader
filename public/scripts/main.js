@@ -69,14 +69,14 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 				return a + b;
 			});
 
-			var today = trader.closed_orders.filter(function (el) {
+			var today_closed_orders = trader.closed_orders.filter(function (el) {
 				return moment($scope.date_long).isSame(el.lastModificationTime, 'd');
 			});
 
 
-			if (today.length) {
-				trader.summary.pairsCount = today.length;
-				var sums = today.map(function (el) {
+			if (today_closed_orders.length) {
+				trader.summary.pairsCount = today_closed_orders.length;
+				var sums = today_closed_orders.map(function (el) {
 					var b_order = el.buy_order;
 					if (b_order) {
 						return el.price * el.quantity - b_order.price * el.quantity;
