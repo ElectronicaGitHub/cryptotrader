@@ -375,7 +375,10 @@ TRADER.prototype.closeOrdersAndSellCycle = function (callback) {
 				});
 			}
 		}
-	}
+	} 
+	console.log(stop_loss_orders.map(function (el) {
+		return [el.currencyPair, diffPercentage]
+	}));
 
 	stop_loss_orders_can_sell = stop_loss_orders.filter(function (el) {
 		return el.inBTC > self.exchange.min_buy_order_price;
