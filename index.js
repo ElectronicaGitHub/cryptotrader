@@ -327,13 +327,13 @@ TRADER.prototype.closeOpenSellOrders = function (callback) {
 	});
 }
 
-TRADER.prototype.closeOrdersAndSellCycle = function (force, callback) {
+TRADER.prototype.closeOrdersAndSellCycle = function (callback) {
 
-	if (!force) {
+	// if (!force) {
 		console.log('Цикл стоп-лосс продаж:', this.exchange.name); 
-	} else {
-		console.log('Цикл экстренных продаж:', this.exchange.name); 
-	}
+	// } else {
+		// console.log('Цикл экстренных продаж:', this.exchange.name); 
+	// }
 
 	var self = this;
 
@@ -359,31 +359,20 @@ TRADER.prototype.closeOrdersAndSellCycle = function (force, callback) {
 			return each_open_sell_order.currencyPair.split('/')[0] == el.currency;
 		})[0];
 
-		if (force && currency) {
-			stop_loss_orders.push({
-				exchangeId : each_open_sell_order.exchangeId, 
-				currencyPair : each_open_sell_order.currencyPair, 
-				sellPrice : currency.best_bid,
-				quantity : each_open_sell_order.quantity,
-				inBTC : currency.best_ask * each_open_sell_order.quantity,
-				diffPercentage : diff_perc
-			});
-		} else {
-			if (closed_buy_order && currency) {
-				var diff = currency.best_ask * closed_buy_order.quantity - closed_buy_order.inBTC;
-				var diff_perc = (diff / closed_buy_order.inBTC) * 100;
+		if (closed_buy_order && currency) {
+			var diff = currency.best_ask * closed_buy_order.quantity - closed_buy_order.inBTC;
+			var diff_perc = (diff / closed_buy_order.inBTC) * 100;
 
-				if ((diff_perc < -this.exchange.stop_loss_koef) || force) {
+			if (diff_perc < -this.exchange.stop_loss_koef) {
 
-					stop_loss_orders.push({
-						exchangeId : each_open_sell_order.exchangeId, 
-						currencyPair : each_open_sell_order.currencyPair, 
-						sellPrice : currency.best_bid,
-						quantity : each_open_sell_order.quantity,
-						inBTC : currency.best_ask * each_open_sell_order.quantity,
-						diffPercentage : diff_perc
-					});
-				}
+				stop_loss_orders.push({
+					exchangeId : each_open_sell_order.exchangeId, 
+					currencyPair : each_open_sell_order.currencyPair, 
+					sellPrice : currency.best_bid,
+					quantity : each_open_sell_order.quantity,
+					inBTC : currency.best_ask * each_open_sell_order.quantity,
+					diffPercentage : diff_perc
+				});
 			}
 		}
 	}
