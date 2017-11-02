@@ -472,7 +472,7 @@ TRADER.prototype.makeBuyAndSellData = function (next) {
 		return _curr_arr.indexOf(currencyName) == -1 && !self.open_buy_orders_by_curr[el.symbol];
 	});
 
-	console.log('closed_buy_orders_by_curr', closed_buy_orders_by_curr);
+	console.log('closed_buy_orders_by_curr', self.closed_buy_orders_by_curr);
 
 	self.able_to_sell_pairs = self.available_balances.filter(function (el) {
 		if (self.closed_buy_orders_by_curr[el.currency + '/BTC']) {
