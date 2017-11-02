@@ -377,7 +377,7 @@ TRADER.prototype.closeOrdersAndSellCycle = function (callback) {
 		}
 	} 
 	console.log(stop_loss_orders.map(function (el) {
-		return [el.currencyPair, diffPercentage]
+		return [el.currencyPair, el.diffPercentage]
 	}));
 
 	stop_loss_orders_can_sell = stop_loss_orders.filter(function (el) {
