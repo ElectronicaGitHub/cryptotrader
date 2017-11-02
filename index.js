@@ -312,6 +312,8 @@ var currenciesRankMap = {};
 
 TRADER.prototype.closeOpenSellOrders = function (callback) {
 
+	console.log('Цикл закрытия ордеров');
+
 	var orders_to_close = [];
 	for (var i in this.open_sell_orders) {
 		var each_open_sell_order = this.open_sell_orders[i];
@@ -320,6 +322,8 @@ TRADER.prototype.closeOpenSellOrders = function (callback) {
 			currencyPair : each_open_sell_order.currencyPair, 
 		});
 	}
+
+	console.log('Ордера на закрытие', orders_to_close);
 
 	async.eachSeries(orders_to_close, function (order, serie_callback) {
 		self.wrapWait(self.cancelOrder.bind(self, order, serie_callback))();
