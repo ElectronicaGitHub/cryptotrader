@@ -156,7 +156,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 
 				self.sellCycle.bind(self),
 				self.buyCycle.bind(self),
-				self.closeOrdersAndSellCycle.bind(self, false),
+				self.closeOrdersAndSellCycle.bind(self),
 				self.checkCycle.bind(self)
 			], function (error, data) {
 				console.log('trade ended');
