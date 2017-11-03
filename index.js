@@ -318,10 +318,23 @@ TRADER.prototype.getUserSummaries = function (next) {
 TRADER.prototype.getUserBalances = function (next) {
 	var self = this;
 	this.getBalance({}, function (data) {
-		self.available_balances = data.available;
-		self.total_balances = data.total;
+		
+		self.total_balances = data.total.map(function (balance_currency) {
+			var _pair = self.exchange_pairs.filter(function (pair) {
+				return balance_currency.currency == pair.currency;
+			});
+			if (_pair[0]) { 
+				balance_currency.inBTC = UTILS.getInBTC(balance_currency.value, _pair[0].best_ask);
+				balance_currency.best_ask = _pair[0].best_ask;
+				balance_currency.best_bid = _pair[0].best_bid;
+			 } else {
+				balance_currency.inBTC = balance_currency.value;
+			 }
 
-		self.total_balances = self.total_balances.map(function (balance_currency) {
+			return balance_currency;
+		});
+
+		self.available_balances = data.available.map(function (balance_currency) {
 			var _pair = self.exchange_pairs.filter(function (pair) {
 				return balance_currency.currency == pair.currency;
 			});
@@ -461,11 +474,12 @@ TRADER.prototype.normalizeBalances = function (next) {
 
 	var need_to_buy_currencies = self.available_balances.filter(function (el) {
 		return el.currency != 'BTC';	
-	}).filter(function (el) {
+	})
+	.filter(function (el) {
 		return el.value * el.best_ask <= self.exchange.min_buy_order_price;
 	});
 
-	console.log('Нужно докупить', need_to_buy_currencies.filter(function (el) {
+	console.log('Нужно докупить', need_to_buy_currencies.map(function (el) {
 		return [el.currency, el.value * el.best_ask]
 	}));
 
@@ -476,6 +490,7 @@ TRADER.prototype.normalizeBalances = function (next) {
 	}, function (error, data) {
 		next(null);
 	});
+	// next(null);
 }
 
 TRADER.prototype.makeTradeData = function (next) {
