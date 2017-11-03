@@ -607,7 +607,7 @@ TRADER.prototype.sellPair = function (currency, quantity, buy_order, quick_sell,
 	// var currencyPair = pair.currency + '/BTC';
 	var sell_price = self.calculateSellPrice(currency, buy_order, quantity, quick_sell);
 
-	console.log('Выставляем ордер на продажу', quantity, 'по цене', sell_price);
+	console.log('Выставляем ордер на продажу', currency, 'в кол-ве', quantity, 'по цене', sell_price, 'В BTC', quantity * sell_price);
 
 	this.sellLimit(currency_pair, sell_price.toFixed(8), quantity, function (error, data) {
 		if (error) {
