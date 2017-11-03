@@ -469,7 +469,7 @@ TRADER.prototype.normalizeBalances = function (next) {
 		return [el.currency, el.value * el.best_ask]
 	}));
 
-	async.eachSeries(work_buy_pairs, function (pair, serie_callback) {
+	async.eachSeries(need_to_buy_currencies, function (pair, serie_callback) {
 
 		self.wrapWait(self.buyPair.bind(self, pair, serie_callback))();
 
