@@ -755,7 +755,7 @@ TRADER.prototype.buyPair = function (pair, next) {
 	var self = this;
 	var pair_name = pair.symbol || pair.currency + '/BTC';
 	var buy_price = +pair.best_ask + satoshi;
-	var quantity = +((base_currency_diff_value.exchange.max_buy_order_price * 101 / 100) / buy_price);
+	var quantity = +((this.exchange.max_buy_order_price * 101 / 100) / buy_price);
 
 	console.log('Покупка валюты', pair_name);
 
