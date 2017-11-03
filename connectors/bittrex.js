@@ -26,6 +26,7 @@ function Bittrex() {
 	this.max_req_interval = 500
 	this.ok_spread_value = 0.4;
 	this.exchange_fee = 0.0025;
+	this.base_currency_diff_value = 0.005;
 
 	this.formatter = {
 		makeCurrencyName : function (currencyName) {
@@ -106,7 +107,6 @@ function Bittrex() {
 				quantity : quantity,
 				rate : price
 			};
-			console.log(data, quantity * price);
 			bittrexAPI.selllimit(data, function (data, err) {
 				if (err) {
 					// console.log(err);

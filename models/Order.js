@@ -10,6 +10,7 @@ var Order = new Schema({
 	price : Number,
 	type : String,
 	inBTC : String,
+	reason : String,
 	orderStatus : String,
 	lastModificationTime : Number,
 	buyOrderId : {
