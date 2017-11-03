@@ -1,5 +1,9 @@
 var async = require('async');
 var TRADER = require('./tradeMethods');
+
+var Rollbar = require("rollbar");
+var rollbar = new Rollbar("d1f871271f6840859895328aa1b65114");
+
 var connectors = {
 	LiveCoin : require('./connectors/livecoin'),
 	Bittrex : require('./connectors/bittrex'),
@@ -35,27 +39,39 @@ BOT.prototype.tradeCycle = function (callback) {
 }
 
 BOT.prototype.loopTradeCycle = function (callback) {
-	console.log('loopTradeCycle STARTED');
 
-	var self = this;
+	try {
+		console.log('loopTradeCycle STARTED');
 
-	run();
+		var self = this;
 
-	interval = setInterval(run, this.trade_cycle_time);
+		run();
 
-	function run() {
-		async.eachSeries(self.TRADERS, function (trader, next) {
-			async.waterfall([
-				trader.checkCycle.bind(trader),
-				trader.tradeCycle.bind(trader)
-			], function (error, data) {
-				next(null);
+		interval = setInterval(run, this.trade_cycle_time);
+
+		function run() {
+			async.eachSeries(self.TRADERS, function (trader, next) {
+				async.waterfall([
+					trader.checkCycle.bind(trader),
+					trader.tradeCycle.bind(trader)
+				], function (error, data) {
+					next(null);
+				});
+			}, function (err, data) {
 			});
-		}, function (err, data) {
-		});
-	}
+		}
 
-	callback('ok');
+		callback('ok');
+
+	} catch (e) {
+
+		rollbar.error(e);
+		callback({
+			success : false, 
+			error : e
+		});
+
+	}
 }
 
 BOT.prototype.stopLoopTradeCycle = function (callback) {

@@ -14,6 +14,10 @@ var log_file = fs.createWriteStream(__dirname + '/out.log', {flags : 'a'});
 var log_stdout = process.stdout;
 var BOT = require('./bot');
 
+
+var Rollbar = require("rollbar");
+var rollbar = new Rollbar("d1f871271f6840859895328aa1b65114");
+
 var port = process.env.PORT || 8888;
 
 String.prototype.endsWith = String.prototype.endsWith || function(suffix) {
@@ -112,6 +116,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 
 	var self = this;
 
+
 	if (!this.active) {
 		console.log('Биржа неактивна', self.exchange.name);
 		return callback();
@@ -156,7 +161,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 
 				self.sellCycle.bind(self),
 				self.buyCycle.bind(self),
-				self.closeOrdersAndSellCycle.bind(self),
+				self.stopLossCycle.bind(self),
 				self.checkCycle.bind(self)
 			], function (error, data) {
 				console.log('trade ended');
@@ -332,7 +337,7 @@ TRADER.prototype.closeOpenSellOrders = function (callback) {
 	});
 }
 
-TRADER.prototype.closeOrdersAndSellCycle = function (callback) {
+TRADER.prototype.stopLossCycle = function (callback) {
 
 	// if (!force) {
 		console.log('Цикл стоп-лосс продаж:', this.exchange.name); 
@@ -407,9 +412,18 @@ TRADER.prototype.closeOrdersAndSellCycle = function (callback) {
 
 	async.eachSeries(stop_loss_orders_can_sell, function (order, serie_callback) {
 
+	// TRADER.prototype.sellPair = function (currency_pair, quantity, buy_order, quick_sell, next) {
+
 		async.series([
 			self.cancelOrder.bind(self, order),
-			self.sellPairWithPrice.bind(self, order)
+			// self.sellPairWithPrice.bind(self, order)
+			self.sellPair.bind(
+				self, 
+				order.currencyPair,
+				order.quantity,
+				null,
+				true
+			)
 		], function (err, data) {
 			serie_callback();
 		});
@@ -503,13 +517,20 @@ TRADER.prototype.quickSellCycle = function (next) {
 
 	var self = this;
 
-	console.log('quickSellCycle', this.able_to_sell_pairs.map(function (el) {
+	console.log('Цикл быстрых продаж', this.able_to_sell_pairs.map(function (el) {
 		return el.currency;
 	}));
 
 	async.eachSeries(self.able_to_sell_pairs, function (pair, serie_callback) {
 
-		self.wrapWait(self.sellPairWithProfit.bind(self, pair, true, serie_callback))();
+		self.wrapWait(self.sellPair.bind(
+			self, 
+			pair.currency + '/BTC', 
+			pair.value, 
+			null, 
+			true, 
+			serie_callback)
+		)();
 		
 	}, function(error, data) {
 		next(null);
@@ -520,62 +541,77 @@ TRADER.prototype.sellCycle = function (next) {
 
 	var self = this;
 
-	console.log('sellCycle', this.able_to_sell_pairs.map(function (el) {
+	console.log('Цикл продаж', this.able_to_sell_pairs.map(function (el) {
 		return el.currency;
 	}));
 
 	async.eachSeries(self.able_to_sell_pairs, function (pair, serie_callback) {
 
-		self.wrapWait(self.sellPairWithProfit.bind(self, pair, false, serie_callback))();
+		self.wrapWait(self.sellPair.bind(
+			self, 
+			pair.currency + '/BTC', 
+			pair.value, 
+			pair.buy_order,
+			false, 
+			serie_callback)
+		)();
 		
 	}, function(error, data) {
 		next(null);
 	});
 }
 
-TRADER.prototype.sellPairWithProfit = function (pair, quick_sell, next) {
+TRADER.prototype.calculateSellPrice = function (buy_order, quantity, quick_sell) {
+
+	var sell_price;
+
+	if (quick_sell) {
+		// быстрая продажа, продаем по рынку
+		var currency = this.total_balances.filter(function (el) { return pair.currency == el.currency; })[0];
+		sell_price = currency.best_bid;
+	} else {
+		// продаем с профитом
+		var tax = (buy_order.price * quantity) * ( 2 * this.exchange.exchange_fee);
+		var price_in_btc = buy_order.price * quantity; // понимаем цену в битках
+		var profit_price_in_btc = (price_in_btc * (100 + this.exchange.profit_koef) / 100) + tax;
+
+		sell_price = profit_price_in_btc / quantity;
+	}
+
+	// if (sell_price * pair.value < this.exchange.max_buy_order_price) {
+	// 	sell_price = this.exchange.max_buy_order_price / pair.value;
+	// }
+
+	return +sell_price;
+}
+
+// TRADER.prototype.sellPair = function (pair, quick_sell, next) {
+TRADER.prototype.sellPair = function (currency_pair, quantity, buy_order, quick_sell, next) {
 
 	var self = this;
 
-	console.log('sellPairWithProfit');
+	console.log('Продажа пары ' + quick_sell ? 'по рынку' : 'с профитом');
 
-	if (!pair.buy_order) {
-		console.log('Пара', pair.currency, 'Не ордера на покупку');
+	if (!buy_order && !quick_sell) {
+		console.log('Пара', currency_pair, 'без ордера на покупку');
 		next(null);
 		return;
 	}
+	// var currencyPair = pair.currency + '/BTC';
+	var sell_price = self.calculateSellPrice(buy_order, quantity, quick_sell);
 
-	var tax = pair.buy_order.price * ( 2 * this.exchange.exchange_fee);
-	var pair_name = pair.currency + '/BTC';
-	var sell_price;
-	var currency = this.total_balances.filter(function (el) {
-		return pair.currency == el.currency;
-	})[0];
-	if (!quick_sell) {
-		sell_price = (pair.buy_order.price / 100 * (100 + this.exchange.profit_koef)) + tax;
-	} else {
-		sell_price = currency.best_ask;
-	}
+	console.log('Выставляем ордер на продажу', quantity, 'по цене', sell_price);
 
-	if (sell_price * pair.value < this.exchange.max_buy_order_price) {
-		sell_price = this.exchange.max_buy_order_price / pair.value;
-	}
-
-	sell_price = +sell_price; // для правильной работы toFixed
-
-	// console.log('bought with', pair.buy_order.price);
-	console.log('Выставляем ордер на продажу', pair.value, 'по цене', sell_price, 'Ожидаемый доход', (sell_price * pair.value) - (pair.buy_order.price * pair.value), 'Такса', tax);
-	// console.log('pair_name', pair_name);
-	this.sellLimit(pair_name, sell_price.toFixed(8), pair.value, function (error, data) {
+	this.sellLimit(currency_pair, sell_price.toFixed(8), quantity, function (error, data) {
 		if (error) {
 			console.log('Ошибка выставления ордера на продажу', error);
 			next(null);
 			return;
 		} else {
-			console.log('Ордер на продажу успешно выставлен', pair_name, 'по цене', sell_price);
+			console.log('Ордер на продажу успешно выставлен', currency_pair, 'по цене', sell_price);
 			self.baseConnector.saveOrder({
 				exchangeId : data.exchangeId,
-				currencyPair : pair_name,
+				currencyPair : currency_pair,
 				type : 'LIMIT_SELL',
 				orderStatus : 'OPEN'
 			}, function (err, data) {
@@ -588,31 +624,31 @@ TRADER.prototype.sellPairWithProfit = function (pair, quick_sell, next) {
 	});
 }
 
-TRADER.prototype.sellPairWithPrice = function (order, next) {
-	console.log('sellPairWithPrice');
+// TRADER.prototype.sellPairWithPrice = function (order, next) {
+// 	console.log('sellPairWithPrice');
 
-	var self = this;
+// 	var self = this;
 
-	this.sellLimit(order.currencyPair, order.sellPrice, order.quantity, function (error, data) {
-		if (error) {
-			console.log('Ошибка выставления ордера на продажу', error);
-			next();
-		} else {
-			console.log('Ордер на продажу успешно выставлен', order.currencyPair, 'по цене', order.sellPrice);
-			self.baseConnector.saveOrder({
-				exchangeId : data.exchangeId,
-				currencyPair : order.currencyPair,
-				type : 'LIMIT_SELL',
-				orderStatus : 'OPEN'
-			}, function (err, data) {
-				if (!err) console.log('Ордер сохранен в базу');
-				else console.log('Ошибка сохранения в базу');
+// 	this.sellLimit(order.currencyPair, order.sellPrice, order.quantity, function (error, data) {
+// 		if (error) {
+// 			console.log('Ошибка выставления ордера на продажу', error);
+// 			next();
+// 		} else {
+// 			console.log('Ордер на продажу успешно выставлен', order.currencyPair, 'по цене', order.sellPrice);
+// 			self.baseConnector.saveOrder({
+// 				exchangeId : data.exchangeId,
+// 				currencyPair : order.currencyPair,
+// 				type : 'LIMIT_SELL',
+// 				orderStatus : 'OPEN'
+// 			}, function (err, data) {
+// 				if (!err) console.log('Ордер сохранен в базу');
+// 				else console.log('Ошибка сохранения в базу');
 
-				next();
-			});		
-		}
-	});
-}
+// 				next();
+// 			});		
+// 		}
+// 	});
+// }
 
 TRADER.prototype.cancelOpenBuyOrdersCycle = function (next) {
 
@@ -834,6 +870,7 @@ app.get('/log', function (req, res, next) {
     res.sendfile('out.log');
 });
 
+app.use(rollbar.errorHandler());
 
 app.listen(port, function() {
     console.log('Node app is running on port', port);
