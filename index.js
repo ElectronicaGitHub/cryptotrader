@@ -765,7 +765,7 @@ TRADER.prototype.buyPair = function (pair, next) {
 		return;		
 	}
 
-	this.buyLimit(pair_name, buy_price, quantity, function (error, data) {
+	this.buyLimit(pair_name, buy_price.toFixed(8), quantity, function (error, data) {
 		console.log('DEBUG!!!', error, data);
 		if (error) {
 			console.log('Ошибка выставления ордера на покупку', error);
