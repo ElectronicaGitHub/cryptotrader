@@ -152,7 +152,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 			isRaising = raisingValue > 0;
 		}
 
-		if (isRaising && ((raisingValue/arr[3][check_parameter]) >= this.exchange.base_currency_diff_value)) {
+		if (isRaising && ((raisingValue/arr[3][check_parameter]) >= self.exchange.base_currency_diff_value)) {
 
 			console.log('Валюта растет: Продаем все пары');
 			async.series([
@@ -755,7 +755,7 @@ TRADER.prototype.buyPair = function (pair, next) {
 	var self = this;
 	var pair_name = pair.symbol || pair.currency + '/BTC';
 	var buy_price = +pair.best_ask + satoshi;
-	var quantity = +((self.exchange.max_buy_order_price * 101 / 100) / buy_price);
+	var quantity = +((base_currency_diff_value.exchange.max_buy_order_price * 101 / 100) / buy_price);
 
 	console.log('Покупка валюты', pair_name);
 
