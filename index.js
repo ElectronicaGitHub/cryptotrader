@@ -18,7 +18,12 @@ var BOT = require('./bot');
 var Rollbar = require("rollbar");
 var rollbar = new Rollbar("d1f871271f6840859895328aa1b65114");
 
+process.on('uncaughtException', function (err) {
+	rollbar.error(err);
+});
+
 var port = process.env.PORT || 8888;
+
 
 String.prototype.endsWith = String.prototype.endsWith || function(suffix) {
     return this.indexOf(suffix, this.length - suffix.length) !== -1;
@@ -525,7 +530,7 @@ TRADER.prototype.quickSellCycle = function (next) {
 
 		self.wrapWait(self.sellPair.bind(
 			self, 
-			pair.currency + '/BTC', 
+			pair.currency, 
 			pair.value, 
 			null, 
 			true, 
@@ -549,7 +554,7 @@ TRADER.prototype.sellCycle = function (next) {
 
 		self.wrapWait(self.sellPair.bind(
 			self, 
-			pair.currency + '/BTC', 
+			pair.currency, 
 			pair.value, 
 			pair.buy_order,
 			false, 
@@ -561,13 +566,13 @@ TRADER.prototype.sellCycle = function (next) {
 	});
 }
 
-TRADER.prototype.calculateSellPrice = function (buy_order, quantity, quick_sell) {
+TRADER.prototype.calculateSellPrice = function (currency, buy_order, quantity, quick_sell) {
 
 	var sell_price;
 
 	if (quick_sell) {
 		// быстрая продажа, продаем по рынку
-		var currency = this.total_balances.filter(function (el) { return pair.currency == el.currency; })[0];
+		var currency = this.total_balances.filter(function (el) { return currency == el.currency; })[0];
 		sell_price = currency.best_bid;
 	} else {
 		// продаем с профитом
@@ -586,9 +591,11 @@ TRADER.prototype.calculateSellPrice = function (buy_order, quantity, quick_sell)
 }
 
 // TRADER.prototype.sellPair = function (pair, quick_sell, next) {
-TRADER.prototype.sellPair = function (currency_pair, quantity, buy_order, quick_sell, next) {
+TRADER.prototype.sellPair = function (currency, quantity, buy_order, quick_sell, next) {
 
 	var self = this;
+	var currency_pair = currency.indexOf('/') < 0 ? (currency + '/BTC') : currency;
+	var currency = currency_pair.split('/')[0];
 
 	console.log('Продажа пары ' + quick_sell ? 'по рынку' : 'с профитом');
 
@@ -598,7 +605,7 @@ TRADER.prototype.sellPair = function (currency_pair, quantity, buy_order, quick_
 		return;
 	}
 	// var currencyPair = pair.currency + '/BTC';
-	var sell_price = self.calculateSellPrice(buy_order, quantity, quick_sell);
+	var sell_price = self.calculateSellPrice(currency, buy_order, quantity, quick_sell);
 
 	console.log('Выставляем ордер на продажу', quantity, 'по цене', sell_price);
 

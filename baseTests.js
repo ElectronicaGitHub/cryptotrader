@@ -11,7 +11,59 @@ var baseConnector = new BaseConnector('Bittrex');
 var Rollbar = require("rollbar");
 var rollbar = new Rollbar("d1f871271f6840859895328aa1b65114");
 
-rollbar.log('hello');
+
+var a = function (value, next) {
+	setTimeout(function () {
+		console.log('value is', value);
+		rr = z.t;
+		next();
+		
+	}, 100);
+}
+
+var b = function (next) {
+	setTimeout(function () {
+		var x = getY();
+	}, 100);
+}
+
+function getY(y) {
+	var a = z.x;
+	return a;
+}
+
+function run() {
+	async.series([
+		a.bind(null, 1),
+		a.bind(null, 2),
+		a.bind(null, 3),
+		b.bind(null),
+	], function (err, data) {
+		console.log(data, err);
+	})
+}
+
+var start = function () {
+	console.log('start');
+	try {
+		run();
+
+		setTimeout(run, 1000);
+	} catch (err) {
+		rollbar.error(e);
+		callback({
+			success : false, 
+			error : e
+		});
+	}
+}
+
+process.on('uncaughtException', function (err) {
+	rollbar.error(err);
+});
+
+start();
+
 
 
 mongoose.connection.on('open', function () {
@@ -20,10 +72,10 @@ mongoose.connection.on('open', function () {
 
 console.log('baseConnector', baseConnector);
 
-remoteClosedOrders = [
-	{exchangeId : '4', exchangeName : "Bittrex", orderStatus : 'EXECUTED', quantity : 444},
-	{exchangeId : '3', exchangeName : "Bittrex", orderStatus : 'EXECUTED', quantity : 333},
-]
+// remoteClosedOrders = [
+// 	{exchangeId : '4', exchangeName : "Bittrex", orderStatus : 'EXECUTED', quantity : 444},
+// 	{exchangeId : '3', exchangeName : "Bittrex", orderStatus : 'EXECUTED', quantity : 333},
+// ]
 // async.waterfall([
 // 	baseConnector.saveOrder.bind(baseConnector, {exchangeId : '1', exchangeName : "Bittrex", orderStatus : 'OPEN'}),
 // 	baseConnector.saveOrder.bind(baseConnector, {exchangeId : '2', exchangeName : "Bittrex", orderStatus : 'OPEN'}),
@@ -59,9 +111,9 @@ remoteClosedOrders = [
 //   .map(_.spread(_.merge))
 //   .value();
 
-function findOrders (next) {
-	baseConnector.findOrders({}, function (err, data) {
-		if (err) return next(err);
-		next(null);
-	});
-}
+// function findOrders (next) {
+// 	baseConnector.findOrders({}, function (err, data) {
+// 		if (err) return next(err);
+// 		next(null);
+// 	});
+// }
