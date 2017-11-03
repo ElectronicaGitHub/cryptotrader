@@ -552,7 +552,7 @@ TRADER.prototype.makeTradeData = function (next) {
 				return _curr.quantity == el.value;
 			})[0];
 			if (!el.buy_order) {
-				el.buy_order = self.closed_buy_orders_by_curr[el.currency + '/BTC'][0];
+				el.buy_order = _.sortBy(self.closed_buy_orders_by_curr[el.currency + '/BTC'], ['lastModificationTime']).reverse()[0];
 			}
 		}
 
@@ -628,7 +628,7 @@ TRADER.prototype.calculateSellPrice = function (currency, buy_order, quantity, q
 	if (quick_sell) {
 		// быстрая продажа, продаем по рынку
 		var currency = this.total_balances.filter(function (el) { return currency == el.currency; })[0];
-		sell_price = currency.best_bid;
+		sell_price = currency.best_ask + satoshi;
 	} else {
 		// продаем с профитом
 		var tax = (buy_order.price * quantity) * ( 2 * this.exchange.exchange_fee);
