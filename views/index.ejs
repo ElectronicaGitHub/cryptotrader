@@ -320,10 +320,12 @@
 										<p>buy 
 											<span>q: {{ pair.buy_order.quantity | number:8 }}</span>
 											<span>pr: {{ pair.buy_order.price | number:8 }}</span>
+											<span>time: {{ moment(pair.buy_order.lastModificationTime).locale('ru').format('LLL') }}</span>
 										</p>
 										<p>sell 
 											<span>q: {{ pair.sell_order.quantity | number:8 }}</span>
 											<span>pr: {{ pair.sell_order.price | number:8 }}</span>
+											<span>time: {{ moment(pair.sell_order.lastModificationTime).locale('ru').format('LLL') }}</span>
 										</p>
 									</span>
 									<!-- <span ng-class="balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC > 0 ? 'ok' : 'not-ok'">
