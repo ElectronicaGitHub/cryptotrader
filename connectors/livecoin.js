@@ -45,7 +45,6 @@ function LiveCoin() {
 		getTicker : function (callback) {
 			console.log('Получение рынка');
 			unirest.get(self.baseUrl + self.urls.ticker).end(function(response) {
-				console.log('Получение рынка ок');
 				callback(self.pipes.makeCurrencies(response.body));
 			}, function(error) {
 				console.log(error);
@@ -56,7 +55,6 @@ function LiveCoin() {
 			var req_data = self.misc.prepareRequestData(data);
 			var url = self.baseUrl + self.urls.getBalance + '?' + req_data.url_data;
 			unirest.get(url, req_data.headers).end(function(response) {
-				console.log('Получение баланса ок');
 				callback(self.pipes.makeBalances(response.body));
 			}, function(error) {
 				console.log(error);
@@ -68,7 +66,6 @@ function LiveCoin() {
 			var url = self.baseUrl + self.urls.orders + '?' + req_data.url_data;
 
 			unirest.get(url, req_data.headers).end(function (response) {
-				console.log('Получение ордеров ок');
 				callback(self.pipes.makeOrders(response.body));
 			}, function (error) {
 				console.log(error);
