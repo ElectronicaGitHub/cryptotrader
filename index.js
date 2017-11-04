@@ -229,7 +229,8 @@ TRADER.prototype.getUserOrders = function (next) {
 				return el.type == 'LIMIT_BUY' && (el.orderStatus == 'EXECUTED' || el.orderStatus == 'PARTIALLY_FILLED_AND_CANCELLED');
 			});
 			self.closed_orders = ORDERS.filter(el => {
-				return el.orderStatus == 'EXECUTED' || el.orderStatus == 'PARTIALLY_FILLED_AND_CANCELLED';
+				return (el.orderStatus == 'EXECUTED' || el.orderStatus == 'PARTIALLY_FILLED_AND_CANCELLED') && 
+				moment(el.lastModificationTime).isSameOrAfter(moment().substract(2, 'd'), 'd');
 			});
 
 			self.open_sell_orders_by_curr = {};
