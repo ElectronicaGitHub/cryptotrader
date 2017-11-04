@@ -557,13 +557,15 @@ TRADER.prototype.makeTradeData = function (next) {
 
 	// Бежим по балансу и продаем значения
 	self.able_to_sell_pairs = self.available_balances.filter(function (el) {
-		if (self.closed_buy_orders_by_curr[el.currency + '/BTC']) {
-			el.buy_order = self.closed_buy_orders_by_curr[el.currency + '/BTC'].filter(function (_curr) {
-				return _curr.quantity == el.value;
-			})[0];
-			if (!el.buy_order) {
-				el.buy_order = _.sortBy(self.closed_buy_orders_by_curr[el.currency + '/BTC'], ['lastModificationTime']).reverse()[0];
-			}
+
+		let closed_buy_orders = self.closed_buy_orders_by_curr[el.currency + '/BTC'];
+
+		if (closed_buy_orders) {
+
+			// el.buy_order = closed_buy_orders.filter(curr => curr.quantity == el.value)[0];
+			// if (!el.buy_order) {
+			el.buy_order = _.sortBy(closed_buy_orders, ['lastModificationTime']).reverse()[0];
+			// }
 		}
 
 		return el.currency != 'BTC';
