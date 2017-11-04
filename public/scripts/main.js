@@ -168,13 +168,12 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			}
 
 			for (let j in obj.sell) {
-				var buy_order = obj.buy.filter(function (el) {
-					return el.quantity == obj.sell[j].quantity;
-				})[0] || _.sortBy(obj.buy, 'lastModificationTime').reverse()[0];
-
-				obj.sell[j].buy_order = buy_order;
+				// закрытые покупки, надо проставить !!!
+				var buys = obj.buy;
+				buys = buys.filter((el) => el.lastModificationTime < obj.sell[j].lastModificationTime);
+				obj.sell[j].buy_order = _.sortBy(buys, 'lastModificationTime')[buys.length - 1];
 			}
-			delete obj.buy;
+			// delete obj.buy;
 
 			orders_currencies[i] = obj;
 		}
@@ -199,57 +198,57 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		return valueinBTC * trader.btc_usd.best_ask;
 	}
 
-	$scope.getChartData = function (altcoin, days) {
-		$http.post('/getChartData', {
-			currencyPair : altcoin.symbol
-		}).then(function (data) {
-			var data = JSON.parse(data.data);
-			console.log(data);
+	// $scope.getChartData = function (altcoin, days) {
+	// 	$http.post('/getChartData', {
+	// 		currencyPair : altcoin.symbol
+	// 	}).then(function (data) {
+	// 		var data = JSON.parse(data.data);
+	// 		console.log(data);
 
-			var prepared_data = data.ohlc.slice(data.ohlc.length - (days * 100)).map((el) => {
-				return el[1];
-			});
+	// 		var prepared_data = data.ohlc.slice(data.ohlc.length - (days * 100)).map((el) => {
+	// 			return el[1];
+	// 		});
 
-			altcoin.price_change = (prepared_data[prepared_data.length - 1] - prepared_data[0])/prepared_data[0] * 100;
+	// 		altcoin.price_change = (prepared_data[prepared_data.length - 1] - prepared_data[0])/prepared_data[0] * 100;
 
-			makeHighchart(altcoin.symbol, prepared_data);
-		}, function (error) {
-			console.log('error', error);
-		});
-	}
+	// 		makeHighchart(altcoin.symbol, prepared_data);
+	// 	}, function (error) {
+	// 		console.log('error', error);
+	// 	});
+	// }
 
-	function makeHighchart(currencyPair, data) {
+	// function makeHighchart(currencyPair, data) {
 
-		console.log(data);
+	// 	console.log(data);
 		
-		Highcharts.chart('chart-data-' + currencyPair, {
-			chart : {
-				height: 120
-			},
-			xAxis: { title : { text : null } , labels : { enabled : false }},
-            yAxis: { title : { text : null },
-	            plotLines: [{
-	                value: data[0],
-	                color: 'green',
-	                width: 2,
-	                label: {
-	                    text: data[0],
-                    	align : 'right'
-	                }
-	            }, {
-	                value: data[data.length - 1],
-	                color: 'red',
-	                width: 2,
-	                label: {
-	                    text: data[data.length - 1],
-                    	align : 'right'
-	                }
-	            }] 
-	        },
-            legend : { enabled : false },
-		    title: { text : null },
-		    series: [{ data }],
-		});
+	// 	Highcharts.chart('chart-data-' + currencyPair, {
+	// 		chart : {
+	// 			height: 120
+	// 		},
+	// 		xAxis: { title : { text : null } , labels : { enabled : false }},
+ //            yAxis: { title : { text : null },
+	//             plotLines: [{
+	//                 value: data[0],
+	//                 color: 'green',
+	//                 width: 2,
+	//                 label: {
+	//                     text: data[0],
+ //                    	align : 'right'
+	//                 }
+	//             }, {
+	//                 value: data[data.length - 1],
+	//                 color: 'red',
+	//                 width: 2,
+	//                 label: {
+	//                     text: data[data.length - 1],
+ //                    	align : 'right'
+	//                 }
+	//             }] 
+	//         },
+ //            legend : { enabled : false },
+	// 	    title: { text : null },
+	// 	    series: [{ data }],
+	// 	});
 
-	}
+	// }
 }]);

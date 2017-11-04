@@ -270,10 +270,12 @@
 						<p>buy 
 							<span>q: {{ pair.buy_order.quantity | number:8 }}</span>
 							<span>pr: {{ pair.buy_order.price | number:8 }}</span>
+							<span>time: {{ moment(pair.buy_order.lastModificationTime).locale('ru').format('LLL') }}</span>
 						</p>
 						<p>sell 
 							<span>q: {{ pair.quantity | number:8 }}</span>
 							<span>pr: {{ pair.price | number:8 }}</span>
+							<span>time: {{ moment(pair.lastModificationTime).locale('ru').format('LLL') }}</span>
 							<span>r: {{ pair.reason }}</span>
 						</p>
 					</div>
@@ -346,7 +348,7 @@
 
 			</div>
 			<div class="altcoins-container col-sm-2 hidden-xs">
-				<div class="each-altcoin" ng-repeat="altcoin in trader.exchange_pairs | filter:exchange_pairs_filter" ng-class="{ tradeable : altcoin.tradeable }">
+				<div class="each-altcoin" ng-repeat="altcoin in trader.exchange_pairs" ng-class="{ tradeable : altcoin.tradeable }">
 					<i>{{ altcoin.rank | number:2 }}</i>
 					<b>{{ altcoin.symbol }}</b>
 					<!-- <a href="https://www.livecoin.net/ru/trade/index?currencyPair={{ altcoin.symbol }}" target="_blank"><b>{{ altcoin.symbol }}</b></a> [ {{altcoin.best_ask | number : 6}} BTC | vol: {{ altcoin.volume * altcoin.best_ask | number:2 }} BTC |  -->
