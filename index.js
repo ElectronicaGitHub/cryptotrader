@@ -470,7 +470,7 @@ TRADER.prototype.stopLossCycle = function (callback) {
 				order.currencyPair,
 				order.quantity,
 				null,
-				true
+				'stop_loss'
 			)
 		], function (err, data) {
 			serie_callback();
@@ -602,7 +602,7 @@ TRADER.prototype.quickSellCycle = function (next) {
 			pair.currency, 
 			pair.value, 
 			null, 
-			true, 
+			'quick_sell', 
 			serie_callback)
 		)();
 		
@@ -663,7 +663,7 @@ TRADER.prototype.sellPair = function (currency, quantity, buy_order, quick_sell,
 	var self = this;
 	var currency_pair = currency.indexOf('/') < 0 ? (currency + '/BTC') : currency;
 	var currency = currency_pair.split('/')[0];
-	var reason = quick_sell ? 'quick_sell' : 'profit_sell';
+	var reason = quick_sell ? quick_sell : 'profit_sell';
 
 	console.log('Продажа пары ' + quick_sell ? 'по рынку' : 'с профитом');
 
