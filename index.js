@@ -231,7 +231,7 @@ TRADER.prototype.getUserOrders = function (next) {
 			});
 			self.closed_orders = ORDERS.filter(el => {
 				return (el.orderStatus == 'EXECUTED' || el.orderStatus == 'PARTIALLY_FILLED_AND_CANCELLED') && 
-				moment(el.lastModificationTime).isSameOrAfter(moment().subtract(1, 'd'), 'd');
+				moment(el.lastModificationTime).isSameOrAfter(moment().subtract(3, 'd'), 'd');
 			});
 
 			self.open_sell_orders_by_curr = {};
