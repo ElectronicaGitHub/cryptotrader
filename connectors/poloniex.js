@@ -50,7 +50,7 @@ function Poloniex() {
 					console.log(err);
 					return callback(err);
 				}
-				console.log('Получение баланса ок');
+				console.log('Получение баланса');
 				callback(self.pipes.makeBalances(data));
 			});
 		},
@@ -134,7 +134,7 @@ function Poloniex() {
 				if (err) {
 					return callback(err);
 				}
-				callback(null);
+				callback(null, data);
 			});
 		},
 		getChartData : function (period, currencyPair, callback) {
