@@ -115,8 +115,6 @@ function Poloniex() {
 				rate : price
 			};
 			self.poloniex.sell(data, function (err, data) {
-
-				console.log('poloniex sell limit', err, data);
 				if (data.error) {
 					// console.log(err);
 					return callback(data.error);

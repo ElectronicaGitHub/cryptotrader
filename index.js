@@ -640,7 +640,6 @@ TRADER.prototype.calculateSellPrice = function (currency, buy_order, quantity, q
 	var sell_price;
 
 	if (quick_sell) {
-		debugger;
 		// быстрая продажа, продаем по рынку
 		var currency = this.total_balances.filter(function (el) { return currency == el.currency; })[0];
 		sell_price = +currency.best_ask + satoshi;
@@ -679,7 +678,7 @@ TRADER.prototype.sellPair = function (currency, quantity, buy_order, quick_sell,
 	console.log('Выставляем ордер на продажу', currency, 'в кол-ве', quantity, 'по цене', sell_price, 'В BTC', quantity * sell_price);
 
 	this.sellLimit(currency_pair, sell_price.toFixed(8), quantity, function (error, data) {
-		console.log('DEBUG !!!', error, data);
+		// console.log('DEBUG !!!', error, data);
 		if (error) {
 			console.log('Ошибка выставления ордера на продажу', error);
 			next(null);
