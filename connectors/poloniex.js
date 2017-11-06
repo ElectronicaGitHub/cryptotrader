@@ -117,9 +117,9 @@ function Poloniex() {
 			self.poloniex.sell(data, function (err, data) {
 
 				console.log('poloniex sell limit', err, data);
-				if (err) {
+				if (data.error) {
 					// console.log(err);
-					return callback(err);
+					return callback(data.error);
 				}
 				callback(null, {
 					success : data.success,
@@ -186,7 +186,6 @@ function Poloniex() {
 			}
 
 			// return data;
-
 		},
 		makeCurrencies : function (data) {
 			
