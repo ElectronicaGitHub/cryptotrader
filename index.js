@@ -465,13 +465,13 @@ TRADER.prototype.stopLossCycle = function (callback) {
 
 		async.series([
 			self.cancelOrder.bind(self, order),
-			self.sellPair.bind(
+			self.wrapWait(self.sellPair.bind(
 				self, 
 				order.currencyPair,
 				order.quantity,
 				null,
 				'stop_loss'
-			)
+			))
 		], function (err, data) {
 			serie_callback();
 		});
