@@ -665,7 +665,7 @@ TRADER.prototype.sellPair = function (currency, quantity, buy_order, quick_sell,
 	var currency = currency_pair.split('/')[0];
 	var reason = quick_sell ? quick_sell : 'profit_sell';
 
-	console.log('Продажа пары ' + quick_sell ? 'по рынку' : 'с профитом');
+	console.log('Продажа пары ' + (quick_sell ? 'по рынку' : 'с профитом'));
 
 	if (!buy_order && !quick_sell) {
 		console.log('Пара', currency_pair, 'без ордера на покупку');
