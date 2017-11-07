@@ -112,6 +112,7 @@ TRADER.prototype.checkCycle = function (callback) {
 		self.getUserOrders.bind(self),
 		self.makeTradeData.bind(self),
 		self.syncRemoteOrdersWithLocal.bind(self),
+		self.collectChartData.bind(self)
 
 		// self.normalizeBalances.bind(self),
 	], function (error, pairs_data) {
@@ -120,6 +121,16 @@ TRADER.prototype.checkCycle = function (callback) {
 }
 
 TRADER.prototype.checkBaseToFiatTrend = function (callback) {}
+
+TRADER.prototype.collectChartData = function(callback) {
+
+	var self = this;
+
+	this.getChartData(null, 'BTC/' + this.exchange.usdName, (err, data) => {
+		self.chartData = data;
+		callback();
+	});
+}
 
 TRADER.prototype.tradeCycle = function (callback) {
 
@@ -138,6 +149,8 @@ TRADER.prototype.tradeCycle = function (callback) {
 	self.getChartData(null, 'BTC/' + this.exchange.usdName, function (err, data) {
 
 		var isRaising;
+
+		self.lastBaseToFiatChart = data;
 
 		if (!data) {
 			isRaising = false;
@@ -647,7 +660,7 @@ TRADER.prototype.calculateSellPrice = function (currency, buy_order, quantity, q
 		// продаем с профитом
 		var tax = (buy_order.price * quantity) * ( 2 * this.exchange.exchange_fee);
 		var price_in_btc = buy_order.price * quantity; // понимаем цену в битках
-		var profit_price_in_btc = (price_in_btc * (100 + this.exchange.profit_koef) / 100) + tax;
+		var profit_price_in_btc = (price_in_btc * (100 + +this.exchange.profit_koef) / 100) + tax;
 
 		sell_price = profit_price_in_btc / quantity;
 	}
