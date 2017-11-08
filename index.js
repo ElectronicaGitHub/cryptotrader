@@ -96,7 +96,7 @@ TRADER.able_to_buy_pairs = [];
 
 TRADER.pairs_graph_data = {};
 
-TRADER.prototype.checkCycle = function (callback) {
+TRADER.prototype.checkCycle = function (hasAnalyze, callback) {
 
 	var self = this;
 
@@ -107,16 +107,19 @@ TRADER.prototype.checkCycle = function (callback) {
 
 	console.log('Цикл проверки', this.exchange.name);
 
-	async.waterfall([
+	fnArr = [
 		self.getUserSummaries.bind(self),
 		self.getUserBalances.bind(self),
 		self.getUserOrders.bind(self),
 		self.makeTradeData.bind(self),
-		self.syncRemoteOrdersWithLocal.bind(self),
-		self.analyzeChartData.bind(self)
+		self.syncRemoteOrdersWithLocal.bind(self)
+	]
 
-		// self.normalizeBalances.bind(self),
-	], function (error, pairs_data) {
+	if (hasAnalyze) {
+		fnArr.push(self.analyzeChartData.bind(self));
+	}
+
+	async.waterfall(fnArr, function (error, pairs_data) {
 		callback();
 	});
 }
@@ -234,7 +237,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 			async.series([
 				self.sellCycle.bind(self),
 				self.stopLossCycle.bind(self),
-				self.checkCycle.bind(self),
+				self.checkCycle.bind(self, true),
 				
 				// self.closeOpenSellOrders.bind(self),
 				// self.checkCycle.bind(self),
@@ -250,17 +253,17 @@ TRADER.prototype.tradeCycle = function (callback) {
 			async.series([
 				// отмена открытых покупок
 				self.cancelOpenBuyOrdersCycle.bind(self),
-				self.wrapWait(self.checkCycle.bind(self)),
+				self.wrapWait(self.checkCycle.bind(self, false)),
 
 				// нормализация невалидных к сделкам балансов
 				self.normalizeBalances.bind(self),
-				self.wrapWait(self.checkCycle.bind(self)),
+				self.wrapWait(self.checkCycle.bind(self, false)),
 
 				self.sellCycle.bind(self),
 				self.buyCycle.bind(self),
 
 				self.stopLossCycle.bind(self),
-				self.checkCycle.bind(self)
+				self.checkCycle.bind(self, true)
 
 			], function (error, data) {
 				console.log('Торговый цикл завершен');

@@ -43,7 +43,7 @@ BOT.prototype.loopCollectChartData = function (callback) {
 BOT.prototype.checkCycle = function (callback) {
 
 	async.eachSeries(this.TRADERS, function (trader, next) {
-		trader.checkCycle(next);
+		trader.checkCycle(true, next);
 		// trader.tradeCycle(next);
 
 	}, function (err, data) {
