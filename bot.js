@@ -76,7 +76,7 @@ BOT.prototype.loopTradeCycle = function (callback) {
 			try {
 				async.eachSeries(self.TRADERS, function (trader, next) {
 					async.waterfall([
-						trader.checkCycle.bind(trader),
+						trader.checkCycle.bind(trader, true),
 						trader.tradeCycle.bind(trader)
 					], function (error, data) {
 						next(null);
