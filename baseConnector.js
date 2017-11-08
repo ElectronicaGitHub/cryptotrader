@@ -101,9 +101,12 @@ BaseConnector.prototype.updateOpenOrders = function (remote_closed_orders, next)
 	var obj = { orderStatus : 'OPEN', exchangeName : self.exchangeName};
 	Order.find(obj, function (err, open_orders) {
 
+		console.log('открытые ордера найдены');
+
 		if (err) return next(err);
 
 		async.each(open_orders, function (order, each_next) {
+			console.log('идем по каждому');
 			var our_order = remote_closed_orders.filter(function (el) {
 				return order.exchangeId == el.exchangeId;
 			})[0];
