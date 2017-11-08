@@ -34,7 +34,7 @@ BOT.prototype.loopCollectChartData = function (callback) {
 		async.eachSeries(self.TRADERS, function (trader, next) {
 			trader.collectChartData(next);
 		}, function (err, data) {
-			console.log('Сбор успешно завершен');
+			// console.log('Сбор успешно завершен');
 			callback(null);
 		});
 	}

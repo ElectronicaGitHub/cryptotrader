@@ -123,7 +123,7 @@ TRADER.prototype.checkCycle = function (callback) {
 
 TRADER.prototype.collectChartData = function (callback) {
 
-	console.log('Сбор данных рынка', this.exchange.name);
+	// console.log('Сбор данных рынка', this.exchange.name);
 
 	var self = this;
 
