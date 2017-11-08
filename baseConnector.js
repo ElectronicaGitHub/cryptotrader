@@ -35,7 +35,7 @@ BaseConnector.prototype.updateChartData = function (next) {
 			for (currency of new_values_array) {
 				json_to_save[currency.symbol] = json_to_save[currency.symbol] || [];
 				json_to_save[currency.symbol].push(currency);
-				json_to_save[currency.symbol] = json_to_save[currency.symbol].filter(el => el.timestamp <= (+new Date() - (1000 * 60 * 60 * 2)))
+				json_to_save[currency.symbol] = json_to_save[currency.symbol].filter(el => el.timestamp >= (+new Date() - (1000 * 60 * 60 * 2)))
 
 			}
 			let n = new ChartData({ 
@@ -52,7 +52,7 @@ BaseConnector.prototype.updateChartData = function (next) {
 			for (currency of new_values_array) {
 				json_to_update[currency.symbol] = json_to_update[currency.symbol] || [];
 				json_to_update[currency.symbol].push(currency);
-				json_to_update[currency.symbol] = json_to_update[currency.symbol].filter(el => el.timestamp <= (+new Date() - (1000 * 60 * 60 * 2)))
+				json_to_update[currency.symbol] = json_to_update[currency.symbol].filter(el => el.timestamp >= (+new Date() - (1000 * 60 * 60 * 2)))
 
 			}
 
