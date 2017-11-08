@@ -101,8 +101,6 @@ BaseConnector.prototype.updateOpenOrders = function (remote_closed_orders, next)
 	var obj = { orderStatus : 'OPEN', exchangeName : self.exchangeName};
 	Order.find(obj, function (err, open_orders) {
 
-		console.log('открытые ордера найдены', open_orders.length);
-
 		if (err) return next(err);
 
 		async.each(open_orders, function (order, each_next) {
@@ -111,10 +109,11 @@ BaseConnector.prototype.updateOpenOrders = function (remote_closed_orders, next)
 			})[0];
 			if (our_order) {
 				order = _.extend(order, our_order);
+				order.orderStatus = 'EXECUTED';
 			}
 			order.save(function (err, res) {
 				if (err) return each_next(err);
-				console.log('ордер синхронизирован');
+				console.log('ордер синхронизован');
 				each_next(null);
 			});
 		}, function (err, data) {
