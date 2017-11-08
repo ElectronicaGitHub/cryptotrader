@@ -310,6 +310,9 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 					xAxis: {
 				        type: 'datetime'
 					},
+					legend : {
+						enabled : false
+					},
 					title : { text : null },
 				    series: [
 				    {
