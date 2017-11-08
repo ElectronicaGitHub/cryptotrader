@@ -138,7 +138,7 @@ TRADER.prototype.collectChartData = function (callback) {
 		let data = result[1]
 
 		for (var i in data) {
-			data[i] = data[i].slice(data.length - 60);	
+			data[i] = data[i].slice(data[i].length - 60);	
 		}
 		self.pairs_graph_data = data;
 
@@ -157,7 +157,7 @@ TRADER.prototype.analyzeChartData = function(callback) {
 	var data = this.baseConnector.getChartData(function (err, data) {
 
 		for (var i in data) {
-			data[i] = data[i].slice(data.length - 60);	
+			data[i] = data[i].slice(data[i].length - 60);	
 		}
 
 		// смотрим последний час допустим значит берем 12 последних тиков
