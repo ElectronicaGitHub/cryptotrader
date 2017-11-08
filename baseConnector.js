@@ -113,7 +113,6 @@ BaseConnector.prototype.updateOpenOrders = function (remote_closed_orders, next)
 			}
 			order.save(function (err, res) {
 				if (err) return each_next(err);
-				console.log('ордер синхронизован');
 				each_next(null);
 			});
 		}, function (err, data) {
