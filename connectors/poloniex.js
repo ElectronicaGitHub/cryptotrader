@@ -40,7 +40,7 @@ function Poloniex() {
 					console.log(err);
 					return callback(err);
 				}
-				console.log('Получение рынка');
+				console.log('Получение рынка Poloniex');
 				callback(self.pipes.makeCurrencies(data));
 			});
 		},
@@ -50,7 +50,7 @@ function Poloniex() {
 					console.log(err);
 					return callback(err);
 				}
-				console.log('Получение баланса');
+				console.log('Получение баланса Poloniex');
 				callback(self.pipes.makeBalances(data));
 			});
 		},
@@ -139,7 +139,7 @@ function Poloniex() {
 		},
 		getChartData : function (period, currencyPair, callback) {
 			var url = 'https://poloniex.com/public?command=returnChartData&start=' + moment().subtract(2,'d').format('X') + '&end=9999999999' +  
-				'&period=300&currencyPair=' + encodeURIComponent(self.formatter.makeCurrencyName(currencyPair));
+				'&period=60&currencyPair=' + encodeURIComponent(self.formatter.makeCurrencyName(currencyPair));
 			unirest.get(url).end(function (response) {
 				callback(null, self.pipes.makeChartData(response.body));
 			}, function (error) {
@@ -203,7 +203,8 @@ function Poloniex() {
 					best_ask : el.lowestAsk,
 					best_bid : el.highestBid,
 					currency : currencyName[1],
-					volume : el.quoteVolume
+					volume : el.quoteVolume,
+					timestamp : +new Date()
 				}
 			});
 		},

@@ -1,4 +1,5 @@
 var Order = require('./models/Order.js');
+var ChartData = require('./models/ChartData.js');
 var _ = require('lodash');
 var async = require('async');
 
@@ -19,6 +20,55 @@ var async = require('async');
 
 var BaseConnector = function (exchangeName) {
 	this.exchangeName = exchangeName;
+}
+
+BaseConnector.prototype.updateChartData = function (next) {
+
+	let new_values_array = this.exchange_pairs;
+	let trader = this;
+
+	ChartData.findOne({ exchangeName : this.exchange.name }, function (err, chart_data_value) {
+		if (!chart_data_value) {
+	
+			let json_to_save = {};
+
+			for (currency of new_values_array) {
+				json_to_save[currency.symbol] = json_to_save[currency.symbol] || [];
+				json_to_save[currency.symbol].push(currency);
+			}
+			let n = new ChartData({ 
+				exchangeName : trader.exchange.name, 
+				json : JSON.stringify(json_to_save) 
+			});
+
+			n.save(function (err, res) {
+				if (err) return next(err);
+				next(null, json_to_save);
+			});
+		} else {
+			let json_to_update = JSON.parse(chart_data_value.json);
+			for (currency of new_values_array) {
+				json_to_update[currency.symbol] = json_to_update[currency.symbol] || [];
+				json_to_update[currency.symbol].push(currency);
+			}
+
+			chart_data_value.json = JSON.stringify(json_to_update);
+
+			chart_data_value.save(function (err, data) {
+				if (err) return next(err);
+				next(null, json_to_update);
+			});
+		}
+	})
+}
+
+BaseConnector.prototype.getChartData = function (next) {
+	let request = {};
+	request.exchangeName = this.exchangeName;
+	console.log('getChartData request', request);
+	ChartData.findOne(request, function (err, data) {
+		next(null, JSON.parse(data.json));
+	});
 }
 
 BaseConnector.prototype.findOrder = function (request, next) {

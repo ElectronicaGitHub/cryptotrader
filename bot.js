@@ -18,6 +18,26 @@ var BaseConnector = require('./baseConnector');
 var BOT = function() {
 	this.TRADERS = [];
 	this.trade_cycle_time = 1000 * 60 * 6;
+	this.collect_cycle_time = 1000 * 60 * 1;
+}
+
+BOT.prototype.loopCollectChartData = function (callback) {
+
+	var self = this;
+
+	run();
+
+	interval = setInterval(run, this.collect_cycle_time);
+
+
+	function run() {
+		async.eachSeries(self.TRADERS, function (trader, next) {
+			trader.collectChartData(next);
+		}, function (err, data) {
+			console.log('Сбор успешно завершен');
+			callback(null);
+		});
+	}
 }
 
 BOT.prototype.checkCycle = function (callback) {

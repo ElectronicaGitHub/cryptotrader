@@ -42,7 +42,7 @@ function Bittrex() {
 					console.log(err);
 					return callback(err);
 				}
-				console.log('getTicker');
+				console.log('Получение рынка Bittrex');
 				callback(self.pipes.makeCurrencies(data));
 			});
 		},
@@ -52,7 +52,7 @@ function Bittrex() {
 					console.log(err);
 					return callback(err);
 				}
-				console.log('getBalance');
+				console.log('Получение баланса Bittrex');
 				callback(self.pipes.makeBalances(data));
 			});
 		},
@@ -130,7 +130,7 @@ function Bittrex() {
 			});
 		},
 		getChartData : function (period, currencyPair, callback) {
-			var url = 'https://bittrex.com/Api/v2.0/pub/market/GetTicks?tickInterval=fiveMin&marketName=' + encodeURIComponent(self.formatter.makeCurrencyName(currencyPair));
+			var url = 'https://bittrex.com/Api/v2.0/pub/market/GetTicks?tickInterval=oneMin&marketName=' + encodeURIComponent(self.formatter.makeCurrencyName(currencyPair));
 			// console.log(url);
 			unirest.get(url).end(function (response) {
 				callback(null, self.pipes.makeChartData(response.body));
@@ -184,7 +184,8 @@ function Bittrex() {
 					best_ask : el.Ask,
 					best_bid : el.Bid,
 					currency : currencyName[1],
-					volume : el.Volume
+					volume : el.Volume,
+					timestamp : +new Date()
 				}
 			});
 		},

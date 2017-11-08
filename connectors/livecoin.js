@@ -174,7 +174,8 @@ function LiveCoin() {
 					best_ask : el.best_ask,
 					best_bid : el.best_bid,
 					currency : el.cur,
-					volume : el.volume
+					volume : el.volume,
+					timestamp : +new Date()
 				}
 			});
 		},

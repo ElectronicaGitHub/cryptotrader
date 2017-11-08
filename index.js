@@ -94,6 +94,7 @@ TRADER.closed_buy_orders_by_curr = {};
 TRADER.able_to_sell_pairs = [];
 TRADER.able_to_buy_pairs = [];
 
+TRADER.pairs_graph_data = {};
 
 TRADER.prototype.checkCycle = function (callback) {
 
@@ -112,7 +113,7 @@ TRADER.prototype.checkCycle = function (callback) {
 		self.getUserOrders.bind(self),
 		self.makeTradeData.bind(self),
 		self.syncRemoteOrdersWithLocal.bind(self),
-		self.collectChartData.bind(self)
+		self.analyzeChartData.bind(self)
 
 		// self.normalizeBalances.bind(self),
 	], function (error, pairs_data) {
@@ -120,16 +121,77 @@ TRADER.prototype.checkCycle = function (callback) {
 	});
 }
 
-TRADER.prototype.checkBaseToFiatTrend = function (callback) {}
+TRADER.prototype.collectChartData = function (callback) {
 
-TRADER.prototype.collectChartData = function(callback) {
+	console.log('Сбор данных рынка', this.exchange.name);
 
 	var self = this;
 
-	this.getChartData(null, 'BTC/' + this.exchange.usdName, (err, data) => {
-		self.chartData = data;
+	async.series([
+		self.getUserSummaries.bind(self),
+		self.baseConnector.updateChartData.bind(self)
+	], function (err, result) {
+
+		let data = result[1]
+
+		for (var i in data) {
+			data[i] = data[i].slice(data.length - 60);	
+		}
+		self.pairs_graph_data = data;
+
 		callback();
 	});
+}
+
+// TRADER.prototype.checkBaseToFiatTrend = function (callback) {}
+
+TRADER.prototype.analyzeChartData = function(callback) {
+
+	console.log('analyzeChartData');
+
+	var self = this;
+
+	var data = this.baseConnector.getChartData(function (err, data) {
+
+		for (var i in data) {
+			data[i] = data[i].slice(data.length - 60);	
+		}
+
+		// смотрим последний час допустим значит берем 12 последних тиков
+		// 48 4 часа
+		// 96 8 часа
+		// 1 минутки
+		// data = data.slice(data.length - 60);
+
+		// console.log('Пара', el.symbol, data);
+
+		// self.pairs_graph_data = self.pairs_graph_data || {};
+		// self.pairs_graph_data[el.symbol] = data;
+
+		// находим коэффициенты для трех прямых, сохраняем их и те данные при которых мы решились на покупку пары
+		// this.able_to_buy_pairs.graph_k_av = '';
+		// this.able_to_buy_pairs.graph_b_av = '';
+
+		// this.able_to_buy_pairs.graph_k_min = '';
+		// this.able_to_buy_pairs.graph_b_min = '';
+
+		// this.able_to_buy_pairs.graph_k_max = '';
+		// this.able_to_buy_pairs.graph_b_max = '';
+
+		self.pairs_graph_data = data;
+		callback();
+	});
+
+
+
+	// }, function (err, data) {
+	// 	callback();
+	// });
+
+	// this.getChartData(null, 'BTC/' + this.exchange.usdName, (err, data) => {
+	// 	self.chartData = data;
+	// 	callback();
+	// });
 }
 
 TRADER.prototype.tradeCycle = function (callback) {
@@ -542,9 +604,11 @@ TRADER.prototype.makeTradeData = function (next) {
 		return el;
 	});
 
-	self.able_to_buy_pairs = self.able_to_buy_pairs.filter(function (el) {
-		return el.success_counts > 0 || (!el.success_counts && !el.in_trade);
-	})
+	self.able_to_buy_pairs = self.able_to_buy_pairs
+
+	// .filter(function (el) {
+	// 	return el.success_counts > 0 || (!el.success_counts && !el.in_trade);
+	// })
 	.filter(function (el) {
 		return el.in_trade < 1 || !el.in_trade;
 	})
@@ -951,3 +1015,4 @@ bot.addToTraders('Poloniex');
 if (loopTradeOnStart) {
 	bot.loopTradeCycle(function () {});
 }
+bot.loopCollectChartData(function () {});
