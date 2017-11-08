@@ -231,7 +231,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 
 		// data = data.map((el, n) => [n * 0.0001, el.close, 1]);
 		// data = data.map((el, n) => [n, el.close]);
-		data = data.map((el, n) => [el.timestamp, el.best_ask, 1]);
+		data = data.map((el, n) => [el.timestamp, +el.best_ask, 1]);
 		y_min = _.minBy(data, 1);
 		y_max = _.maxBy(data, 1);
 
@@ -303,9 +303,9 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 
 		(function (data, lines) {
 			setTimeout(function () {
-				Highcharts.chart('graph-' + pair.symbol, {
+				Highcharts.chart('graph-' + trader.exchange.name + '-' + pair.symbol, {
 					chart : {
-						height: 300
+						height: 200
 					},
 					xAxis: {
 				        type: 'datetime'
@@ -401,7 +401,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		    y0 = m*x0 + b;
 		var xf = Math.max.apply(null, xs), 
 		    yf = m*xf + b;
-		    
+
 	    var y0max = y0 + max[1];
 	    var y0min = y0 + min[1];
 		var yfmax = yf + max[1];

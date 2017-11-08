@@ -169,6 +169,7 @@
 		padding: 10px;
 		background: #f5f5f5;
 		margin-bottom: 5px;
+		font-size: 11px;
 	}
 	.each-pair-to-buy.success {
 		background: lightgreen;
@@ -268,7 +269,8 @@
 			<!-- <button ng-click="makeChart(trader)" class="btn btn-xs btn-primary">Получить база/фиат</button> -->
 			<!-- <div id="chart-{{ trader.exchange.name }}"></div> -->
 			<p>Последние пары для покупки</p>
-			<div class="each-pair-to-buy" ng-repeat="pair in trader.able_to_buy_pairs" ng-show="trader.pairs_graph_data[pair.symbol]" ng-class="{ success : pair.is_graph_acceptable, error : !pair.is_graph_acceptable }">
+			<!-- <div class="each-pair-to-buy" ng-repeat="pair in trader.able_to_buy_pairs" ng-show="trader.pairs_graph_data[pair.symbol]" ng-class="{ success : pair.is_graph_acceptable, error : !pair.is_graph_acceptable }"> -->
+			<div class="col-xs-6 each-pair-to-buy" ng-repeat="pair in trader.tradeable_exchange_pairs" ng-show="trader.pairs_graph_data[pair.symbol]" ng-class="{ success : pair.is_graph_acceptable, error : !pair.is_graph_acceptable }">
 				<b>{{ pair.symbol }}</b>
 				<span>best_ask {{ pair.best_ask }}</span> | 
 				<span>best_bid {{ pair.best_bid }}</span> | 
@@ -284,7 +286,7 @@
 					<span>last_max_y: {{ pair.last_base_y }}</span>
 					<span>diff: {{ (pair.last_base_y - pair.first_base_y) / pair.first_base_y * 100 | number:2 }}</span>
 				</p>
-				<div id="graph-{{pair.symbol}}" ng-init="makeGraph(trader, pair)"></div>
+				<div id="graph-{{trader.exchange.name}}-{{pair.symbol}}" ng-init="makeGraph(trader, pair)"></div>
 			</div>
 		</div>
 
