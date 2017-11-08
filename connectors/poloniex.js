@@ -40,7 +40,7 @@ function Poloniex() {
 					console.log(err);
 					return callback(err);
 				}
-				console.log('Получение рынка Poloniex');
+				console.log('Получен рынок Poloniex');
 				callback(self.pipes.makeCurrencies(data));
 			});
 		},
@@ -50,7 +50,7 @@ function Poloniex() {
 					console.log(err);
 					return callback(err);
 				}
-				console.log('Получение баланса Poloniex');
+				console.log('Получен баланс Poloniex');
 				callback(self.pipes.makeBalances(data));
 			});
 		},

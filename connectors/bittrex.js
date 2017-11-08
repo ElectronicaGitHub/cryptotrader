@@ -42,7 +42,7 @@ function Bittrex() {
 					console.log(err);
 					return callback(err);
 				}
-				console.log('Получение рынка Bittrex');
+				console.log('Получен рынок Bittrex');
 				callback(self.pipes.makeCurrencies(data));
 			});
 		},
@@ -52,7 +52,7 @@ function Bittrex() {
 					console.log(err);
 					return callback(err);
 				}
-				console.log('Получение баланса Bittrex');
+				console.log('Получен баланс Bittrex');
 				callback(self.pipes.makeBalances(data));
 			});
 		},

@@ -882,6 +882,7 @@ TRADER.prototype.buyPair = function (pair, next) {
 }
 
 TRADER.prototype.syncRemoteOrdersWithLocal = function (next) {
+	console.log('Начата синхронизация ордеров');
 	var self = this;
 
 	self.baseConnector.updateOpenOrders(self.closed_orders, function (err, data) {
