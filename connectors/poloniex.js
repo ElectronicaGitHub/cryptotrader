@@ -139,9 +139,8 @@ function Poloniex() {
 		},
 		getChartData : function (period, currencyPair, callback) {
 			var url = 'https://poloniex.com/public?command=returnChartData&start=' + moment().subtract(2,'d').format('X') + '&end=9999999999' +  
-				'&period=60&currencyPair=' + encodeURIComponent(self.formatter.makeCurrencyName(currencyPair));
+				'&period=300&currencyPair=' + encodeURIComponent(self.formatter.makeCurrencyName(currencyPair));
 			unirest.get(url).end(function (response) {
-				console.log(response.body);
 				callback(null, self.pipes.makeChartData(response.body));
 			}, function (error) {
 				console.log(error);

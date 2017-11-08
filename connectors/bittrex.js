@@ -130,7 +130,7 @@ function Bittrex() {
 			});
 		},
 		getChartData : function (period, currencyPair, callback) {
-			var url = 'https://bittrex.com/Api/v2.0/pub/market/GetTicks?tickInterval=oneMin&marketName=' + encodeURIComponent(self.formatter.makeCurrencyName(currencyPair));
+			var url = 'https://bittrex.com/Api/v2.0/pub/market/GetTicks?tickInterval=fiveMin&marketName=' + encodeURIComponent(self.formatter.makeCurrencyName(currencyPair));
 			// console.log(url);
 			unirest.get(url).end(function (response) {
 				callback(null, self.pipes.makeChartData(response.body));

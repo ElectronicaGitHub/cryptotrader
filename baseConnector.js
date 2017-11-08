@@ -65,7 +65,6 @@ BaseConnector.prototype.updateChartData = function (next) {
 BaseConnector.prototype.getChartData = function (next) {
 	let request = {};
 	request.exchangeName = this.exchangeName;
-	console.log('getChartData request', request);
 	ChartData.findOne(request, function (err, data) {
 		next(null, JSON.parse(data.json));
 	});
