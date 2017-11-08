@@ -110,25 +110,14 @@ BaseConnector.prototype.updateOpenOrders = function (remote_closed_orders, next)
 			if (our_order) {
 				order = _.extend(order, our_order);
 			}
-			order.save(each_next);
+			order.save(function (err, res) {
+				if (err) return each_next(err);
+				console.log('ордер синхронизирован');
+				each_next(null);
+			});
 		}, function (err, data) {
 			next(null);
 		})
-
-		// var remote_open_orders_ids = remote_closed_orders.map(function (el) { return el.exchangeId; });
-		// var open_orders_ids = open_orders.map(function (el) { return el.exchangeId; });
-
-		// var ids = _.difference(open_orders_ids, remote_open_orders_ids)
-		// // [1,2,3,4] [1,2] => [3,4]
-		// // console.log('remote_open_orders_ids', remote_open_orders_ids);
-		// // console.log('open_orders_ids', open_orders_ids);
-		// // console.log('difference ids', ids);
-
-		// Order.update({exchangeId : { $in : ids }}, { orderStatus : 'EXECUTED'}, { multi : true }, function (err, result) {
-		// 	if (err) return next(err);
-		// 	next(null);
-		// });
-
 	});
 }
 
