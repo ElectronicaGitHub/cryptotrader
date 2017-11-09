@@ -266,12 +266,8 @@
 			</div>	
 		</div>
 		
-		<div ng-if="showInfo" class="info-container container">
+		<!-- <div ng-if="showInfo" class="info-container container">
 			<p>Инфо контейнер</p>
-			<!-- <button ng-click="makeChart(trader)" class="btn btn-xs btn-primary">Получить база/фиат</button> -->
-			<!-- <div id="chart-{{ trader.exchange.name }}"></div> -->
-			<p>Последние пары для покупки</p>
-			<!-- <div class="each-pair-to-buy" ng-repeat="pair in trader.able_to_buy_pairs" ng-show="trader.pairs_graph_data[pair.symbol]" ng-class="{ success : pair.is_graph_acceptable, error : !pair.is_graph_acceptable }"> -->
 			<div class="col-xs-6 each-pair-to-buy" ng-repeat="pair in trader.tradeable_exchange_pairs" ng-show="trader.pairs_graph_data[pair.symbol]" ng-class="{ success : pair.is_graph_acceptable, error : !pair.is_graph_acceptable }">
 				<b>{{ pair.symbol }}</b>
 				<span>best_ask {{ pair.best_ask }}</span> | 
@@ -290,7 +286,7 @@
 				</p>
 				<div id="graph-{{trader.exchange.name}}-{{pair.symbol}}" ng-init="makeGraph(trader, pair)"></div>
 			</div>
-		</div>
+		</div> -->
 
 		<div class="toggle-panel visible-xs">
 			<div class="toggle-panel-button col-xs-6" ng-class="{ selected : view == 'closed'}" ng-click="view = 'closed'" >Закрытые</div>
