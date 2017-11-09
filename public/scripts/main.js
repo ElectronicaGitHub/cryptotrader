@@ -261,6 +261,8 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		
 		// первое значение y на базовой регрессии
 		let first_base_y = pair.first_base_y = lines.baseLine.m * first_value_x + lines.baseLine.b;
+		let first_min_y = lines.minLine.m * first_value_x + lines.minLine.b;
+		let first_max_y = lines.maxLine.m * first_value_x + lines.maxLine.b;
 		// последнее значение y на максимальной регрессии
 		let last_max_y = lines.maxLine.m * last_value_x + lines.maxLine.b;
 		// последнее значение y на базовой регрессии
@@ -289,11 +291,15 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		let tax = (sell_price * quantity) * (trader.exchange.exchange_fee * 2);
 		let new_price_in_btc = (sell_price + tax) * quantity;
 
-		let percent_profit = (new_price_in_btc/price_in_btc).toFixed(2);
+		let percent_profit = ((new_price_in_btc - price_in_btc) / price_in_btc * 100).toFixed(3);
 
 		// console.log(percent_profit);
 
-		console.log(trader.exchange.name, pair.symbol, percent_profit, sell_price);
+		console.log(trader.exchange.name, pair.symbol, percent_profit);
+
+		// Нашли перестановку, определили процент профита
+		// Если перестановка при текущей покупке лежит в должном проценте от линии
+		// базовой регрессии то покупаем пару и переставляем именно на эту цену
 
 
 
@@ -363,8 +369,8 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			            marker: { enabled: false },
 			            states: { hover: { lineWidth: 0 } },
 			            enableMouseTracking: false,
-			            color: '#11AA22',
-			            lineWidth : 3
+			            color: Highcharts.getOptions().colors[0],
+			            lineWidth : 1
 			        },
 			        {
 			            type: 'line',
@@ -374,8 +380,8 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			            marker: { enabled: false },
 			            states: { hover: { lineWidth: 0 } },
 			            enableMouseTracking: false,
-			            color: '#FF0000',
-			            lineWidth : 3
+			            color: Highcharts.getOptions().colors[0],
+			            lineWidth : 1
 			        },
 					{
 			            type: 'line',
@@ -398,8 +404,24 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			            marker: { enabled: false },
 			            states: { hover: { lineWidth: 0 } },
 			            enableMouseTracking: false,
-			            color : '#FF88DD',
+			            color : '#FF0000',
 			            lineWidth: 3
+			        },
+			        {
+				        name: 'Full Range',
+				        data: [
+							[ first_value_x, first_min_y, first_max_y],
+							[ last_value_x, last_min_y, last_max_y]
+				        ],
+				        type: 'arearange',
+				        lineWidth: 0,
+				        linkedTo: ':previous',
+				        color: Highcharts.getOptions().colors[0],
+				        fillOpacity: 0.3,
+				        zIndex: 0,
+				        marker: {
+				            enabled: false
+				        }
 			        },
 			        // линия перестановки при текущей покупке
 			        { 
