@@ -253,46 +253,78 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 
 		// рассматриваем что последняя точка находится в нижнем коридоре
 		
+		// первое значение
 		let first_value_x = data[0][0];
+		// последнее значение x и y
 		let last_value_x = data[data.length - 1][0];
 		let last_value_y = data[data.length - 1][1];
-
+		
+		// первое значение y на базовой регрессии
 		let first_base_y = pair.first_base_y = lines.baseLine.m * first_value_x + lines.baseLine.b;
+		// последнее значение y на максимальной регрессии
 		let last_max_y = lines.maxLine.m * last_value_x + lines.maxLine.b;
-
+		// последнее значение y на базовой регрессии
 		let last_base_y = pair.last_base_y = lines.baseLine.m * last_value_x + lines.baseLine.b;
+		// последнее значение y на минимальной регрессии
 		let last_min_y = lines.minLine.m * last_value_x + lines.minLine.b;
-
-
+		// разницы от/до в y
 		let diff_from_min_to_base = last_base_y - last_min_y;
 		let diff_from_min_to_max = last_max_y - last_min_y;
+		// процентная разница нашего значения в промежутке между минимумом и базой
 		let percent_from_min_to_base = (last_value_y - last_min_y)/(diff_from_min_to_base) * 100;
+		// процентная разница нашего значения в промежутке между минимумом и максимумом
 		let percent_from_min_to_max = (last_value_y - last_min_y)/(diff_from_min_to_max) * 100;
-
+		// получаем наши линии
 		lines = makeLines(data, diff_from_min_to_base);
 
-		console.log(pair.symbol);
-		console.log(lines);
+		// считаем прибыль при покупке в текущий момент
+		let current_ask = +pair.best_ask;
+		let quantity = trader.exchange.max_buy_order_price / current_ask;
+		// let tax =(current_ask * quantity) * ( 2 * trader.exchange.exchange_fee);
+		let price_in_btc = current_ask * quantity; // понимаем цену в битках
+		// let profit_price_in_btc = (price_in_btc * (100 + +trader.exchange.profit_koef) / 100) + tax;
+		// let sell_price = profit_price_in_btc / quantity;
+
+		let sell_price = current_ask + diff_from_min_to_base;
+		let tax = (sell_price * quantity) * (trader.exchange.exchange_fee * 2);
+		let new_price_in_btc = (sell_price + tax) * quantity;
+
+		let percent_profit = (new_price_in_btc/price_in_btc).toFixed(2);
+
+		// console.log(percent_profit);
+
+		console.log(trader.exchange.name, pair.symbol, percent_profit, sell_price);
+
+
+
+		// console.log('Покупаем', current_ask);
+		// console.log('Такса', tax);
+
+		// console.log('Продаем', sell_price);
+
+		// console.log(lines);
 		// console.log('y_max[1]', y_max[1]);
 		// console.log('y_min[1]', y_min[1]);
 
-		console.log('function max value', last_max_y);
-		console.log('function base value', last_base_y);
-		console.log('function min value', last_min_y);
-		console.log('last value', last_value_y);	
+		// console.log('function max value', last_max_y);
+		// console.log('function base value', last_base_y);
+		// console.log('function min value', last_min_y);
+		// console.log('last value', last_value_y);	
 	
-		console.log('diff_from_min_to_base', diff_from_min_to_base);
-		console.log('diff_from_min_to_max', diff_from_min_to_max);
+		// console.log('diff_from_min_to_base', diff_from_min_to_base);
+		// console.log('diff_from_min_to_max', diff_from_min_to_max);
 
-		console.log('percent from min to base', percent_from_min_to_base);
-		console.log('percent from min to max', percent_from_min_to_max);
+		// console.log('percent from min to base', percent_from_min_to_base);
+		// console.log('percent from min to max', percent_from_min_to_max);
 
-		console.log('percent_graph_raise_value', Math.abs((last_base_y - first_base_y) / first_base_y * 100));
+		// console.log('percent_graph_raise_value', Math.abs((last_base_y - first_base_y) / first_base_y * 100));
+		let percent_graph_raise_value = (last_base_y - first_base_y) / first_base_y * 100;
+
 
 		if (last_value_y > last_min_y && 
 			last_value_y < last_base_y && 
 			// Math.abs(pair.spread_value) > 3 && // ???
-			(last_base_y - first_base_y) / first_base_y * 100 > -params.percent_graph_raise_value &&  
+			percent_graph_raise_value > -params.percent_graph_raise_value &&  
 			last_value_y > data[data.length - 2][1] &&
 			percent_from_min_to_base < params.percent_from_min_to_base) {
 			pair.is_graph_acceptable = true;			
@@ -330,7 +362,9 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			            // data: [[test_x0, test_y0], [test_xf, test_yf]], 
 			            marker: { enabled: false },
 			            states: { hover: { lineWidth: 0 } },
-			            enableMouseTracking: false
+			            enableMouseTracking: false,
+			            color: '#11AA22',
+			            lineWidth : 3
 			        },
 			        {
 			            type: 'line',
@@ -339,7 +373,9 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			            // data: [[max_test_x0, max_test_y0], [max_test_xf, max_test_yf]], 
 			            marker: { enabled: false },
 			            states: { hover: { lineWidth: 0 } },
-			            enableMouseTracking: false
+			            enableMouseTracking: false,
+			            color: '#FF0000',
+			            lineWidth : 3
 			        },
 					{
 			            type: 'line',
@@ -348,13 +384,31 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			            // data: [[max_test_x0, max_test_y0], [max_test_xf, max_test_yf]], 
 			            marker: { enabled: false },
 			            states: { hover: { lineWidth: 0 } },
-			            enableMouseTracking: false
+			            enableMouseTracking: false,
+			            color: '#66AA22',
+			            lineWidth : 2
 			        },
+			        {
+			            type: 'line',
+			            name: 'Линия перестановки',
+			            data: [
+			            	[lines.baseLine.data[0].x, sell_price], 
+			            	[lines.baseLine.data[1].x, sell_price]
+			            ], 
+			            marker: { enabled: false },
+			            states: { hover: { lineWidth: 0 } },
+			            enableMouseTracking: false,
+			            color : '#FF88DD',
+			            lineWidth: 3
+			        },
+			        // линия перестановки при текущей покупке
 			        { 
 				    	type: 'line', 
+				    	marker: { enabled: false },
 				    	name: 'BTC/USD', 
 				    	data 
-				    }]
+				    }
+				    ]
 				});
 			});
 		})(data, lines);
@@ -365,7 +419,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		var slope = regression('linear', data);
 		// var slope = linear_regression(data);
 
-		console.log(slope);
+		// console.log(slope);
 
 		var m = slope.equation[0], b = slope.equation[1];
 		// var m = slope[0], b = slope[1];
@@ -411,8 +465,6 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 	    var yfmin = yf + min[1];
 
 	    let addition = diff_from_min_to_base * params.percent_from_min_to_base / 100;
-
-	    console.log('addition', addition);
 
 		let baseLine = [{ x : x0, y : y0 }, { x: xf, y : yf}];
 	    let minLine = [{x : x0, y : y0min}, {x : xf, y : yfmin}];
