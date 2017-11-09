@@ -286,7 +286,7 @@
 				<p>
 					<span>first_base_y: {{ pair.first_base_y }}</span> | 
 					<span>last_max_y: {{ pair.last_base_y }}</span>
-					<span>diff: {{ (pair.last_base_y - pair.first_base_y) / pair.first_base_y * 100 | number:2 }}</span>
+					<span>diff: {{ pair.percent_graph_raise_value | number:2 }}</span>
 				</p>
 				<div id="graph-{{trader.exchange.name}}-{{pair.symbol}}" ng-init="makeGraph(trader, pair)"></div>
 			</div>
@@ -309,7 +309,7 @@
 				
 				<div class="each-closed-pair" ng-repeat="pair in trader.closed_orders | orderBy:'-lastModificationTime'" ng-class="{ gold : moment(date_long).isSame(pair.lastModificationTime, 'd'), yesterday : moment(date_long).isSame(moment(pair.lastModificationTime).add(1, 'd'), 'd') }">
 					{{ $index + 1 }}. <b>{{ pair.currencyPair }}</b> / 
-					<span ng-class="(pair.buy_order.quantity * pair.price - pair.buy_order.quantity * pair.buy_order.price) > 0 ? 'ok' : 'not-ok'">{{pair.quantity * pair.price - pair.quantity * pair.buy_order.price | number:6 }} BTC [ {{ inUSD(trader, pair.quantity * pair.price - pair.quantity * pair.buy_order.price) | number:2 }} USD]</span>
+					<span ng-class="(pair.quantity * pair.price - pair.buy_order.quantity * pair.buy_order.price) > 0 ? 'ok' : 'not-ok'">{{pair.quantity * pair.price - pair.buy_order.quantity * pair.buy_order.price | number:6 }} BTC [ {{ inUSD(trader, pair.quantity * pair.price - pair.buy_order.quantity * pair.buy_order.price) | number:2 }} USD]</span>
 
 					<span>{{ moment(pair.lastModificationTime).locale('ru').format('LLL') }}</span>
 
