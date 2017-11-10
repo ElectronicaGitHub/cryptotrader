@@ -228,7 +228,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			return [values.first_value_x + (n * 1000 * 60), el, 1];
 		});
 
-		let data2 = trader.pairs_graph_data[pair.symbol];
+		let data2 = trader.pairs_graph_data[sell_pair.currencyPair];
 
 		let summary_data = data.concat(data2);
 
