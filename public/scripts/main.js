@@ -228,7 +228,11 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			return [values.first_value_x + (n * 1000 * 60), el, 1];
 		});
 
-		$scope.makeGraph(graph_id, lines, values, data);
+		let data2 = trader.pairs_graph_data[pair.symbol];
+
+		let summary_data = data.concat(data2);
+
+		$scope.makeGraph(graph_id, lines, values, summary_data);
 	}
 
 	$scope.makeGraphForCurrentMarket = function (trader, pair) {
