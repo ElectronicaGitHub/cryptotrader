@@ -218,7 +218,6 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		if (!sell_pair.buy_order || !sell_pair.buy_order.analyticsResult) return;
 		
 		let graph_id = 'graph-' + trader.exchange.name + '-' + sell_pair.currencyPair + '-' + sell_pair.buy_order.exchangeId;
-		console.log(graph_id);
 		let lines  = sell_pair.buy_order.analyticsResult.lines;
 		let values = sell_pair.buy_order.analyticsResult.values;
 
@@ -229,6 +228,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		});
 
 		let data2 = trader.pairs_graph_data[sell_pair.currencyPair];
+		data2 = data2.map((el, n) => [el.timestamp, +el.best_ask, 1]);
 
 		let summary_data = data.concat(data2);
 
