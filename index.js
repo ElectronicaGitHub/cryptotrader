@@ -159,7 +159,7 @@ TRADER.prototype.analyzeChartData = function(callback) {
 	var data = this.baseConnector.getChartData(function (err, data) {
 
 		for (var i in data) {
-			data[i] = data[i].slice(data[i].length - 60);
+			data[i] = data[i].slice(data[i].length - 120);
 		}
 
 		self.pairs_graph_data = data;
