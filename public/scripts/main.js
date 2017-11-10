@@ -213,174 +213,170 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		return valueinBTC * trader.btc_usd.best_ask;
 	}
 
-	// $scope.getChartData = function (altcoin, days) {
-	// 	$http.post('/getChartData', {
-	// 		currencyPair : altcoin.symbol
-	// 	}).then(function (data) {
-	// 		var data = JSON.parse(data.data);
-	// 		console.log(data);
+	$scope.makeGraphForClosedOrder = function (trader, sell_pair) {
 
-	// 		var prepared_data = data.ohlc.slice(data.ohlc.length - (days * 100)).map((el) => {
-	// 			return el[1];
-	// 		});
+		if (!sell_pair.buy_order || !sell_pair.buy_order.analyticsResult) return;
+		
+		let graph_id = 'graph-' + trader.exchange.name + '-' + sell_pair.symbol + '-' + sell_pair.exchangeId;
+		let lines  = sell_pair.buy_order.analyticsResult.lines;
+		let values = sell_pair.buy_order.analyticsResult.values;
+		let data = sell_pair.buy_order.buyMomentChartData.map(el => {
+			return []
+		});
 
-	// 		altcoin.price_change = (prepared_data[prepared_data.length - 1] - prepared_data[0])/prepared_data[0] * 100;
+		$scope.makeGraph(graph_id, lines, values, data);
+	}
 
-	// 		makeHighchart(altcoin.symbol, prepared_data);
-	// 	}, function (error) {
-	// 		console.log('error', error);
-	// 	});
-	// }
-
-	$scope.makeGraph = function (trader, pair) {
-
-		// analyticsModule.setParams(params);
-		// let analyticsResult = analyticsModule.analyze(trader, pair, params);
-
-		let lines = pair.analyticsResult.lines;
-		let values = pair.analyticsResult.values;
+	$scope.makeGraphForCurrentMarket = function (trader, pair) {
 
 		let data = trader.pairs_graph_data[pair.symbol];
 
 		if (!data) return;
 
+		let graph_id = 'graph-' + trader.exchange.name + '-' + pair.symbol;
+		let lines = pair.analyticsResult.lines;
+		let values = pair.analyticsResult.values;
+
 		data = data.map((el, n) => [el.timestamp, +el.best_ask, 1]);
 
-		(function (data, lines) {
-			setTimeout(function () {
-				Highcharts.chart('graph-' + trader.exchange.name + '-' + pair.symbol, {
-					chart : {
-						height: 200
-					},
-					xAxis: {
-				        type: 'datetime'
-					},
-					legend : {
-						enabled : false
-					},
-					title : { text : null },
-				    series: [
-				    {
-			            type: 'line',
-			            name: 'Regression Line',
-			            data: [
-			            	[lines.baseLine.data[0].x, lines.baseLine.data[0].y], 
-			            	[lines.baseLine.data[1].x, lines.baseLine.data[1].y]
-			            ], 
-			            marker: { enabled: false },
-			            states: { hover: { lineWidth: 0 } },
-			            enableMouseTracking: false
-			        },
-			        {
-			            type: 'line',
-			            name: 'Regression Line Min',
-			            data: [
-			            	[lines.minLine.data[0].x, lines.minLine.data[0].y], 
-			            	[lines.minLine.data[1].x, lines.minLine.data[1].y]
-			            ], 
-			            marker: { enabled: false },
-			            states: { hover: { lineWidth: 0 } },
-			            enableMouseTracking: false,
-			            color: Highcharts.getOptions().colors[0],
-			            lineWidth : 1
-			        },
-			        {
-			            type: 'line',
-			            name: 'Regression Line Max',
-			            data: [
-			            	[lines.maxLine.data[0].x, lines.maxLine.data[0].y], 
-			            	[lines.maxLine.data[1].x, lines.maxLine.data[1].y]
-			            ], 
-			            marker: { enabled: false },
-			            states: { hover: { lineWidth: 0 } },
-			            enableMouseTracking: false,
-			            color: Highcharts.getOptions().colors[0],
-			            lineWidth : 1
-			        },
-					{
-			            type: 'line',
-			            name: 'Regression Line Min Percentage',
-			            data: [
-			            	[lines.minPercentageLine.data[0].x, lines.minPercentageLine.data[0].y], 
-			            	[lines.minPercentageLine.data[1].x, lines.minPercentageLine.data[1].y]
-			            ], 
-			            marker: { enabled: false },
-			            states: { hover: { lineWidth: 0 } },
-			            enableMouseTracking: false,
-			            color: '#66AA22',
-			            lineWidth : 2
-			        },
-			        {
-			            type: 'line',
-			            name: 'Линия перестановки',
-			            data: [
-			            	[lines.baseLine.data[0].x, values.sell_price], 
-			            	[lines.baseLine.data[1].x, values.sell_price]
-			            ], 
-			            marker: { enabled: false },
-			            states: { hover: { lineWidth: 0 } },
-			            enableMouseTracking: false,
-			            color : '#FF0000',
-			            lineWidth: 3
-			        },
-			        // {
-			        //     type: 'line',
-			        //     name: 'Линия перестановки макс',
-			        //     data: [
-			        //     	[lines.baseLine.data[0].x, sell_price_max], 
-			        //     	[lines.baseLine.data[1].x, sell_price_max]
-			        //     ], 
-			        //     marker: { enabled: false },
-			        //     states: { hover: { lineWidth: 0 } },
-			        //     enableMouseTracking: false,
-			        //     color : '#FF0000',
-			        //     lineWidth: 3
-			        // },
+		$scope.makeGraph(graph_id, lines, values, data);
+	}
 
-			    //     {
-				   //      name: 'Range Перестановки',
-				   //      data: [
-							// [ first_value_x, sell_price_min, sell_price_max],
-							// [ last_value_x, sell_price_min, sell_price_max]
-				   //      ],
-				   //      type: 'arearange',
-				   //      lineWidth: 0,
-				   //      linkedTo: ':previous',
-				   //      states: { hover: { lineWidth: 0 } },
-				   //      color: '#FF0000',
-				   //      fillOpacity: 0.5,
-				   //      zIndex: 0,
-				   //      marker: {
-				   //          enabled: false
-				   //      }
-			    //     },
+	$scope.makeGraph = function (graph_id, lines, values) {
+		setTimeout(function () {
+			Highcharts.chart(graph_id, {
+				chart : {
+					height: 200
+				},
+				xAxis: {
+			        type: 'datetime'
+				},
+				legend : {
+					enabled : false
+				},
+				title : { text : null },
+			    series: [
+			    {
+		            type: 'line',
+		            name: 'Regression Line',
+		            data: [
+		            	[lines.baseLine.data[0].x, lines.baseLine.data[0].y], 
+		            	[lines.baseLine.data[1].x, lines.baseLine.data[1].y]
+		            ], 
+		            marker: { enabled: false },
+		            states: { hover: { lineWidth: 0 } },
+		            enableMouseTracking: false
+		        },
+		        {
+		            type: 'line',
+		            name: 'Regression Line Min',
+		            data: [
+		            	[lines.minLine.data[0].x, lines.minLine.data[0].y], 
+		            	[lines.minLine.data[1].x, lines.minLine.data[1].y]
+		            ], 
+		            marker: { enabled: false },
+		            states: { hover: { lineWidth: 0 } },
+		            enableMouseTracking: false,
+		            color: Highcharts.getOptions().colors[0],
+		            lineWidth : 1
+		        },
+		        {
+		            type: 'line',
+		            name: 'Regression Line Max',
+		            data: [
+		            	[lines.maxLine.data[0].x, lines.maxLine.data[0].y], 
+		            	[lines.maxLine.data[1].x, lines.maxLine.data[1].y]
+		            ], 
+		            marker: { enabled: false },
+		            states: { hover: { lineWidth: 0 } },
+		            enableMouseTracking: false,
+		            color: Highcharts.getOptions().colors[0],
+		            lineWidth : 1
+		        },
+				{
+		            type: 'line',
+		            name: 'Regression Line Min Percentage',
+		            data: [
+		            	[lines.minPercentageLine.data[0].x, lines.minPercentageLine.data[0].y], 
+		            	[lines.minPercentageLine.data[1].x, lines.minPercentageLine.data[1].y]
+		            ], 
+		            marker: { enabled: false },
+		            states: { hover: { lineWidth: 0 } },
+		            enableMouseTracking: false,
+		            color: '#66AA22',
+		            lineWidth : 2
+		        },
+		        {
+		            type: 'line',
+		            name: 'Линия перестановки',
+		            data: [
+		            	[lines.baseLine.data[0].x, values.sell_price], 
+		            	[lines.baseLine.data[1].x, values.sell_price]
+		            ], 
+		            marker: { enabled: false },
+		            states: { hover: { lineWidth: 0 } },
+		            enableMouseTracking: false,
+		            color : '#FF0000',
+		            lineWidth: 3
+		        },
+		        // {
+		        //     type: 'line',
+		        //     name: 'Линия перестановки макс',
+		        //     data: [
+		        //     	[lines.baseLine.data[0].x, sell_price_max], 
+		        //     	[lines.baseLine.data[1].x, sell_price_max]
+		        //     ], 
+		        //     marker: { enabled: false },
+		        //     states: { hover: { lineWidth: 0 } },
+		        //     enableMouseTracking: false,
+		        //     color : '#FF0000',
+		        //     lineWidth: 3
+		        // },
 
-			        {
-				        name: 'Full Range',
-				        data: [
-							[ values.first_value_x, values.first_min_y, values.first_max_y],
-							[ values.last_value_x, values.last_min_y, values.last_max_y]
-				        ],
-				        type: 'arearange',
-				        lineWidth: 0,
-				        linkedTo: ':previous',
-				        color: Highcharts.getOptions().colors[0],
-				        fillOpacity: 0.3,
-				        zIndex: 0,
-				        marker: {
-				            enabled: false
-				        }
-			        },
-			        { 
-				    	type: 'line', 
-				    	marker: { enabled: false },
-				    	name: 'BTC/USD', 
-				    	data 
-				    }
-				    ]
-				});
+		    //     {
+			   //      name: 'Range Перестановки',
+			   //      data: [
+						// [ first_value_x, sell_price_min, sell_price_max],
+						// [ last_value_x, sell_price_min, sell_price_max]
+			   //      ],
+			   //      type: 'arearange',
+			   //      lineWidth: 0,
+			   //      linkedTo: ':previous',
+			   //      states: { hover: { lineWidth: 0 } },
+			   //      color: '#FF0000',
+			   //      fillOpacity: 0.5,
+			   //      zIndex: 0,
+			   //      marker: {
+			   //          enabled: false
+			   //      }
+		    //     },
+
+		        {
+			        name: 'Full Range',
+			        data: [
+						[ values.first_value_x, values.first_min_y, values.first_max_y],
+						[ values.last_value_x, values.last_min_y, values.last_max_y]
+			        ],
+			        type: 'arearange',
+			        lineWidth: 0,
+			        linkedTo: ':previous',
+			        color: Highcharts.getOptions().colors[0],
+			        fillOpacity: 0.3,
+			        zIndex: 0,
+			        marker: {
+			            enabled: false
+			        }
+		        },
+		        { 
+			    	type: 'line', 
+			    	marker: { enabled: false },
+			    	name: 'BTC/USD', 
+			    	data 
+			    }
+			    ]
 			});
-		})(data, lines);
+		});
+		
 	}
 
 	// делалось для какого то хуя
