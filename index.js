@@ -293,7 +293,7 @@ TRADER.prototype.getUserOrders = function (next) {
 			});
 			self.closed_orders = ORDERS.filter(el => {
 				return (el.orderStatus == 'EXECUTED' || el.orderStatus == 'PARTIALLY_FILLED_AND_CANCELLED') && 
-				moment(el.lastModificationTime).isSameOrAfter(moment().subtract(3, 'd'), 'd');
+				moment(el.lastModificationTime).isSameOrAfter(moment().subtract(2, 'd'), 'd');
 			});
 
 			// console.log(self.closed_orders.filter(el => el.currencyPair == 'VTC/BTC' && el.type == 'LIMIT_SELL').map(el => [el.exchangeId, el.quantity]));
