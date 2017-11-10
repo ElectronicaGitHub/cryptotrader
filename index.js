@@ -296,8 +296,6 @@ TRADER.prototype.getUserOrders = function (next) {
 				moment(el.lastModificationTime).isSameOrAfter(moment().subtract(3, 'd'), 'd');
 			});
 
-			console.log('info', self.closed_orders.filter(el => el.analyticsResult).length);
-
 			// console.log(self.closed_orders.filter(el => el.currencyPair == 'VTC/BTC' && el.type == 'LIMIT_SELL').map(el => [el.exchangeId, el.quantity]));
 
 			self.open_sell_orders_by_curr = {};
@@ -953,6 +951,10 @@ app.post('/removeOrder', function (req, res, next) {
 });
 
 app.post('/checkCycle', function (req, res, next) {
+
+	let a = bot.TRADERS[1].closed_orders.filter(el => el.analyticsResult).length;
+
+	console.log(a);
 	bot.checkCycle(function () {
 		res.json({
 			bot : bot
