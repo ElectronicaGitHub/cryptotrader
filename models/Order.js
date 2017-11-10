@@ -20,19 +20,19 @@ var Order = new Schema({
 	analyticsResult : {
 		type : String,
 		set : function (val) {
-			return JSON.stringify(val);
+			return val ? JSON.stringify(val) : null;
 		},
 		get : function (string) {
-			return JSON.parse(string);
+			return string ? JSON.parse(string) : null;
 		}
 	},
 	buyMomentChartData : {
 		type : String,
 		set : function (val) {
-			return JSON.stringify(val);
+			return val ? JSON.stringify(val) : null;
 		},
 		get : function (string) {
-			return JSON.parse(string);
+			return string ? JSON.parse(string) : null;
 		}	
 	}
 });
