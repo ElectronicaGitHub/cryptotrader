@@ -952,10 +952,10 @@ app.post('/removeOrder', function (req, res, next) {
 
 app.post('/checkCycle', function (req, res, next) {
 
-	let a = bot.TRADERS[1].closed_orders.filter(el => el.analyticsResult).length;
-
-	console.log(a);
 	bot.checkCycle(function () {
+		let a = bot.TRADERS[1].closed_orders.filter(el => el.analyticsResult).length;
+
+		console.log(a);
 		res.json({
 			bot : bot
 		});
