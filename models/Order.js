@@ -16,7 +16,8 @@ var Order = new Schema({
 	buyOrderId : {
 		type : ObjectId,
 		ref : 'Order'
-	}
+	},
+	analyticsResult : String
 });
 
 module.exports = mongoose.model('Order', Order);

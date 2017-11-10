@@ -14,7 +14,9 @@ var log_file = fs.createWriteStream(__dirname + '/out.log', {flags : 'a'});
 var log_stdout = process.stdout;
 var BOT = require('./bot');
 var moment = require('moment');
+var AnalyticsModule = require('./analyticsModule');
 
+var analyticsModule = new AnalyticsModule();
 
 var Rollbar = require("rollbar");
 var rollbar = new Rollbar("d1f871271f6840859895328aa1b65114");
@@ -115,9 +117,9 @@ TRADER.prototype.checkCycle = function (hasAnalyze, callback) {
 		self.syncRemoteOrdersWithLocal.bind(self)
 	]
 
-	if (hasAnalyze) {
-		fnArr.push(self.analyzeChartData.bind(self));
-	}
+	// if (hasAnalyze) {
+	// 	fnArr.push(self.analyzeChartData.bind(self));
+	// }
 
 	async.waterfall(fnArr, function (error, pairs_data) {
 		callback();
@@ -150,51 +152,29 @@ TRADER.prototype.collectChartData = function (callback) {
 
 TRADER.prototype.analyzeChartData = function(callback) {
 
-	console.log('analyzeChartData');
+	console.log('Начат анализ данных');
 
 	var self = this;
 
 	var data = this.baseConnector.getChartData(function (err, data) {
 
 		for (var i in data) {
-			data[i] = data[i].slice(data[i].length - 60);	
+			data[i] = data[i].slice(data[i].length - 60);
 		}
 
-		// смотрим последний час допустим значит берем 12 последних тиков
-		// 48 4 часа
-		// 96 8 часа
-		// 1 минутки
-		// data = data.slice(data.length - 60);
-
-		// console.log('Пара', el.symbol, data);
-
-		// self.pairs_graph_data = self.pairs_graph_data || {};
-		// self.pairs_graph_data[el.symbol] = data;
-
-		// находим коэффициенты для трех прямых, сохраняем их и те данные при которых мы решились на покупку пары
-		// this.able_to_buy_pairs.graph_k_av = '';
-		// this.able_to_buy_pairs.graph_b_av = '';
-
-		// this.able_to_buy_pairs.graph_k_min = '';
-		// this.able_to_buy_pairs.graph_b_min = '';
-
-		// this.able_to_buy_pairs.graph_k_max = '';
-		// this.able_to_buy_pairs.graph_b_max = '';
-
 		self.pairs_graph_data = data;
+
+		for (let pair of self.able_to_buy_pairs) {
+			pair.analyticsResult = analyticsModule.analyze(self, pair);
+		}
+
+		// сохраняем analyticsResult в pair
+		// что и за какую цену и ситуацию на рынке было куплено
+
+		// analyticsModule.setParams(params);
+
 		callback();
 	});
-
-
-
-	// }, function (err, data) {
-	// 	callback();
-	// });
-
-	// this.getChartData(null, 'BTC/' + this.exchange.usdName, (err, data) => {
-	// 	self.chartData = data;
-	// 	callback();
-	// });
 }
 
 TRADER.prototype.tradeCycle = function (callback) {
@@ -290,6 +270,8 @@ TRADER.prototype.getUserOrders = function (next) {
 		// a = _.sortBy(a, ['lastModificationTime']).reverse();
 		// console.log(a);
 
+		// console.log(API_ORDERS.filter(el => el.currencyPair == 'VTC/BTC' && el.type == 'LIMIT_SELL').map(el => [el.exchangeId, el.quantity]));
+
 		self.baseConnector.findOrders({}, (err, ORDERS_FROM_BASE) => {
 
 			var ORDERS = _(ORDERS_FROM_BASE)
@@ -311,6 +293,8 @@ TRADER.prototype.getUserOrders = function (next) {
 				return (el.orderStatus == 'EXECUTED' || el.orderStatus == 'PARTIALLY_FILLED_AND_CANCELLED') && 
 				moment(el.lastModificationTime).isSameOrAfter(moment().subtract(3, 'd'), 'd');
 			});
+
+			// console.log(self.closed_orders.filter(el => el.currencyPair == 'VTC/BTC' && el.type == 'LIMIT_SELL').map(el => [el.exchangeId, el.quantity]));
 
 			self.open_sell_orders_by_curr = {};
 			self.open_buy_orders_by_curr = {};
@@ -608,7 +592,6 @@ TRADER.prototype.makeTradeData = function (next) {
 	});
 
 	self.able_to_buy_pairs = self.able_to_buy_pairs
-
 	// .filter(function (el) {
 	// 	return el.success_counts > 0 || (!el.success_counts && !el.in_trade);
 	// })
@@ -653,18 +636,10 @@ TRADER.prototype.makeTradeData = function (next) {
 		return el.currency != 'BTC';
 	});
 
-	// for (var i in self.able_to_sell_pairs) {
-
-	// 	var p = self.able_to_sell_pairs[i];
-
-	// 	console.log('пара', p.currency, 'была куплена', p.buy_order.price);
-	// 	var sell_price = (pair.buy_order.price / 100 * (100 + this.exchange.profit_koef));
-	// 	console.log('продаем за', pair.price);
-	// 	console.log('было', p.buy_order.price * p.value, 'стало ', p.price * p.value);
-	// }
-
-	if (next) next();
-
+	// тех анализ
+	self.analyzeChartData(function (err, data) {
+		if (next) next();
+	});
 }
 
 TRADER.prototype.quickSellCycle = function (next) {
