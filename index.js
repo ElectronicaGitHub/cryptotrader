@@ -296,7 +296,7 @@ TRADER.prototype.getUserOrders = function (next) {
 				moment(el.lastModificationTime).isSameOrAfter(moment().subtract(3, 'd'), 'd');
 			});
 
-			console.log('info', self.closed_orders.map(el => el.analyticsResult));
+			console.log('info', self.closed_orders.filter(el => el.analyticsResult).length);
 
 			// console.log(self.closed_orders.filter(el => el.currencyPair == 'VTC/BTC' && el.type == 'LIMIT_SELL').map(el => [el.exchangeId, el.quantity]));
 
