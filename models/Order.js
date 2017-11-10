@@ -17,7 +17,26 @@ var Order = new Schema({
 		type : ObjectId,
 		ref : 'Order'
 	},
-	analyticsResult : String
+	analyticsResult : {
+		type : String,
+		set : function (val) {
+			return JSON.stringify(val);
+		},
+		get : function (string) {
+			return JSON.parse(string);
+		}
+	},
+	buyMomentChartData : {
+		type : String,
+		set : function (val) {
+			return JSON.stringify(val);
+		},
+		get : function (string) {
+			return JSON.parse(string);
+		}	
+	}
 });
+Order.set('toObject', { getters: true });
+Order.set('toJSON', { getters: true });
 
 module.exports = mongoose.model('Order', Order);

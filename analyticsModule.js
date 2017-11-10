@@ -40,6 +40,7 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 	pair.diff_value = (data[0][1] - y_min[1])/y_min[1] * 100;
 	pair.spread_value = (y_max[1] - y_min[1])/y_min[1] * 100;
 	pair.baseline_m = lines.baseLine.m;
+	pair.buyMomentChartData = data.map(el => el[1]);
 	
 	// первое значение
 	let first_value_x = data[0][0];

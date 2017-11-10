@@ -598,8 +598,12 @@ TRADER.prototype.makeTradeData = function (next) {
 	.filter(function (el) {
 		return el.in_trade < 1 || !el.in_trade;
 	})
+	// .filter(function (el) {
+	// 	return el.rank >= self.exchange.ok_rank_value && isFinite(el.rank);
+	// })
+	// (!!!)
 	.filter(function (el) {
-		return el.rank >= self.exchange.ok_rank_value && isFinite(el.rank);
+		return isFinite(el.rank);
 	})
 	.filter(function (el) {
 		var value; 
@@ -636,7 +640,7 @@ TRADER.prototype.makeTradeData = function (next) {
 		return el.currency != 'BTC';
 	});
 
-	// тех анализ
+	// Тех Анализ
 	self.analyzeChartData(function (err, data) {
 		if (next) next();
 	});
@@ -715,10 +719,11 @@ TRADER.prototype.calculateSellPrice = function (currency, buy_order, quantity, q
 }
 
 TRADER.prototype.sellPair = function (currency, quantity, buy_order, quick_sell, next) {
-	var self = this;
-	var currency_pair = currency.indexOf('/') < 0 ? (currency + '/BTC') : currency;
-	var currency = currency_pair.split('/')[0];
-	var reason = quick_sell ? quick_sell : 'profit_sell';
+	let self = this;
+	let currency_pair = currency.indexOf('/') < 0 ? (currency + '/BTC') : currency;
+	currency = currency_pair.split('/')[0];
+	let reason = quick_sell ? quick_sell : 'profit_sell';
+	let sell_price;
 
 	console.log('Продажа пары ' + (quick_sell ? 'по рынку' : 'с профитом'));
 
@@ -728,7 +733,14 @@ TRADER.prototype.sellPair = function (currency, quantity, buy_order, quick_sell,
 		return;
 	}
 	// var currencyPair = pair.currency + '/BTC';
-	var sell_price = self.calculateSellPrice(currency, buy_order, quantity, quick_sell);
+
+	if (buy_order && buy_order.analyticsResult) {
+		console.log('Ордер содержит данные аналитики');
+		sell_price = buy_order.analyticsResult.values.sell_price;
+		console.log('Ордер не содержит данных аналитики');
+	} else {
+		sell_price = self.calculateSellPrice(currency, buy_order, quantity, quick_sell);
+	}
 
 	console.log('Выставляем ордер на продажу', currency, 'в кол-ве', quantity, 'по цене', sell_price, 'В BTC', quantity * sell_price);
 
@@ -806,13 +818,13 @@ TRADER.prototype.buyCycle = function (next) {
 		return;		
 	}
 
-	var work_buy_pairs = this.able_to_buy_pairs.slice(0, 5);
+	// var work_buy_pairs = this.able_to_buy_pairs.slice(0, 5);
 
-	console.log('Цикл покупки', this.btc_value, work_buy_pairs.map(function (el) {
+	console.log('Цикл покупки', this.btc_value, this.able_to_buy_pairs.map(function (el) {
 		return el.symbol;
 	}));
 	
-	async.eachSeries(work_buy_pairs, function (pair, serie_callback) {
+	async.eachSeries(this.able_to_buy_pairs, function (pair, serie_callback) {
 
 		self.wrapWait(self.buyPair.bind(self, pair, serie_callback))();
 
@@ -827,13 +839,13 @@ TRADER.prototype.buyPair = function (pair, next) {
 	var buy_price = +pair.best_ask + satoshi;
 	var quantity = +((this.exchange.max_buy_order_price * 101 / 100) / buy_price);
 
-	console.log('Покупка валюты', pair_name);
-
 	if (this.btc_value < self.exchange.max_buy_order_price) {
 		console.log('Cлишком мало валюты для покупки', this.btc_value + ' BTC');
 		next(null);
 		return;		
 	}
+
+	console.log('Покупка валюты', pair_name);
 
 	this.buyLimit(pair_name, buy_price.toFixed(8), quantity, function (error, data) {
 		console.log('DEBUG!!!', error, data);
@@ -847,7 +859,9 @@ TRADER.prototype.buyPair = function (pair, next) {
 				exchangeId : data.exchangeId,
 				currencyPair : pair_name,
 				type : 'LIMIT_BUY',
-				orderStatus : 'OPEN'
+				orderStatus : 'OPEN',
+				analyticsResult : pair.analyticsResult,
+				buyMomentChartData : pair.buyMomentChartData
 			}, function (err, data) {
 				if (!err) console.log('Ордер сохранен в базу');
 				else console.log('Ошибка сохранения в базу');
@@ -871,24 +885,6 @@ TRADER.prototype.syncRemoteOrdersWithLocal = function (next) {
 		next(null);
 	})
 }
-
-// ГОТОВО !!!
-// выставили ордер на покупку
-// сохранили orderStatus = OPEN
-
-// ГОТОВО !!!
-// бежим по всем что сохранены опен
-// если статус поменян то ставим orderStatus = EXECUTED
-// бежим по всем открытым селл ордрам и смотрим закрылись ли они
-
-// ГОТОВО !!!
-// отменяем все выставленные на продажу, удаляем их из базы по ид
-
-// 
-// выставляем ордер на продажу сохраняем его в нем ид покупочного buyOrderId
-// если квикселим то заменяем тот ордер новым оставляя buyOrderId
-
-
 
 app.get('/', function (req, res, next) {
 	res.render('index', {
