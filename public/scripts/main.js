@@ -217,7 +217,8 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 
 		if (!sell_pair.buy_order || !sell_pair.buy_order.analyticsResult) return;
 		
-		let graph_id = 'graph-' + trader.exchange.name + '-' + sell_pair.symbol + '-' + sell_pair.buy_order.exchangeId;
+		let graph_id = 'graph-' + trader.exchange.name + '-' + sell_pair.currencyPair + '-' + sell_pair.buy_order.exchangeId;
+		console.log(graph_id);
 		let lines  = sell_pair.buy_order.analyticsResult.lines;
 		let values = sell_pair.buy_order.analyticsResult.values;
 
