@@ -263,7 +263,7 @@
 			</div>	
 		</div>
 		
-		<div ng-if="showInfo" class="info-container container">
+		<!-- <div ng-if="showInfo" class="info-container container">
 			<p>Инфо контейнер</p>
 			<div class="col-xs-6 each-pair-to-buy" ng-repeat="pair in trader.able_to_buy_pairs" ng-show="trader.pairs_graph_data[pair.symbol]" ng-class="{ success : pair.is_pair_acceptable, error : !pair.is_pair_acceptable }">
 				<b>{{ pair.symbol }}</b>
@@ -283,7 +283,7 @@
 				</p>
 				<div id="graph-{{trader.exchange.name}}-{{pair.symbol}}" ng-init="makeGraphForCurrentMarket(trader, pair)"></div>
 			</div>
-		</div>
+		</div> -->
 
 		<div class="toggle-panel visible-xs">
 			<div class="toggle-panel-button col-xs-6" ng-class="{ selected : view == 'closed'}" ng-click="view = 'closed'" >Закрытые</div>
@@ -319,7 +319,7 @@
 							<span>r: {{ pair.reason }}</span>
 						</p>
 					</div>
-					<!-- <div id="graph-{{trader.exchange.name}}-{{pair.symbol}}-{{ pair.buy_order.exchangeId }}" ng-init="makeGraphForClosedOrder(trader, pair.buy_order)"></div> -->
+					<div id="graph-{{trader.exchange.name}}-{{pair.symbol}}-{{ pair.buy_order.exchangeId }}" ng-init="makeGraphForClosedOrder(trader, pair.buy_order)"></div>
 				</div>
 			</div>
 

@@ -220,8 +220,11 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		let graph_id = 'graph-' + trader.exchange.name + '-' + sell_pair.symbol + '-' + sell_pair.exchangeId;
 		let lines  = sell_pair.buy_order.analyticsResult.lines;
 		let values = sell_pair.buy_order.analyticsResult.values;
-		let data = sell_pair.buy_order.buyMomentChartData.map(el => {
-			return []
+
+		let lastModificationTime = sell_pair.buy_order.lastModificationTime;
+
+		let data = sell_pair.buy_order.buyMomentChartData.map((el, n) => {
+			return [lastModificationTime - (n * 1000 * 60 ), el, 1];
 		});
 
 		$scope.makeGraph(graph_id, lines, values, data);
