@@ -737,8 +737,8 @@ TRADER.prototype.sellPair = function (currency, quantity, buy_order, quick_sell,
 	if (buy_order && buy_order.analyticsResult) {
 		console.log('Ордер содержит данные аналитики');
 		sell_price = buy_order.analyticsResult.values.sell_price;
-		console.log('Ордер не содержит данных аналитики');
 	} else {
+		console.log('Ордер не содержит данных аналитики');
 		sell_price = self.calculateSellPrice(currency, buy_order, quantity, quick_sell);
 	}
 
