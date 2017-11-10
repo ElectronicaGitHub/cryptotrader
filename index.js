@@ -280,6 +280,8 @@ TRADER.prototype.getUserOrders = function (next) {
 				.map(_.spread(_.merge))
 				.value();
 
+			debugger;
+
 			self.open_sell_orders = ORDERS.filter(el => {
 				return el.type == 'LIMIT_SELL' && el.orderStatus == 'OPEN';
 			});
