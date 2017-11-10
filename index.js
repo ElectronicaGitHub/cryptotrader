@@ -818,13 +818,13 @@ TRADER.prototype.buyCycle = function (next) {
 		return;		
 	}
 
-	// var work_buy_pairs = this.able_to_buy_pairs.slice(0, 5);
+	var work_buy_pairs = this.able_to_buy_pairs.filter(el => el.is_pair_acceptable);
 
-	console.log('Цикл покупки', this.btc_value, this.able_to_buy_pairs.map(function (el) {
+	console.log('Цикл покупки', this.btc_value, work_buy_pairs.map(function (el) {
 		return el.symbol;
 	}));
 	
-	async.eachSeries(this.able_to_buy_pairs, function (pair, serie_callback) {
+	async.eachSeries(work_buy_pairs, function (pair, serie_callback) {
 
 		self.wrapWait(self.buyPair.bind(self, pair, serie_callback))();
 
