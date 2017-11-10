@@ -225,7 +225,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		let lastModificationTime = sell_pair.buy_order.lastModificationTime;
 
 		let data = sell_pair.buy_order.buyMomentChartData.map((el, n) => {
-			return [lastModificationTime - (n * 1000 * 60 ), el, 1];
+			return [values.first_value_x + (n * 1000 * 60), el, 1];
 		});
 
 		$scope.makeGraph(graph_id, lines, values, data);
