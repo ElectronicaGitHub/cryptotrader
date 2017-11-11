@@ -14,9 +14,6 @@ var log_file = fs.createWriteStream(__dirname + '/out.log', {flags : 'a'});
 var log_stdout = process.stdout;
 var BOT = require('./bot');
 var moment = require('moment');
-var AnalyticsModule = require('./analyticsModule');
-
-var analyticsModule = new AnalyticsModule();
 
 var Rollbar = require("rollbar");
 var rollbar = new Rollbar("d1f871271f6840859895328aa1b65114");
@@ -165,13 +162,13 @@ TRADER.prototype.analyzeChartData = function(callback) {
 		self.pairs_graph_data = data;
 
 		for (let pair of self.able_to_buy_pairs) {
-			pair.analyticsResult = analyticsModule.analyze(self, pair);
+			pair.analyticsResult = self.analyticsModule.analyze(self, pair);
 		}
 
 		// сохраняем analyticsResult в pair
 		// что и за какую цену и ситуацию на рынке было куплено
 
-		// analyticsModule.setParams(params);
+		// self.analyticsModule.setParams(params);
 
 		callback();
 	});
@@ -460,63 +457,38 @@ TRADER.prototype.stopLossCycle = function (callback) {
 
 	console.log('Цикл стоп-лосс продаж:', this.exchange.name); 
 
-	var self = this;
+	let self = this;
 
-	var stop_loss_orders = [];
+	for ( let i in this.open_sell_orders) {
+		let each_open_sell_order = this.open_sell_orders[i];
 
-	var stop_loss_orders_can_sell = [];
-	var stop_loss_orders_cant_sell = [];
-
-	for ( var i in this.open_sell_orders) {
-		var each_open_sell_order = this.open_sell_orders[i];
-		// console.log('each_open_sell_order', each_open_sell_order.currencyPair, each_open_sell_order.quantity);
-
-		var closed_buy_order = this.closed_buy_orders.filter(function (el) {
-			return el.currencyPair == each_open_sell_order.currencyPair && el.quantity == each_open_sell_order.quantity;
-		})[0];
-		if (!closed_buy_order) {
-			closed_buy_order = closed_buy_orders_for_this_curr = this.closed_buy_orders.filter(function (el) {
-				return el.currencyPair == each_open_sell_order.currencyPair;
-			});
-			closed_buy_order = _.sortBy(closed_buy_order, ['lastModificationTime']).reverse()[0];
+		let closed_buy_orders = self.closed_buy_orders_by_curr[el.currency + '/BTC'];
+		if (closed_buy_orders) {
+			each_open_sell_order.buy_order = _.sortBy(closed_buy_orders, ['lastModificationTime']).reverse()[0];
 		}
-		var currency = this.total_balances.filter(function (el) {
+		let currency = this.total_balances.filter(function (el) {
 			return each_open_sell_order.currencyPair.split('/')[0] == el.currency;
 		})[0];
 
-		if (closed_buy_order && currency) {
-			var diff = currency.best_ask * closed_buy_order.quantity - closed_buy_order.inBTC;
-			var diff_perc = (diff / closed_buy_order.inBTC) * 100;
-
-			if (diff_perc < -this.exchange.stop_loss_koef) {
-
-				stop_loss_orders.push({
-					exchangeId : each_open_sell_order.exchangeId, 
-					currencyPair : each_open_sell_order.currencyPair, 
-					sellPrice : currency.best_bid,
-					quantity : each_open_sell_order.quantity,
-					inBTC : currency.best_ask * each_open_sell_order.quantity,
-					diffPercentage : diff_perc
-				});
+		if (each_open_sell_order.buy_order && currency) {
+			// если в покупном ордере есть аналитика и стоп лосс цена
+			if (each_open_sell_order.buy_order.analyticsResult && 
+				each_open_sell_order.buy_order.analyticsResult.values.stop_loss_price) {
+				// то сравниваем цену
+				each_open_sell_order.is_sellable = (currency.best_ask <= each_open_sell_order.buy_order.analyticsResult.values.stop_loss_price);
+			} else {
+				// иначе смотрим стандартно через стоп-лосс коэффициент
+				let diff = (currency.best_ask * each_open_sell_order.buy_order.quantity) - each_open_sell_order.buy_order.inBTC;
+				let diff_perc = (diff / each_open_sell_order.buy_order.inBTC) * 100;
+				each_open_sell_order.is_sellable = (diff_perc < -this.exchange.stop_loss_koef);
 			}
 		}
-	} 
+	}
 
-	stop_loss_orders_can_sell = stop_loss_orders.filter(function (el) {
-		return el.inBTC > self.exchange.min_buy_order_price;
-	});
+	let stop_loss_orders_can_sell = this.open_sell_orders
+		.filter(el => el.is_sellable);
 
-	stop_loss_orders_cant_sell = stop_loss_orders.filter(function (el) {
-		return el.inBTC <= self.exchange.min_buy_order_price;
-	});
-
-	// их надо докупить сперва и потом сбагрить нахуй
-	// докупаем эти пары
-	// делаем проверку
-	// затем снова смотрим убыточные сделки
-	// продаем всю сумму на балансе по этой валюте ( все вместе с докупленным )
-
-	console.log('Ордера на продажу:', stop_loss_orders_can_sell.map(function (el) {
+	console.log('Ордера:', stop_loss_orders_can_sell.map(function (el) {
 		return el.currencyPair;
 	}));
 
@@ -533,7 +505,7 @@ TRADER.prototype.stopLossCycle = function (callback) {
 				self, 
 				order.currencyPair,
 				order.quantity,
-				null,
+				order.buy_order,
 				'stop_loss'
 			))
 		], function (err, data) {
@@ -648,29 +620,29 @@ TRADER.prototype.makeTradeData = function (next) {
 	});
 }
 
-TRADER.prototype.quickSellCycle = function (next) {
+// TRADER.prototype.quickSellCycle = function (next) {
 
-	var self = this;
+// 	var self = this;
 
-	console.log('Цикл быстрых продаж', this.able_to_sell_pairs.map(function (el) {
-		return el.currency;
-	}));
+// 	console.log('Цикл быстрых продаж', this.able_to_sell_pairs.map(function (el) {
+// 		return el.currency;
+// 	}));
 
-	async.eachSeries(self.able_to_sell_pairs, function (pair, serie_callback) {
+// 	async.eachSeries(self.able_to_sell_pairs, function (pair, serie_callback) {
 
-		self.wrapWait(self.sellPair.bind(
-			self, 
-			pair.currency, 
-			pair.value, 
-			null, 
-			'quick_sell', 
-			serie_callback)
-		)();
+// 		self.wrapWait(self.sellPair.bind(
+// 			self, 
+// 			pair.currency, 
+// 			pair.value, 
+// 			null, 
+// 			'quick_sell', 
+// 			serie_callback)
+// 		)();
 		
-	}, function(error, data) {
-		next(null);
-	});
-}
+// 	}, function(error, data) {
+// 		next(null);
+// 	});
+// }
 
 TRADER.prototype.sellCycle = function (next) {
 
@@ -734,11 +706,14 @@ TRADER.prototype.sellPair = function (currency, quantity, buy_order, quick_sell,
 		next(null);
 		return;
 	}
-	// var currencyPair = pair.currency + '/BTC';
 
 	if (buy_order && buy_order.analyticsResult) {
 		console.log('Ордер содержит данные аналитики');
-		sell_price = buy_order.analyticsResult.values.sell_price;
+		if (reason == 'profit_sell') {
+			sell_price = buy_order.analyticsResult.values.sell_price;
+		} else if (reason == 'stop_loss') {
+			sell_price = buy_order.analyticsResult.values.stop_loss_price;
+		}
 	} else {
 		console.log('Ордер не содержит данных аналитики');
 		sell_price = self.calculateSellPrice(currency, buy_order, quantity, quick_sell);
@@ -863,6 +838,7 @@ TRADER.prototype.buyPair = function (pair, next) {
 				type : 'LIMIT_BUY',
 				orderStatus : 'OPEN',
 				analyticsResult : pair.analyticsResult,
+				analyticsParams : self.analyticsModule.params,
 				buyMomentChartData : pair.buyMomentChartData
 			}, function (err, data) {
 				if (!err) console.log('Ордер сохранен в базу');
@@ -931,6 +907,20 @@ app.post('/saveTraderChanges', function (req, res, next) {
 			bot.TRADERS[i].exchange.ok_spread_value = data.ok_spread_value;
 		}
 	}
+	res.json({
+		success : true
+	});
+});
+
+app.post('/saveTraderAnalyticsChanges', function (req, res ,next) {
+	data = req.body;
+
+	for (var i in bot.TRADERS) {
+		if (bot.TRADERS[i].exchange.name == data.name) {
+			bot.TRADERS[i].analyticsModule.setParams(data.params);
+		}
+	}
+
 	res.json({
 		success : true
 	});

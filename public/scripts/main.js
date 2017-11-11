@@ -171,6 +171,13 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		});
 	}
 
+	$scope.saveTraderAnalyticsChanges = function (trader) {
+		$http.post('/saveTraderAnalyticsChanges', {
+			name : trader.exchange.name,
+			params : trader.analyticsModule.params
+		});
+	}
+
 	$scope.stopLoopTradeCycle = function () {
 		$http.post('/stopLoopTradeCycle').then(function (data) {
 			console.log('stopped');
@@ -324,8 +331,21 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		            marker: { enabled: false },
 		            states: { hover: { lineWidth: 0 } },
 		            enableMouseTracking: false,
+		            color : '#00FF00',
+		            lineWidth: 4
+		        },
+		        {
+		            type: 'line',
+		            name: 'Стоп-лосс линия',
+		            data: [
+		            	[lines.baseLine.data[0].x, values.stop_loss_price], 
+		            	[lines.baseLine.data[1].x, values.stop_loss_price]
+		            ], 
+		            marker: { enabled: false },
+		            states: { hover: { lineWidth: 0 } },
+		            enableMouseTracking: false,
 		            color : '#FF0000',
-		            lineWidth: 3
+		            lineWidth: 4
 		        },
 		        // {
 		        //     type: 'line',

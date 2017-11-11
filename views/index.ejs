@@ -83,6 +83,10 @@
 	.exchange-settings-panel {
 		background: antiquewhite;
 		padding: 10px 0 0px;
+		overflow: hidden;
+	}
+	.form-group {
+		overflow: hidden;
 	}
 	.panel-info {
 		font-size: 12px;
@@ -226,19 +230,73 @@
 	<div class="exchange-settings-panel" ng-if="selectedTrader">
 		<div class="container">
 			<div class="form-group">
-				<label for="stop loss k">stop loss k</label>
-				<input class="from-control" type="text" ng-model="selectedTrader.exchange.stop_loss_koef">
-				<label for="stop loss k">profit k</label>
-				<input class="from-control" type="text" ng-model="selectedTrader.exchange.profit_koef">
-				<label for="stop loss k">ok rank value</label>
-				<input class="from-control" type="text" ng-model="selectedTrader.exchange.ok_rank_value">
-				<label for="stop loss k">ok spread value, %</label>
-				<input class="from-control" type="text" ng-model="selectedTrader.exchange.ok_spread_value">
-				<button class="btn btn-xs btn-success" ng-click="saveTraderChanges(selectedTrader)">Применить</button>
+				<div class="col-xs-6">
+					<label>stop loss k (depr.)</label>
+					<input class="from-control" type="number" ng-model="selectedTrader.exchange.stop_loss_koef">
+				</div>
+				<div class="col-xs-6">
+					<label>profit k (depr.)</label>
+					<input class="from-control" type="number" ng-model="selectedTrader.exchange.profit_koef">
+				</div>
+				<div class="col-xs-6">
+					<label>ok rank value</label>
+					<input class="from-control" type="number" ng-model="selectedTrader.exchange.ok_rank_value">
+				</div>
+				<div class="col-xs-6">
+					<label>ok spread value, %</label>
+					<input class="from-control" type="number" ng-model="selectedTrader.exchange.ok_spread_value">
+				</div>
+				<div class="col-xs-12">
+					<button class="btn btn-xs btn-success" ng-click="saveTraderChanges(selectedTrader)">Применить</button>
+				</div>
 			</div>
 		</div>
 	</div>
 
+	<div class="exchange-settings-panel" ng-if="selectedTrader" style="background: lemonchiffon">
+		<div class="container">
+			<div class="form-group">
+
+				<div class="col-xs-6">
+					<label>percent_from_min_to_base</label>
+					<input class="from-control" type="number" ng-model="selectedTrader.analyticsModule.params.percent_from_min_to_base">
+				</div>
+
+				<div class="col-xs-6">
+					<label>percent_graph_raise_value</label>
+					<input class="from-control" type="number" ng-model="selectedTrader.analyticsModule.params.percent_graph_raise_value">
+				</div>
+
+				<div class="col-xs-6">
+					<label>percent_from_base_to_max_to_buy_min</label>
+					<input class="from-control" type="number" ng-model="selectedTrader.analyticsModule.params.percent_from_base_to_max_to_buy_min">
+				</div>
+
+				<div class="col-xs-6">
+					<label>percent_from_base_to_max_to_buy_max</label>
+					<input class="from-control" type="number" ng-model="selectedTrader.analyticsModule.params.percent_from_base_to_max_to_buy_max">
+				</div>
+
+				<div class="col-xs-6">
+					<label>percent_from_base_to_max_step</label>
+					<input class="from-control" type="number" ng-model="selectedTrader.analyticsModule.params.percent_from_base_to_max_step">
+				</div>
+
+				<div class="col-xs-6">
+					<label>stop_loss_percent_from_min</label>
+					<input class="from-control" type="number" ng-model="selectedTrader.analyticsModule.params.stop_loss_percent_from_min">
+				</div>
+
+				<div class="col-xs-6">
+					<label>min_profit_percent</label>
+					<input class="from-control" type="number" ng-model="selectedTrader.analyticsModule.params.min_profit_percent">
+				</div>
+				<div class="col-xs-12">
+					<button class="btn btn-xs btn-success" ng-click="saveTraderAnalyticsChanges(selectedTrader)">Применить</button>
+				</div>
+			</div>
+		</div>
+	</div>
 	
 	<div class="each-bot-panel" ng-if="trader.total_balances" ng-repeat="trader in bot.TRADERS" ng-show="trader == selectedTrader">
 

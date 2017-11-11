@@ -12,11 +12,19 @@ function AnalyticsModule() {
 		percent_from_base_to_max_to_buy_min : 40,
 		percent_from_base_to_max_to_buy_max : 70,
 		percent_from_base_to_max_step : 10,
-		min_profit_percent : 0.8
+		// процент от минимальной границы относительно общего коридора вниз
+		stop_loss_percent_from_min : 10,
+		// минимальный процент профита чтоб совершить сделку
+		min_profit_percent : 1.5
 	}
 }
 
 AnalyticsModule.prototype.setParams = function (params) {
+
+	for (var i in params) {
+		params[i] = +params[i] || this.params[i];
+	}
+
 	this.params = params;
 }
 
@@ -100,6 +108,10 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 	let new_price_in_btc, new_price_in_btc_min, new_price_in_btc_max;
 	let usd_profit, usd_profit_min, usd_profit_max;
 
+	// Рассчет стоп-лосса
+	let stop_loss_addition = diff_from_min_to_max * this.params.stop_loss_percent_from_min / 100;
+	let stop_loss_price = last_min_y - stop_loss_addition;
+
 	// цикл увеличения процента при недостаточном профите
 	// заложен в параметрах
 	do {
@@ -174,7 +186,8 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 		diff_from_base_to_max,
 		percent_from_min_to_base,
 		percent_from_min_to_max,
-		sell_price
+		sell_price,
+		stop_loss_price
 	} }
 }
 

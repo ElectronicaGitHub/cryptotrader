@@ -1,6 +1,8 @@
 var async = require('async');
 var TRADER = require('./tradeMethods');
 
+var AnalyticsModule = require('./analyticsModule');
+
 var Rollbar = require("rollbar");
 var rollbar = new Rollbar({
 	accessToken: "d1f871271f6840859895328aa1b65114",
@@ -108,6 +110,7 @@ BOT.prototype.addToTraders = function (exchangeName) {
 	var tr = new TRADER();
 	tr.useExchange(new connectors[exchangeName]());
 	tr.baseConnector = new BaseConnector(exchangeName);
+	tr.analyticsModule = new AnalyticsModule();
 	this.TRADERS.push(tr);
 }
 

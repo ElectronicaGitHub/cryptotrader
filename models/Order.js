@@ -34,6 +34,15 @@ var Order = new Schema({
 		get : function (string) {
 			return string ? JSON.parse(string) : null;
 		}	
+	},
+	analyticsParams : {
+		type : String,
+		set : function (val) {
+			return val ? JSON.stringify(val) : null;
+		},
+		get : function (string) {
+			return string ? JSON.parse(string) : null;
+		}
 	}
 });
 Order.set('toObject', { getters: true });
