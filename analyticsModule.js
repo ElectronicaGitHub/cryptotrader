@@ -20,6 +20,27 @@ function AnalyticsModule() {
 	}
 }
 
+AnalyticsModule.prototype.getPower = function (val) {
+	let n = 0;
+
+	val = Math.abs(val);
+
+	if (val > 10) {
+		do {
+	        val /= 10;
+	        n++;
+	    } while (val > 10)
+
+	} else if (val < 1) {
+		do {
+	        val *= 10;
+	        n--;
+	    } while (val < 1)
+
+	}
+	return { val, n }
+}
+
 AnalyticsModule.prototype.setParams = function (params) {
 
 	for (var i in params) {
@@ -79,6 +100,15 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 
 	// коэффициент роста нашего графа по базовой регрессии
 	pair.percent_graph_raise_value = (last_base_y - first_base_y) / first_base_y * 100;
+
+	let val_and_power_y = this.getPower(last_base_y - first_base_y);
+	let val_and_power_x = this.getPower(last_value_x - first_value_x);
+
+	// console.log(val_and_power_y, val_and_power_x);
+
+	pair.normalize_baseline_m = pair.baseline_m / Math.pow(10, val_and_power_y.n) * Math.pow(10, val_and_power_x.n);
+
+	// console.log('normalize_baseline_m', pair.normalize_baseline_m);
 
 	// считаем прибыль при покупке в текущий момент
 	let current_ask = +pair.best_ask;

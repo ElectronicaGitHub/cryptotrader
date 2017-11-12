@@ -339,8 +339,9 @@
 
 				</p>
 				<p>
-					<span>first_base_y: {{ pair.first_base_y }}</span> | 
-					<span>last_max_y: {{ pair.last_base_y }}</span>
+					<!-- <span>first_base_y: {{ pair.first_base_y }}</span> |  -->
+					<!-- <span>last_max_y: {{ pair.last_base_y }}</span> -->
+					<span>normalize_baseline_m {{ pair.normalize_baseline_m }}</span> | 
 					<span>diff: {{ pair.percent_graph_raise_value | number:2 }}</span>
 				</p>
 				<div id="graph-{{trader.exchange.name}}-{{pair.symbol}}" ng-init="makeGraphForCurrentMarket(trader, pair)"></div>

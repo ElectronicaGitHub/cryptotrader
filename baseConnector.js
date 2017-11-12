@@ -42,8 +42,7 @@ BaseConnector.prototype.updateChartData = function (next) {
 				json_to_save[currency.symbol] = json_to_save[currency.symbol]
 					.filter(el => el.timestamp >= (+new Date() - ttl));
 			}
-
-			console.log('Наполненность базы', json_to_save[currency.symbol].length);
+			
 			let n = new ChartData({ 
 				exchangeName : trader.exchange.name, 
 				json : JSON.stringify(json_to_save) 
@@ -61,7 +60,6 @@ BaseConnector.prototype.updateChartData = function (next) {
 				json_to_update[currency.symbol] = json_to_update[currency.symbol]
 					.filter(el => el.timestamp >= (+new Date() - ttl));
 			}
-			console.log('Наполненность базы', json_to_update[currency.symbol].length);
 
 			chart_data_value.json = JSON.stringify(json_to_update);
 
