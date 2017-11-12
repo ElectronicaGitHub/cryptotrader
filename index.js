@@ -138,15 +138,11 @@ TRADER.prototype.collectChartData = function (callback) {
 
 		let last_data_n = 60 * self.analyticsModule.params.graph_hours;
 
-		console.log('last_data_n', last_data_n);
-		console.log(data['LTC/BTC'].length);
-
 		for (var i in data) {
 			let slice_n = last_data_n > data[i].length ? data[i].length : last_data_n;
 			data[i] = data[i].slice(data[i].length - slice_n);	
 		}		
 
-		console.log(data['LTC/BTC'].length);
 		self.pairs_graph_data = data;
 
 		callback();
@@ -165,15 +161,11 @@ TRADER.prototype.analyzeChartData = function(callback) {
 
 		let last_data_n = 60 * self.analyticsModule.params.graph_hours;
 
-		console.log('last_data_n', last_data_n);
-		console.log(data['LTC/BTC'].length);
-
 		for (var i in data) {
 			let slice_n = last_data_n > data[i].length ? data[i].length : last_data_n;
 			data[i] = data[i].slice(data[i].length - slice_n);
 		}
 
-		console.log(data['LTC/BTC'].length);
 		self.pairs_graph_data = data;
 
 		for (let pair of self.able_to_buy_pairs) {

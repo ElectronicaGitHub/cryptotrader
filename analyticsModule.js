@@ -151,7 +151,7 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 	let exs = [];
 
 	count_ex = data.length >= this.params.graph_hours * 60;
-	console.log(data.length, this.params.graph_hours * 60);
+	// console.log(data.length, this.params.graph_hours * 60);
 	// if (!count_ex) {
 	// 	console.log('Недостаточно данных для анализа', data.length, this.params.graph_hours * 60);
 	// }
