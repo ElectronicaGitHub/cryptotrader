@@ -30,7 +30,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 	$scope.bot = window.bot;
 	$scope.date_long = +new Date();
 	$scope.firstTime = true;
-	$scope.showInfo = false;
+	$scope.show_info = false;
 
 	console.log($scope.bot);
 

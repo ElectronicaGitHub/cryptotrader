@@ -214,7 +214,7 @@
 		
 	</div>
 
-	<div class="exchanges-panel" ng-if="bot">
+	<div class="exchanges-panel" ng-show="bot">
 		<div class="container">
 
 			<span ng-repeat="trader in bot.TRADERS" class="button-wrapper button-group">
@@ -222,7 +222,7 @@
 				<button ng-click="toggleExchange(trader)" ng-class="{ 'btn-danger' : trader.active, 'btn-success' : !trader.active}" class="btn btn-xs toggler">IOI</button>
 				
 			</span>
-			<button class="btn btn-xs btn-success" ng-click="showInfo = !showInfo">Инфо</button>
+			<button class="btn btn-xs btn-success" ng-click="show_info = !show_info">Инфо</button>
 			
 		</div>
 	</div>
@@ -325,7 +325,7 @@
 			</div>	
 		</div>
 		
-		<div ng-if="showInfo" class="info-container container">
+		<div ng-if="show_info" class="info-container container">
 			<p>Инфо контейнер</p>
 			<div class="col-xs-6 each-pair-to-buy" ng-repeat="pair in trader.able_to_buy_pairs" ng-show="trader.pairs_graph_data[pair.symbol]" ng-class="{ success : pair.is_pair_acceptable, error : !pair.is_pair_acceptable }">
 				<b>{{ pair.symbol }}</b>
