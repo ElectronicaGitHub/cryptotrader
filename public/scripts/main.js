@@ -269,7 +269,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 	}
 
 	$scope.makeGraph = function (graph_id, lines, values, data) {
-		setTimeout(function () {
+		// setTimeout(function () {
 			Highcharts.chart(graph_id, {
 				chart : {
 					height: 200
@@ -414,7 +414,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			    }
 			    ]
 			});
-		});
+		// });
 		
 	}
 
