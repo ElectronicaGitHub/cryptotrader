@@ -33,6 +33,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			trader.closed_orders = makeClosedPairs(trader.closed_orders_by_curr);
 			calcSummaries(trader);
 		}
+		$scope.makeGraphsForClosedOrders(trader);
 
 	}
 
@@ -57,6 +58,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 				trader.closed_orders = makeClosedPairs(trader.closed_orders_by_curr);
 				calcSummaries(trader);
 			}
+			$scope.makeGraphsForClosedOrders(trader);
 
 		}, function (error) {
 			console.log(error);
@@ -143,6 +145,12 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		}
 
 		return orders;
+	}
+
+	$scope.makeGraphsForClosedOrders = function (trader) {
+		for (let pair of trader.closed_orders) {
+			$scope.makeGraphForClosedOrder(trader, pair);
+		}
 	}
 
 	$scope.tradeCycle = function () {
