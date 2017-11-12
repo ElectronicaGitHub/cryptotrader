@@ -15,13 +15,13 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 	}
 	// let analyticsModule = new AnalyticsModule();
 
-	$scope.makeGraphsForClosedOrders = function (trader) {
-		$timeout(function () {
-			for (let pair of trader.closed_orders) {
-				$scope.makeGraphForClosedOrder(trader, pair);
-			}
-		});
-	}
+	// $scope.makeGraphsForClosedOrders = function (trader) {
+		// $timeout(function () {
+		// 	for (let pair of trader.closed_orders) {
+		// 		$scope.makeGraphForClosedOrder(trader, pair);
+		// 	}
+		// });
+	// }
 
 	$scope.setTraderSelected = function(trader) {
 		$scope.selectedTrader = trader;
@@ -40,7 +40,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 		for (let trader of $scope.bot.TRADERS) {
 			trader.closed_orders = makeClosedPairs(trader.closed_orders_by_curr);
 			calcSummaries(trader);
-			$scope.makeGraphsForClosedOrders(trader);
+			// $scope.makeGraphsForClosedOrders(trader);
 		}
 
 	}
@@ -65,7 +65,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 			for (let trader of $scope.bot.TRADERS) {
 				trader.closed_orders = makeClosedPairs(trader.closed_orders_by_curr);
 				calcSummaries(trader);
-				$scope.makeGraphsForClosedOrders(trader);
+				// $scope.makeGraphsForClosedOrders(trader);
 			}
 
 		}, function (error) {
@@ -271,7 +271,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 	}
 
 	$scope.makeGraph = function (graph_id, lines, values, data) {
-		// setTimeout(function () {
+		setTimeout(function () {
 			Highcharts.chart(graph_id, {
 				chart : {
 					height: 200
@@ -416,8 +416,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 			    }
 			    ]
 			});
-		// });
-		
+		});
 	}
 
 	// делалось для какого то хуя

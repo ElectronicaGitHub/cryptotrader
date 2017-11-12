@@ -362,7 +362,7 @@
 					<b>Итого</b> [ {{ trader.summary.closed_ordersInBTC | number:6 }} BTC / {{ inUSD(trader, trader.summary.closed_ordersInBTC) | number:2 }} USD ]
 				</div>
 				
-				<div class="each-closed-pair" ng-repeat="pair in trader.closed_orders | orderBy:'-lastModificationTime'" ng-class="{ gold : moment(date_long).isSame(pair.lastModificationTime, 'd'), yesterday : moment(date_long).isSame(moment(pair.lastModificationTime).add(1, 'd'), 'd') }">
+				<div class="each-closed-pair" ng-repeat="pair in trader.closed_orders | orderBy:'-lastModificationTime'" ng-class="{ gold : moment(date_long).isSame(pair.lastModificationTime, 'd'), yesterday : moment(date_long).isSame(moment(pair.lastModificationTime).add(1, 'd'), 'd') }" ng-click="makeGraphForClosedOrder(trader, pair)">
 					{{ $index + 1 }}. <b>{{ pair.currencyPair }}</b> / 
 					<span ng-class="(pair.buy_order.quantity * pair.price - pair.buy_order.quantity * pair.buy_order.price) > 0 ? 'ok' : 'not-ok'">{{pair.buy_order.quantity * pair.price - pair.buy_order.quantity * pair.buy_order.price | number:6 }} BTC [ {{ inUSD(trader, pair.buy_order.quantity * pair.price - pair.buy_order.quantity * pair.buy_order.price) | number:2 }} USD]</span>
 
