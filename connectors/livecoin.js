@@ -21,7 +21,7 @@ function LiveCoin() {
 	this.ok_rank_value = 0.5;
 	this.min_req_interval = 1000;
 	this.max_req_interval = 1500;
-	this.ok_spread_value = 0.4;
+	this.ok_spread_value = 0.1;
 	this.exchange_fee = 0.0025;
 	this.base_currency_diff_value = 0.005;
 

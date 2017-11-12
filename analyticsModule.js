@@ -229,7 +229,9 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 		percent_from_min_to_base,
 		percent_from_min_to_max,
 		sell_price,
-		stop_loss_price
+		stop_loss_price,
+		percent_graph_raise_value : pair.percent_graph_raise_value,
+		normalize_baseline_m : pair.normalize_baseline_m
 	} }
 }
 
