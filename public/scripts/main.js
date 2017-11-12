@@ -35,7 +35,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 	if ($scope.bot) {
 		$scope.setTraderSelected($scope.bot.TRADERS[0]);
 
-		for (var trader of $scope.bot.TRADERS) {
+		for (let trader of $scope.bot.TRADERS) {
 			trader.closed_orders = makeClosedPairs(trader.closed_orders_by_curr);
 			calcSummaries(trader);
 			$scope.makeGraphsForClosedOrders(trader);
@@ -60,7 +60,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 
 			console.log($scope.bot);
 
-			for (var trader of $scope.bot.TRADERS) {
+			for (let trader of $scope.bot.TRADERS) {
 				trader.closed_orders = makeClosedPairs(trader.closed_orders_by_curr);
 				calcSummaries(trader);
 				$scope.makeGraphsForClosedOrders(trader);
