@@ -138,8 +138,9 @@ TRADER.prototype.collectChartData = function (callback) {
 
 		let last_data_n = 60 * self.analyticsModule.params.graph_hours;
 
+		console.log('last_data_n', last_data_n);
 		console.log(data['LTC/BTC'].length);
-		
+
 		for (var i in data) {
 			data[i] = data[i].slice(data[i].length - last_data_n);	
 		}		
@@ -163,6 +164,7 @@ TRADER.prototype.analyzeChartData = function(callback) {
 
 		let last_data_n = 60 * self.analyticsModule.params.graph_hours;
 
+		console.log('last_data_n', last_data_n);
 		console.log(data['LTC/BTC'].length);
 
 		for (var i in data) {
