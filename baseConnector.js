@@ -28,6 +28,10 @@ BaseConnector.prototype.updateChartData = function (next) {
 	let trader = this;
 
 	ChartData.findOne({ exchangeName : this.exchange.name }, function (err, chart_data_value) {
+		
+		let ttl = 1000 * 60 * 60 * trader.analyticsModule.params.graph_hours;
+		// ttl *= 1.2;
+
 		if (!chart_data_value) {
 	
 			let json_to_save = {};
@@ -35,7 +39,8 @@ BaseConnector.prototype.updateChartData = function (next) {
 			for (currency of new_values_array) {
 				json_to_save[currency.symbol] = json_to_save[currency.symbol] || [];
 				json_to_save[currency.symbol].push(currency);
-				json_to_save[currency.symbol] = json_to_save[currency.symbol].filter(el => el.timestamp >= (+new Date() - (1000 * 60 * 60 * 2)));
+				json_to_save[currency.symbol] = json_to_save[currency.symbol]
+					.filter(el => el.timestamp >= (+new Date() - ttl));
 			}
 			let n = new ChartData({ 
 				exchangeName : trader.exchange.name, 
@@ -51,9 +56,10 @@ BaseConnector.prototype.updateChartData = function (next) {
 			for (currency of new_values_array) {
 				json_to_update[currency.symbol] = json_to_update[currency.symbol] || [];
 				json_to_update[currency.symbol].push(currency);
-				json_to_update[currency.symbol] = json_to_update[currency.symbol].filter(el => el.timestamp >= (+new Date() - (1000 * 60 * 60 * 2)));
+				json_to_update[currency.symbol] = json_to_update[currency.symbol]
+					.filter(el => el.timestamp >= (+new Date() - ttl));
 			}
-			
+
 			chart_data_value.json = JSON.stringify(json_to_update);
 
 			chart_data_value.save(function (err, data) {

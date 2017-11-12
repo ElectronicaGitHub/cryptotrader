@@ -134,10 +134,12 @@ TRADER.prototype.collectChartData = function (callback) {
 		self.baseConnector.updateChartData.bind(self)
 	], function (err, result) {
 
-		let data = result[1]
+		let data = result[1];
+
+		let last_data_n = 60 * self.analyticsModule.params.graph_hours;
 
 		for (var i in data) {
-			data[i] = data[i].slice(data[i].length - 60);	
+			data[i] = data[i].slice(data[i].length - last_data_n);	
 		}
 		self.pairs_graph_data = data;
 
@@ -155,8 +157,10 @@ TRADER.prototype.analyzeChartData = function(callback) {
 
 	var data = this.baseConnector.getChartData(function (err, data) {
 
+		let last_data_n = 60 * self.analyticsModule.params.graph_hours;
+
 		for (var i in data) {
-			data[i] = data[i].slice(data[i].length - 120);
+			data[i] = data[i].slice(data[i].length - last_data_n);
 		}
 
 		self.pairs_graph_data = data;

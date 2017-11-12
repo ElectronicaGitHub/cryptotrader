@@ -15,7 +15,8 @@ function AnalyticsModule() {
 		// процент от минимальной границы относительно общего коридора вниз
 		stop_loss_percent_from_min : 10,
 		// минимальный процент профита чтоб совершить сделку
-		min_profit_percent : 1.5
+		min_profit_percent : 1.5,
+		graph_hours : 3
 	}
 }
 
@@ -148,12 +149,23 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 	// базовой регрессии то покупаем пару и переставляем именно на эту цену
 
 	let exs = [];
+
+	count_ex = data.length >= this.params.graph_hours * 60;
+	// console.log(data.length, this.params.graph_hours * 60);
+	// if (!count_ex) {
+	// 	console.log('Недостаточно данных для анализа', data.length, this.params.graph_hours * 60);
+	// }
+
+	exs.push(count_ex);
+
 	// текущее значение больше минимума регрессии
 	// exs.push(last_value_y >= last_min_y);
 	// текущее значение меньше базовой регрессии
 	exs.push(last_value_y < last_base_y);
 	// затухание тренда не больше чем коэффициент
 	exs.push(pair.percent_graph_raise_value > -this.params.percent_graph_raise_value);
+	// затухание тренда по тренду не больше чем коэффициент
+	// exs.push(Math.abs(pair.percent_graph_raise_value) < this.params.percent_graph_raise_value);
 	// последняя точка выше предыдущей
 	exs.push(last_value_y > data[data.length - 2][1]);
 	// нахождение в зоне между минимумом и базой !!!

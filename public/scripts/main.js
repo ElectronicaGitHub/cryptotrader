@@ -254,6 +254,9 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 
 		data = data.map((el, n) => [el.timestamp, +el.best_ask, 1]);
 
+		// data.push([+(moment().add(1,'d')), data[data.length - 1][1], 1]);
+		// data.unshift([+(moment().subtract(1,'d')), data[0][1], 1]);
+
 		$scope.makeGraph(graph_id, lines, values, data);
 	}
 
