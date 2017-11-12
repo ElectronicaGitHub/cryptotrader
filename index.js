@@ -196,7 +196,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 
 		var isRaising;
 
-		self.lastBaseToFiatChart = data;
+		// self.lastBaseToFiatChart = data;
 
 		if (!data) {
 			isRaising = false;
@@ -281,7 +281,7 @@ TRADER.prototype.getUserOrders = function (next) {
 				.map(_.spread(_.merge))
 				.value();
 
-
+			ORDERS = ORDERS.filter(el => moment(el.lastModificationTime).isSameOrAfter(moment().subtract(2, 'd'), 'd'));
 
 			self.open_sell_orders = ORDERS.filter(el => {
 				return el.type == 'LIMIT_SELL' && el.orderStatus == 'OPEN';
@@ -293,8 +293,7 @@ TRADER.prototype.getUserOrders = function (next) {
 				return el.type == 'LIMIT_BUY' && (el.orderStatus == 'EXECUTED' || el.orderStatus == 'PARTIALLY_FILLED_AND_CANCELLED');
 			});
 			self.closed_orders = ORDERS.filter(el => {
-				return (el.orderStatus == 'EXECUTED' || el.orderStatus == 'PARTIALLY_FILLED_AND_CANCELLED') && 
-				moment(el.lastModificationTime).isSameOrAfter(moment().subtract(2, 'd'), 'd');
+				return (el.orderStatus == 'EXECUTED' || el.orderStatus == 'PARTIALLY_FILLED_AND_CANCELLED');
 			});
 
 			// console.log(self.closed_orders.filter(el => el.currencyPair == 'VTC/BTC' && el.type == 'LIMIT_SELL').map(el => [el.exchangeId, el.quantity]));
