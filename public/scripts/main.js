@@ -38,8 +38,8 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		for (var trader of $scope.bot.TRADERS) {
 			trader.closed_orders = makeClosedPairs(trader.closed_orders_by_curr);
 			calcSummaries(trader);
+			$scope.makeGraphsForClosedOrders(trader);
 		}
-		$scope.makeGraphsForClosedOrders(trader);
 
 	}
 
@@ -63,8 +63,8 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 			for (var trader of $scope.bot.TRADERS) {
 				trader.closed_orders = makeClosedPairs(trader.closed_orders_by_curr);
 				calcSummaries(trader);
+				$scope.makeGraphsForClosedOrders(trader);
 			}
-			$scope.makeGraphsForClosedOrders(trader);
 
 		}, function (error) {
 			console.log(error);
