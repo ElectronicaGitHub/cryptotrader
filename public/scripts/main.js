@@ -15,6 +15,12 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 	}
 	// let analyticsModule = new AnalyticsModule();
 
+	$scope.makeGraphsForClosedOrders = function (trader) {
+		for (let pair of trader.closed_orders) {
+			$scope.makeGraphForClosedOrder(trader, pair);
+		}
+	}
+
 	$scope.setTraderSelected = function(trader) {
 		$scope.selectedTrader = trader;
 	}
@@ -145,12 +151,6 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', function($sc
 		}
 
 		return orders;
-	}
-
-	$scope.makeGraphsForClosedOrders = function (trader) {
-		for (let pair of trader.closed_orders) {
-			$scope.makeGraphForClosedOrder(trader, pair);
-		}
 	}
 
 	$scope.tradeCycle = function () {
