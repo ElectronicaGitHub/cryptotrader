@@ -466,7 +466,7 @@ TRADER.prototype.stopLossCycle = function (callback) {
 	for ( let i in this.open_sell_orders) {
 		let each_open_sell_order = this.open_sell_orders[i];
 
-		let closed_buy_orders = self.closed_buy_orders_by_curr[el.currency + '/BTC'];
+		let closed_buy_orders = self.closed_buy_orders_by_curr[each_open_sell_order.currencyPair];
 		if (closed_buy_orders) {
 			each_open_sell_order.buy_order = _.sortBy(closed_buy_orders, ['lastModificationTime']).reverse()[0];
 		}
