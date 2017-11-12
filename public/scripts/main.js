@@ -16,7 +16,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 	// let analyticsModule = new AnalyticsModule();
 
 	$scope.makeGraphsForClosedOrders = function (trader) {
-		$$timeout(function () {
+		$timeout(function () {
 			for (let pair of trader.closed_orders) {
 				$scope.makeGraphForClosedOrder(trader, pair);
 			}
