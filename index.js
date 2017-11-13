@@ -43,6 +43,10 @@ mongoose.connection.on('open', function () {
     log.info('connected to database ' + config.get('db:name'));
 });
 
+mongoose.connection.on('close', function () {
+    log.info('disconnected to database ' + config.get('db:name'));
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 var _ = require('lodash');
