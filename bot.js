@@ -1,3 +1,4 @@
+var mongoose = require('./configs/mongoose');
 var async = require('async');
 var TRADER = require('./tradeMethods');
 
@@ -24,6 +25,8 @@ var BOT = function() {
 }
 
 BOT.prototype.loopCollectChartData = function (callback) {
+
+	console.log('mongoose.connection.readyState', mongoose.connection.readyState);
 
 	var self = this;
 
