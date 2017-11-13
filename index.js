@@ -47,7 +47,7 @@ mongoose.connection.on('disconnected', function () {
     log.info('disconnected to database ' + config.get('db:name'));
 });
 mongoose.connection.on('disconnect', function () {
-    log.info('disconnected to database ' + config.get('db:name'));
+    log.info('disconnect to database ' + config.get('db:name'));
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
