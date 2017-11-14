@@ -6,7 +6,7 @@ function AnalyticsModule() {
 		// насколько от нижней границы в процентах заходить на покупку
 		percent_from_min_to_base : 60,
 		// процент разницы в значениях в начале и в конце графа
-		percent_graph_raise_value : 1.5,
+		percent_graph_raise_value : 2,
 		// куда стараемся переставить переставить
 		// от одной границы до другой, неподошло в одну смотрим другую и тд
 		percent_from_base_to_max_to_buy_min : 40,
@@ -195,9 +195,9 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 	// текущее значение меньше базовой регрессии
 	exs.push(last_value_y < last_base_y);
 	// затухание тренда не больше чем коэффициент
-	exs.push(pair.percent_graph_raise_value > -this.params.percent_graph_raise_value);
+	// exs.push(pair.percent_graph_raise_value > -this.params.percent_graph_raise_value);
 	// затухание тренда по тренду не больше чем коэффициент
-	// exs.push(Math.abs(pair.percent_graph_raise_value) < this.params.percent_graph_raise_value);
+	exs.push(Math.abs(pair.percent_graph_raise_value) < this.params.percent_graph_raise_value);
 	// последняя точка выше предыдущей
 	exs.push(last_value_y > data[data.length - 2][1]);
 	// нахождение в зоне между минимумом и базой !!!
