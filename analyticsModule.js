@@ -100,6 +100,8 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 
 	// коэффициент роста нашего графа по базовой регрессии
 	pair.percent_graph_raise_value = (last_base_y - first_base_y) / first_base_y * 100;
+		
+	// console.log(last_base_y - first_base_y, last_value_x - first_value_x);
 
 	let val_and_power_y = this.getPower(last_base_y - first_base_y);
 	let val_and_power_x = this.getPower(last_value_x - first_value_x);

@@ -227,6 +227,7 @@
 				
 			</span>
 			<button class="btn btn-xs btn-success" ng-click="show_info = !show_info">Инфо</button>
+			<button class="btn btn-xs btn-success" ng-click="show_analytics = !show_analytics">Аналитика</button>
 			
 		</div>
 	</div>
@@ -352,6 +353,66 @@
 			</div>
 		</div>
 
+		<div ng-if="show_analytics" class="info-container container">
+			<p>Аналитика</p>
+
+			<div class="col-xs-6">
+				<div class="each-closed-pair" ng-repeat="pair in trader.closed_orders | orderBy:'-lastModificationTime'" ng-class="{ gold : moment(date_long).isSame(pair.lastModificationTime, 'd'), yesterday : moment(date_long).isSame(moment(pair.lastModificationTime).add(1, 'd'), 'd') }" ng-click="makeGraphForClosedOrder(trader, pair)" ng-if="pair.pairProfit <= 0">
+					{{ $index + 1 }}. <b>{{ pair.currencyPair }}</b> / 
+					<span ng-class="pair.pairProfit > 0 ? 'ok' : 'not-ok'">{{pair.pairProfit | number:6 }} BTC [ {{ inUSD(trader, pair.pairProfit) | number:2 }} USD]</span>
+
+					<span>{{ moment(pair.lastModificationTime).locale('ru').format('LLL') }}</span>
+
+					<div class="each-closed-pair-info">
+						<p>buy 
+							<span>q: {{ pair.buy_order.quantity | number:8 }}</span>
+							<span>pr: {{ pair.buy_order.price | number:8 }}</span>
+							<span>time: {{ moment(pair.buy_order.lastModificationTime).locale('ru').format('LLL') }}</span>
+						</p>
+						<p>sell 
+							<span>q: {{ pair.quantity | number:8 }}</span>
+							<span>pr: {{ pair.price | number:8 }}</span>
+							<span>time: {{ moment(pair.lastModificationTime).locale('ru').format('LLL') }}</span>
+							<span>r: {{ pair.reason }}</span>
+						</p>
+					</div>
+					<div class="closed-order-values" ng-if="pair.buy_order && pair.buy_order.analyticsResult">
+						<span>norm k: {{ pair.buy_order.analyticsResult.values.normalize_baseline_m }}</span> | 
+						<span>relative graph raise val: {{ pair.buy_order.analyticsResult.values.percent_graph_raise_value | number:2 }}</span>
+					</div>
+					<div id="graph-{{trader.exchange.name}}-{{pair.currencyPair}}-{{pair.buy_order.exchangeId}}"></div>
+				</div>
+			</div>
+			<div class="col-xs-6">
+				<div class="each-closed-pair" ng-repeat="pair in trader.closed_orders | orderBy:'-lastModificationTime'" ng-class="{ gold : moment(date_long).isSame(pair.lastModificationTime, 'd'), yesterday : moment(date_long).isSame(moment(pair.lastModificationTime).add(1, 'd'), 'd') }" ng-click="makeGraphForClosedOrder(trader, pair)" ng-if="pair.pairProfit > 0">
+					{{ $index + 1 }}. <b>{{ pair.currencyPair }}</b> / 
+					<span ng-class="pair.pairProfit > 0 ? 'ok' : 'not-ok'">{{pair.pairProfit | number:6 }} BTC [ {{ inUSD(trader, pair.pairProfit) | number:2 }} USD]</span>
+
+					<span>{{ moment(pair.lastModificationTime).locale('ru').format('LLL') }}</span>
+
+					<div class="each-closed-pair-info">
+						<p>buy 
+							<span>q: {{ pair.buy_order.quantity | number:8 }}</span>
+							<span>pr: {{ pair.buy_order.price | number:8 }}</span>
+							<span>time: {{ moment(pair.buy_order.lastModificationTime).locale('ru').format('LLL') }}</span>
+						</p>
+						<p>sell 
+							<span>q: {{ pair.quantity | number:8 }}</span>
+							<span>pr: {{ pair.price | number:8 }}</span>
+							<span>time: {{ moment(pair.lastModificationTime).locale('ru').format('LLL') }}</span>
+							<span>r: {{ pair.reason }}</span>
+						</p>
+					</div>
+					<div class="closed-order-values" ng-if="pair.buy_order && pair.buy_order.analyticsResult">
+						<span>norm k: {{ pair.buy_order.analyticsResult.values.normalize_baseline_m }}</span> | 
+						<span>relative graph raise val: {{ pair.buy_order.analyticsResult.values.percent_graph_raise_value | number:2 }}</span>
+					</div>
+					<div id="graph-{{trader.exchange.name}}-{{pair.currencyPair}}-{{pair.buy_order.exchangeId}}"></div>
+				</div>
+			</div>
+
+		</div>
+
 		<div class="toggle-panel visible-xs">
 			<div class="toggle-panel-button col-xs-6" ng-class="{ selected : view == 'closed'}" ng-click="view = 'closed'" >Закрытые</div>
 			<div class="toggle-panel-button col-xs-6" ng-class="{ selected : view == 'buy_and_sell'}" ng-click="view = 'buy_and_sell'">Продажи</div>
@@ -369,7 +430,7 @@
 				
 				<div class="each-closed-pair" ng-repeat="pair in trader.closed_orders | orderBy:'-lastModificationTime'" ng-class="{ gold : moment(date_long).isSame(pair.lastModificationTime, 'd'), yesterday : moment(date_long).isSame(moment(pair.lastModificationTime).add(1, 'd'), 'd') }" ng-click="makeGraphForClosedOrder(trader, pair)">
 					{{ $index + 1 }}. <b>{{ pair.currencyPair }}</b> / 
-					<span ng-class="(pair.buy_order.quantity * pair.price - pair.buy_order.quantity * pair.buy_order.price) > 0 ? 'ok' : 'not-ok'">{{pair.buy_order.quantity * pair.price - pair.buy_order.quantity * pair.buy_order.price | number:6 }} BTC [ {{ inUSD(trader, pair.buy_order.quantity * pair.price - pair.buy_order.quantity * pair.buy_order.price) | number:2 }} USD]</span>
+					<span ng-class="pair.pairProfit > 0 ? 'ok' : 'not-ok'">{{pair.pairProfit | number:6 }} BTC [ {{ inUSD(trader, pair.pairProfit) | number:2 }} USD]</span>
 
 					<span>{{ moment(pair.lastModificationTime).locale('ru').format('LLL') }}</span>
 
