@@ -530,7 +530,7 @@ TRADER.prototype.normalizeBalances = function (next) {
 		return el.currency != 'BTC';	
 	})
 	.filter(function (el) {
-		return el.value * el.best_ask <= self.exchange.min_buy_order_price;
+		return el.value * el.best_ask <= self.exchange.max_buy_order_price;
 	});
 
 	console.log('Нужно докупить', need_to_buy_currencies.map(function (el) {
