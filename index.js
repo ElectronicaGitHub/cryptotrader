@@ -126,16 +126,22 @@ TRADER.prototype.checkCycle = function (saveBalance, callback) {
 TRADER.prototype.saveBalance = function (callback) {
 	var self = this;
 
-	let total_btc_balance = this.total_balances.filter(el => el.currency == 'BTC')[0];
-	let available_btc_balance = this.available_balances.filter(el => el.currency == 'BTC')[0];
+	let total = 0;
+	let available = 0;
 
-	if (!total_btc_balance || !available_btc_balance) {
-		callback();
-		return;
+	for (var i in this.total_balances) {
+		let el = this.total_balances[i];
+		total += el.inBTC;
+	}
+
+	for (var i in this.available_balances) {
+		let el = this.available_balances[i];
+		available += el.value;
 	}
 
 	self.btc_balance = {
-		total : total_btc_balance.value, available : available_btc_balance.value
+		total, 
+		available
 	}
 
 	console.log('Сохранение баланса', self.btc_balance);
