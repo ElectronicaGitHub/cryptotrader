@@ -275,7 +275,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 				self.buyCycle.bind(self),
 
 				self.stopLossCycle.bind(self),
-				self.checkCycle.bind(self, true)
+				self.checkCycle.bind(self, false)
 
 			], function (error, data) {
 				console.log('Торговый цикл завершен');
