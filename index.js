@@ -95,7 +95,7 @@ TRADER.able_to_buy_pairs = [];
 
 TRADER.pairs_graph_data = {};
 
-TRADER.prototype.checkCycle = function (hasAnalyze, callback) {
+TRADER.prototype.checkCycle = function (saveBalance, callback) {
 
 	var self = this;
 
@@ -109,15 +109,14 @@ TRADER.prototype.checkCycle = function (hasAnalyze, callback) {
 	fnArr = [
 		self.getUserSummaries.bind(self),
 		self.getUserBalances.bind(self),
-		self.saveBalance.bind(self),
 		self.getUserOrders.bind(self),
 		self.makeTradeData.bind(self),
 		self.syncRemoteOrdersWithLocal.bind(self)
 	]
 
-	// if (hasAnalyze) {
-	// 	fnArr.push(self.analyzeChartData.bind(self));
-	// }
+	if (saveBalance) {
+		fnArr.push(self.saveBalance.bind(self));
+	}
 
 	async.waterfall(fnArr, function (error, pairs_data) {
 		callback();
