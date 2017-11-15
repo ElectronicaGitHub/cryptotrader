@@ -109,6 +109,7 @@ TRADER.prototype.checkCycle = function (hasAnalyze, callback) {
 	fnArr = [
 		self.getUserSummaries.bind(self),
 		self.getUserBalances.bind(self),
+		self.saveBalance.bind(self),
 		self.getUserOrders.bind(self),
 		self.makeTradeData.bind(self),
 		self.syncRemoteOrdersWithLocal.bind(self)
@@ -119,6 +120,28 @@ TRADER.prototype.checkCycle = function (hasAnalyze, callback) {
 	// }
 
 	async.waterfall(fnArr, function (error, pairs_data) {
+		callback();
+	});
+}
+
+TRADER.prototype.saveBalance = function (callback) {
+	var self = this;
+
+	let total_btc_balance = this.total_balances.filter(el => el.currency == 'BTC')[0];
+	let available_btc_balance = this.available_balances.filter(el => el.currency == 'BTC')[0];
+
+	if (!total_btc_balance || !available_btc_balance) {
+		callback();
+		return;
+	}
+
+	self.btc_balance = {
+		total : total_btc_balance.value, available : available_btc_balance.value
+	}
+
+	console.log('Сохранение баланса', self.btc_balance);
+
+	self.baseConnector.setBalance(self.btc_balance.total, self.btc_balance.available, function (err, data) {
 		callback();
 	});
 }
@@ -958,6 +981,18 @@ app.post('/checkCycle', function (req, res, next) {
 	});
 });
 
+app.post('/balance', function (req, res, next) {
+	data = req.body;
+
+	var trader = bot.TRADERS.filter(function (el) {
+		return el.exchange.name == data.exchangeName
+	})[0];
+
+	trader.baseConnector.getBalance(function (err, data) {
+		res.json(data);
+	});
+});
+
 app.post('/toggleExchange', function (req, res, next) {
 	data = req.body;
 
@@ -970,7 +1005,6 @@ app.post('/toggleExchange', function (req, res, next) {
 	res.json({
 		success : true
 	});
-
 });
 
 app.get('/log', function (req, res, next) {

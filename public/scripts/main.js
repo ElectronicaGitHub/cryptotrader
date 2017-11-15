@@ -177,6 +177,16 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 		});
 	}
 
+	$scope.getBTCBalances = function (trader) {
+		$http.post('/balance', {
+			exchangeName : trader.exchange.name
+		}).then(function(data) {
+			trader.btc_balances = data;
+		}, function (error) {
+			console.log(error);
+		});
+	}
+
 	$scope.loopTradeCycle = function () {
 		$http.post('/loopTradeCycle').then(function(data) {
 			console.log('loopTradeCycle', data);
@@ -429,6 +439,47 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 			    	data 
 			    }
 			    ]
+			});
+		});
+	}
+
+	$scope.makeBalanceGraph = function (trader) {
+		let total_data = trader.btc_balances.data.map(el => {
+			return [+new Date(el.timestamp), el.total, 1];
+		})
+		let available_data = trader.btc_balances.data.map(el => {
+			return [+new Date(el.timestamp), el.available, 1];
+		});
+
+		console.log(total_data, available_data);
+
+		let graph_id = 'balance-graph-' + trader.exchange.name;
+
+		setTimeout(function () {
+			Highcharts.chart(graph_id, {
+				chart : {
+					height: 200
+				},
+				xAxis: {
+			        type: 'datetime'
+				},
+				legend : {
+					enabled : false
+				},
+				title : { text : null },
+			    series: [{ 
+			    	type: 'line', 
+			    	marker: { enabled: false },
+			    	name: 'total', 
+			    	color: 'blue',
+			    	data : total_data
+			    }, { 
+			    	type: 'line', 
+			    	marker: { enabled: false },
+			    	name : 'available',
+			    	color: 'red',
+			    	data : available_data
+			    }]
 			});
 		});
 	}

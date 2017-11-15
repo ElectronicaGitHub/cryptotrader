@@ -1,5 +1,6 @@
 var Order = require('./models/Order.js');
 var ChartData = require('./models/ChartData.js');
+var Balance = require('./models/Balance.js');
 var _ = require('lodash');
 var async = require('async');
 
@@ -42,7 +43,7 @@ BaseConnector.prototype.updateChartData = function (next) {
 				json_to_save[currency.symbol] = json_to_save[currency.symbol]
 					.filter(el => el.timestamp >= (+new Date() - ttl));
 			}
-			
+
 			let n = new ChartData({ 
 				exchangeName : trader.exchange.name, 
 				json : JSON.stringify(json_to_save) 
@@ -69,6 +70,24 @@ BaseConnector.prototype.updateChartData = function (next) {
 			});
 		}
 	})
+}
+
+BaseConnector.prototype.setBalance = function (total, available, next) {
+	var bal = new Balance({
+		exchangeName : this.exchangeName, total, available
+	});
+
+	bal.save(function (err, balances) {
+		next(null);
+	});
+}
+
+BaseConnector.prototype.getBalance = function (next) {
+	let request = {};
+	request.exchangeName = this.exchangeName;
+	Balance.find(request, function (err, balances) {
+		next(null, balances);
+	});
 }
 
 BaseConnector.prototype.getChartData = function (next) {

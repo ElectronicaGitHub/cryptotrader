@@ -231,6 +231,7 @@
 			</span>
 			<button class="btn btn-xs btn-success" ng-click="show_info = !show_info">Инфо</button>
 			<button class="btn btn-xs btn-success" ng-click="show_analytics = !show_analytics">Аналитика</button>
+			<button class="btn btn-xs btn-success" ng-click="show_balance = !show_balance">Баланс</button>
 			
 		</div>
 	</div>
@@ -310,7 +311,7 @@
 		</div>
 	</div>
 	
-	<div class="each-bot-panel" ng-if="trader.total_balances" ng-repeat="trader in bot.TRADERS" ng-show="trader == selectedTrader">
+	<div class="each-bot-panel" ng-if="trader.total_balances" ng-repeat="trader in bot.TRADERS" ng-show="trader == selectedTrader" ng-init="getBTCBalances(trader)">
 
 		<div class="exchange-info-panel">
 			<div class="container">
@@ -354,6 +355,12 @@
 				</p>
 				<div id="graph-{{trader.exchange.name}}-{{pair.symbol}}" ng-init="makeGraphForCurrentMarket(trader, pair)"></div>
 			</div>
+		</div>
+
+		<div ng-if="show_balance" class="balance-container container" ng-init="makeBalanceGraph(trader)">
+			<p>Баланс</p>
+
+			<div id="balance-graph-{{ trader.exchange.name }}"></div>
 		</div>
 
 		<div ng-if="show_analytics" class="analytics-container container">
