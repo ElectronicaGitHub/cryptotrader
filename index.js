@@ -249,7 +249,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 			async.series([
 				self.sellCycle.bind(self),
 				self.stopLossCycle.bind(self),
-				self.checkCycle.bind(self, true),
+				self.checkCycle.bind(self, false),
 				
 				// self.closeOpenSellOrders.bind(self),
 				// self.checkCycle.bind(self),

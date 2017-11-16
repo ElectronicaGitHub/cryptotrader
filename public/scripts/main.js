@@ -444,12 +444,19 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 	}
 
 	$scope.makeBalanceGraph = function (trader) {
+
 		let total_data = trader.btc_balances.data.map(el => {
 			return [+new Date(el.timestamp), el.total, 1];
 		})
 		let available_data = trader.btc_balances.data.map(el => {
 			return [+new Date(el.timestamp), el.available, 1];
 		});
+
+		avg_total = total_data.map(el => el[1]).reduce((a,b)=> a+b)/total_data.length;
+		avg_available = available_data.map(el => el[1]).reduce((a,b)=> a+b)/available_data.length;
+
+		total_data = total_data.filter(el => { return (el[1] / avg_total) < 2; });
+		available_data = available_data.filter(el => { return (el[1] / avg_available) < 2; });
 
 		console.log(total_data, available_data);
 
@@ -473,13 +480,15 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 			    	name: 'total', 
 			    	color: 'blue',
 			    	data : total_data
-			    }, { 
-			    	type: 'line', 
-			    	marker: { enabled: false },
-			    	name : 'available',
-			    	color: 'red',
-			    	data : available_data
-			    }]
+			    }, 
+			    // { 
+			    // 	type: 'line', 
+			    // 	marker: { enabled: false },
+			    // 	name : 'available',
+			    // 	color: 'red',
+			    // 	data : available_data
+			    // }
+			    ]
 			});
 		});
 	}
