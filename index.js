@@ -200,6 +200,8 @@ TRADER.prototype.analyzeChartData = function(callback) {
 			pair.analyticsResult = self.analyticsModule.analyze(self, pair);
 		}
 
+		self.able_to_buy_pairs = self.able_to_buy_pairs.filter(el => el.analyticsResult);
+
 		// сохраняем analyticsResult в pair
 		// что и за какую цену и ситуацию на рынке было куплено
 

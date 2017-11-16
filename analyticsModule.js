@@ -16,7 +16,7 @@ function AnalyticsModule() {
 		stop_loss_percent_from_min : 10,
 		// минимальный процент профита чтоб совершить сделку
 		min_profit_percent : 1.5,
-		graph_hours : 3
+		graph_hours : 4
 	}
 }
 
@@ -24,6 +24,8 @@ AnalyticsModule.prototype.getPower = function (val) {
 	let n = 0;
 
 	val = Math.abs(val);
+
+	if (val == 0) return {val, n}
 
 	if (val > 10) {
 		do {
