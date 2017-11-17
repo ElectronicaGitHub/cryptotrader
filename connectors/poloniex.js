@@ -255,7 +255,7 @@ function Poloniex() {
 				    high : el["high"],
 				    close : el["close"],
 				    volume : el["volume"],
-				    timestamp : el["date"]
+				    timestamp : el["date"] * 1000
 				}
 			})
 		}

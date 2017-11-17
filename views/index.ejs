@@ -333,6 +333,11 @@
 				<div class="panel-info" ng-if="trader.btc_usd.best_ask">min buy price : {{ trader.exchange.max_buy_order_price }} BTC / {{ trader.btc_usd.best_ask * trader.exchange.max_buy_order_price | number:2 }} USD</div>
 			</div>	
 		</div>
+
+		<div class="container">
+			<p>Базовый тренд</p>
+			<div id="btc-graph-{{ trader.exchange.name }}" ng-init="makeBTCGraph(trader)"></div>
+		</div>
 		
 		<div ng-if="show_info" class="info-container container">
 			<p>Инфо контейнер</p>

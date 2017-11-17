@@ -116,9 +116,16 @@ TRADER.prototype.checkCycle = function (saveBalance, callback) {
 
 	if (saveBalance) {
 		fnArr.push(self.saveBalance.bind(self));
+
+		// self.getChartData(null, 'BTC/' + self.exchange.usdName, function (err, data) {
+		// 	self.lastBaseToFiatChart = data;
+		// });
+		
 	}
 
 	async.waterfall(fnArr, function (error, pairs_data) {
+
+
 		callback();
 	});
 }
@@ -229,7 +236,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 
 		var isRaising;
 
-		// self.lastBaseToFiatChart = data;
+		self.lastBaseToFiatChart = data;
 
 		if (!data) {
 			isRaising = false;

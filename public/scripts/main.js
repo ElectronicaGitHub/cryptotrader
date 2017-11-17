@@ -494,93 +494,70 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 	}
 
 	// делалось для какого то хуя
-	$scope.makeChart = function(trader) {
+	$scope.makeBTCGraph = function(trader) {
 
-		var _data = trader.chartData.map(el => {
-			return [el.timestamp, el.close, el.timestamp];
+		var _data = trader.lastBaseToFiatChart.map(el => {
+			return [el.timestamp, el.close, 1];
 			// return [el.close];
 		});
 		var closeds = trader.closed_orders.filter(el => el.buy_order);
 
 		closeds = _.sortBy(closeds, ['lastModificationTime']);
 
-		var closeds_ok = closeds.filter(el => {
-			return (el.quantity * el.price - el.quantity * el.buy_order.price) > 0;
-		})
+		var closeds_ok = closeds.filter(el => { return el.pairProfit > 0; })
 		.map(el => {
 			return [
 				el.lastModificationTime, 
-				_data[_data.length - 1][1], 
-				el.lastModificationTime
+				_.sortBy(_data.filter(data_el => data_el[0] <= el.lastModificationTime), ['lastModificationTime']).reverse()[0][1], 
+				1
 			];
 		});
 
-		var closeds_not_ok = closeds.filter(el => {
-			return (el.quantity * el.price - el.quantity * el.buy_order.price) < 0;
-		})
+		var closeds_not_ok = closeds.filter(el => { return el.pairProfit < 0; })
 		.map(el => {
 			return [
 				el.lastModificationTime, 
-				_data[_data.length - 1][1], 
-				el.lastModificationTime
+				_.sortBy(_data.filter(data_el => data_el[0] <= el.lastModificationTime), ['lastModificationTime']).reverse()[0][1],
+				1
 			];
 		});
 		var data = _data.filter(el => {
 			return el[0] > closeds[0].lastModificationTime;
 		});
 
-		console.log(closeds);
+		// data = _data;
+		// console.log(data);
 
-		let name = 'chart-' + trader.exchange.name;
+		let name = 'btc-graph-' + trader.exchange.name;
 
 		console.log('chart id', name);
 
-		
-		Highcharts.chart(name, {
-			chart : {
-				height: 400
-			},
-			xAxis: {
-		        type: 'datetime',
-		        dateTimeLabelFormats: {
-		           day: '%d %b %Y'    //ex- 01 Jan 2016
-		        }
-			},
-			xAxis: {
-				rangeSelector: {
-					enabled : true,
-					verticalAlign: 'top',
-					x: 0,
-					y: 0
+		setTimeout(function () {
+			Highcharts.chart(name, {
+				chart : {
+					height: 400
 				},
-			},
-			scrollbar : {
-				enabled : true
-			},
-            // legend : { enabled : false },
-		    // title: { text : null },
-		    series: [{ 
-		    	type: 'line', 
-		    	name: 'BTC/USD', 
-		    	data 
-		    }, {
-		    	name : 'closeds_ok',
-				type : 'scatter',
-				data : closeds_ok,
-				marker : {
-					radius : 4,
-					fillColor: '#00FF00'
-				}
-		    },{
-		    	name : 'closeds_not_ok',
-				type : 'scatter',
-				data : closeds_not_ok,
-				marker : {
-					radius : 4,
-					fillColor: '#FF0000'
-				}
-		    }]
+				xAxis: {
+			        type: 'datetime',
+				},
+			    series: [{ 
+			    	type: 'line', 
+			    	name: 'BTC/USD', 
+			    	data 
+			    }, 
+			    {
+			    	name : 'closeds_ok',
+					type : 'scatter',
+					data : closeds_ok,
+					color: "#00FF00"
+			    },{
+			    	name : 'closeds_not_ok',
+					type : 'scatter',
+					data : closeds_not_ok,
+					color: '#FF0000'
+			    }
+			    ]
+			});
 		});
-
 	}
 }]);
