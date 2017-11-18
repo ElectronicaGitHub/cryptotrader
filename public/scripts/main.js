@@ -455,8 +455,8 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 		avg_total = total_data.map(el => el[1]).reduce((a,b)=> a+b)/total_data.length;
 		avg_available = available_data.map(el => el[1]).reduce((a,b)=> a+b)/available_data.length;
 
-		total_data = total_data.filter(el => { return (el[1] / avg_total) < 2; });
-		available_data = available_data.filter(el => { return (el[1] / avg_available) < 2; });
+		total_data = total_data.filter(el => { return (el[1] / avg_total) < 1.5; });
+		available_data = available_data.filter(el => { return (el[1] / avg_available) < 1.5; });
 
 		console.log(total_data, available_data);
 
