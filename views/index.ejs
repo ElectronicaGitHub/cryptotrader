@@ -394,6 +394,7 @@
 					<div class="closed-order-values" ng-if="pair.buy_order && pair.buy_order.analyticsResult">
 						<span>norm k: {{ pair.buy_order.analyticsResult.values.normalize_baseline_m }}</span> | 
 						<span>relative graph raise val: {{ pair.buy_order.analyticsResult.values.percent_graph_raise_value | number:2 }}</span>
+						<span> || среднеквадр откл : {{ pair.std }} </span>
 					</div>
 					<div id="graph-{{trader.exchange.name}}-{{pair.currencyPair}}-{{pair.buy_order.exchangeId}}"></div>
 				</div>
@@ -421,6 +422,7 @@
 					<div class="closed-order-values" ng-if="pair.buy_order && pair.buy_order.analyticsResult">
 						<span>norm k: {{ pair.buy_order.analyticsResult.values.normalize_baseline_m }}</span> | 
 						<span>relative graph raise val: {{ pair.buy_order.analyticsResult.values.percent_graph_raise_value | number:2 }}</span>
+						<span> || среднеквадр откл : {{ pair.std }} </span>
 					</div>
 					<div id="graph-{{trader.exchange.name}}-{{pair.currencyPair}}-{{pair.buy_order.exchangeId}}"></div>
 				</div>
@@ -465,6 +467,7 @@
 					<div class="closed-order-values" ng-if="pair.buy_order && pair.buy_order.analyticsResult">
 						<span>norm k: {{ pair.buy_order.analyticsResult.values.normalize_baseline_m }}</span> | 
 						<span>relative graph raise val: {{ pair.buy_order.analyticsResult.values.percent_graph_raise_value | number:2 }}</span>
+						<span> || среднеквадр откл : {{ pair.std }} </span>
 					</div>
 					<div id="graph-{{trader.exchange.name}}-{{pair.currencyPair}}-{{pair.buy_order.exchangeId}}"></div>
 					<!-- <div id="graph-{{trader.exchange.name}}-{{pair.currencyPair}}-{{pair.buy_order.exchangeId}}" ng-init="makeGraphForClosedOrder(trader, pair)"></div> -->

@@ -43,6 +43,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 				b_order = pair.buy_order;
 				if (b_order) {
 					pair.pairProfit = b_order.quantity * pair.price - b_order.quantity * b_order.price;
+					pair.std = calcStandartDeviation(pair);
 				}
 				return pair;
 			})
@@ -75,6 +76,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 					b_order = pair.buy_order;
 					if (b_order) {
 						pair.pairProfit = b_order.quantity * pair.price - b_order.quantity * b_order.price;
+						pair.std = calcStandartDeviation(pair);
 					}
 					return pair;
 				})
@@ -85,6 +87,30 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 		}, function (error) {
 			console.log(error);
 		});
+	}
+
+	function calcStandartDeviation(pair) {
+
+		if (!pair.buy_order || !pair.buy_order.analyticsResult) return;
+
+		let data = pair.buy_order.buyMomentChartData.map((el, n) => {
+			return [values.first_value_x + (n * 1000 * 60), el, 1];
+		});
+
+		// let mat_ojidanie = pair.buy_order.buyMomentChartData.data.map(el => el[1]).reduce((a,b) => a+b) / data.length;
+		let sum = data.map(el => { 
+
+		let avg_current_val = (pair.buy_order.analyticsResult.lines.baseLine.m * el[0] ) + pair.buy_order.analyticsResult.lines.baseLine.b;
+		let diff = avg_current_val - el[1];
+		return Math.pow(diff, 2); }).reduce((a, b) => a+b);
+	
+		let srevdekvad_otkl = Math.sqrt(sum) / data.length;
+
+			// console.log('srevdekvad_otkl', srevdekvad_otkl);
+			// console.log('mat_ojidanie', mat_ojidanie);
+
+		return srevdekvad_otkl;
+
 	}
 
 	function calcSummaries(trader) {
@@ -384,38 +410,6 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 		            color : '#FF0000',
 		            lineWidth: 4
 		        },
-		        // {
-		        //     type: 'line',
-		        //     name: 'Линия перестановки макс',
-		        //     data: [
-		        //     	[lines.baseLine.data[0].x, sell_price_max], 
-		        //     	[lines.baseLine.data[1].x, sell_price_max]
-		        //     ], 
-		        //     marker: { enabled: false },
-		        //     states: { hover: { lineWidth: 0 } },
-		        //     enableMouseTracking: false,
-		        //     color : '#FF0000',
-		        //     lineWidth: 3
-		        // },
-
-		    //     {
-			   //      name: 'Range Перестановки',
-			   //      data: [
-						// [ first_value_x, sell_price_min, sell_price_max],
-						// [ last_value_x, sell_price_min, sell_price_max]
-			   //      ],
-			   //      type: 'arearange',
-			   //      lineWidth: 0,
-			   //      linkedTo: ':previous',
-			   //      states: { hover: { lineWidth: 0 } },
-			   //      color: '#FF0000',
-			   //      fillOpacity: 0.5,
-			   //      zIndex: 0,
-			   //      marker: {
-			   //          enabled: false
-			   //      }
-		    //     },
-
 		        {
 			        name: 'Full Range',
 			        data: [
