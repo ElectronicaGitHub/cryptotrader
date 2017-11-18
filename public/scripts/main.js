@@ -94,7 +94,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 		if (!pair.buy_order || !pair.buy_order.analyticsResult) return;
 
 		let data = pair.buy_order.buyMomentChartData.map((el, n) => {
-			return [values.first_value_x + (n * 1000 * 60), el, 1];
+			return [pair.buy_order.analyticsResult.values.first_value_x + (n * 1000 * 60), el, 1];
 		});
 
 		// let mat_ojidanie = pair.buy_order.buyMomentChartData.data.map(el => el[1]).reduce((a,b) => a+b) / data.length;
