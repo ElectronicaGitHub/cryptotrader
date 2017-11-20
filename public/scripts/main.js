@@ -31,6 +31,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 	$scope.date_long = +new Date();
 	$scope.firstTime = true;
 	$scope.show_info = false;
+	$scope.show_balance = true;
 
 	console.log($scope.bot);
 
@@ -208,6 +209,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 			exchangeName : trader.exchange.name
 		}).then(function(data) {
 			trader.btc_balances = data;
+			makeBalanceGraph(trader);
 		}, function (error) {
 			console.log(error);
 		});
@@ -437,7 +439,28 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 		});
 	}
 
-	$scope.makeBalanceGraph = function (trader) {
+	function makeBalanceGraph(trader) {
+
+		trader.balances_by_date_obj = {};
+		for (let balance of trader.btc_balances.data) {
+			let date = moment(balance.timestamp).format('L');
+			if (!trader.balances_by_date_obj[date] || trader.balances_by_date_obj[date] < balance.total) {
+				trader.balances_by_date_obj[date] = balance.total;
+			}
+		}
+		trader.balances_by_date = [];
+		for (let i in trader.balances_by_date_obj) {
+			trader.balances_by_date.push({ date : moment(i), value : trader.balances_by_date_obj[i]})
+		}
+		for (let i in trader.balances_by_date) {
+			let current = trader.balances_by_date[i];
+			let prev = trader.balances_by_date[+i - 1];
+			if (prev) {
+				trader.balances_by_date[i].diff = current.value - prev.value;
+			}
+		}
+
+		console.log(trader.balances_by_date);
 
 		let total_data = trader.btc_balances.data.map(el => {
 			return [+new Date(el.timestamp), el.total, 1];
@@ -452,7 +475,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 		total_data = total_data.filter(el => { return (el[1] / avg_total) < 1.5; });
 		available_data = available_data.filter(el => { return (el[1] / avg_available) < 1.5; });
 
-		console.log(total_data, available_data);
+		// console.log(total_data, available_data);
 
 		let graph_id = 'balance-graph-' + trader.exchange.name;
 
