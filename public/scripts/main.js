@@ -443,14 +443,21 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 
 		trader.balances_by_date_obj = {};
 		for (let balance of trader.btc_balances.data) {
+			let timestamp = balance.timestamp;
 			let date = moment(balance.timestamp).format('L');
-			if (!trader.balances_by_date_obj[date] || trader.balances_by_date_obj[date] < balance.total) {
-				trader.balances_by_date_obj[date] = balance.total;
+			if (!trader.balances_by_date_obj[date] || trader.balances_by_date_obj[date].timestamp < balance.timestamp) {
+				trader.balances_by_date_obj[date] = {
+					total : balance.total,
+					timestamp : balance.timestamp
+				}
 			}
 		}
 		trader.balances_by_date = [];
 		for (let i in trader.balances_by_date_obj) {
-			trader.balances_by_date.push({ date : moment(i), value : trader.balances_by_date_obj[i]})
+			trader.balances_by_date.push({ 
+				date : moment(i), 
+				value : trader.balances_by_date_obj[i].total
+			})
 		}
 		for (let i in trader.balances_by_date) {
 			let current = trader.balances_by_date[i];
