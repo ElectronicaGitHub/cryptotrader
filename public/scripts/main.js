@@ -27,7 +27,16 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 		$scope.selectedTrader = trader;
 	}
 
+	$scope.init = function (trader) {
+		$scope.getBTCBalances(trader);
+		$scope.getClosedOrders(trader);
+		$scope.getAbleToBuyPairs(trader);
+		$scope.getPairsGraphData(trader);
+		$scope.getLastBaseToFiatChart(trader);
+	}
+
 	$scope.bot = window.bot;
+	// $scope.bot = {};
 	$scope.date_long = +new Date();
 	$scope.firstTime = true;
 	$scope.show_info = false;
@@ -38,19 +47,19 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 	if ($scope.bot) {
 		$scope.setTraderSelected($scope.bot.TRADERS[0]);
 
-		for (let trader of $scope.bot.TRADERS) {
-			trader.closed_orders = makeClosedPairs(trader.closed_orders_by_curr);
-			trader.closed_orders.map(pair => {
-				b_order = pair.buy_order;
-				if (b_order) {
-					pair.pairProfit = b_order.quantity * pair.price - b_order.quantity * b_order.price;
-					pair.std = calcStandartDeviation(pair);
-				}
-				return pair;
-			})
-			calcSummaries(trader);
-			// $scope.makeGraphsForClosedOrders(trader);
-		}
+	// 	for (let trader of $scope.bot.TRADERS) {
+	// 		trader.closed_orders = makeClosedPairs(trader.closed_orders_by_curr);
+	// 		trader.closed_orders.map(pair => {
+	// 			b_order = pair.buy_order;
+	// 			if (b_order) {
+	// 				pair.pairProfit = b_order.quantity * pair.price - b_order.quantity * b_order.price;
+	// 				pair.std = calcStandartDeviation(pair);
+	// 			}
+	// 			return pair;
+	// 		})
+	// 		calcSummaries(trader);
+	// 		// $scope.makeGraphsForClosedOrders(trader);
+	// 	}
 
 	}
 
@@ -72,22 +81,26 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 			console.log($scope.bot);
 
 			for (let trader of $scope.bot.TRADERS) {
-				trader.closed_orders = makeClosedPairs(trader.closed_orders_by_curr);
-				trader.closed_orders.map(pair => {
-					b_order = pair.buy_order;
-					if (b_order) {
-						pair.pairProfit = b_order.quantity * pair.price - b_order.quantity * b_order.price;
-						pair.std = calcStandartDeviation(pair);
-					}
-					return pair;
-				})
-				calcSummaries(trader);
+				makeOrders(trader);
 				// $scope.makeGraphsForClosedOrders(trader);
 			}
 
 		}, function (error) {
 			console.log(error);
 		});
+	}
+
+	function makeOrders (trader) {
+		trader.closed_orders = makeClosedPairs(trader.closed_orders_by_curr);
+		trader.closed_orders.map(pair => {
+			b_order = pair.buy_order;
+			if (b_order) {
+				pair.pairProfit = b_order.quantity * pair.price - b_order.quantity * b_order.price;
+				pair.std = calcStandartDeviation(pair);
+			}
+			return pair;
+		})
+		calcSummaries(trader);
 	}
 
 	function calcStandartDeviation(pair) {
@@ -214,6 +227,48 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 			console.log(error);
 		});
 	}
+
+	$scope.getAbleToBuyPairs = function (trader) {
+		$http.post('/able_to_buy_pairs', {
+			exchangeName : trader.exchange.name
+		}).then(function(data) {
+			trader.able_to_buy_pairs = data.data;
+		}, function (error) {
+			console.log(error);
+		});
+	}
+
+	$scope.getPairsGraphData = function (trader) {
+		$http.post('/pairs_graph_data', {
+			exchangeName : trader.exchange.name
+		}).then(function(data) {
+			trader.pairs_graph_data = data.data;
+		}, function (error) {
+			console.log(error);
+		});
+	}
+
+	$scope.getClosedOrders = function (trader) {
+		$http.post('/closed_orders', {
+			exchangeName : trader.exchange.name
+		}).then(function(data) {
+			trader.closed_orders_by_curr = data.data;
+			makeOrders(trader);
+		}, function (error) {
+			console.log(error);
+		});
+	}
+
+	$scope.getLastBaseToFiatChart = function (trader) {
+		$http.post('/lastBaseToFiatChart', {
+			exchangeName : trader.exchange.name
+		}).then(function(data) {
+			trader.lastBaseToFiatChart = data.data;
+		}, function (error) {
+			console.log(error);
+		});
+	}
+	
 
 	$scope.loopTradeCycle = function () {
 		$http.post('/loopTradeCycle').then(function(data) {
@@ -471,7 +526,8 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 
 		let total_data = trader.btc_balances.data.map(el => {
 			return [+new Date(el.timestamp), el.total, 1];
-		})
+		});
+
 		let available_data = trader.btc_balances.data.map(el => {
 			return [+new Date(el.timestamp), el.available, 1];
 		});
@@ -519,6 +575,8 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 
 	// делалось для какого то хуя
 	$scope.makeBTCGraph = function(trader) {
+
+		if (!trader.lastBaseToFiatChart) return;
 
 		var _data = trader.lastBaseToFiatChart.map(el => {
 			return [el.timestamp, el.close, 1];

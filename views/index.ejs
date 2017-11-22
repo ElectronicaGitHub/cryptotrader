@@ -324,7 +324,7 @@
 		</div>
 	</div>
 	
-	<div class="each-bot-panel" ng-if="trader.total_balances" ng-repeat="trader in bot.TRADERS" ng-show="trader == selectedTrader" ng-init="getBTCBalances(trader)">
+	<div class="each-bot-panel" ng-if="trader.total_balances" ng-repeat="trader in bot.TRADERS" ng-show="trader == selectedTrader" ng-init="init(trader)">
 
 		<div class="exchange-info-panel">
 			<div class="container">
@@ -359,6 +359,7 @@
 				<span>best_ask {{ pair.best_ask }}</span> | 
 				<span>best_bid {{ pair.best_bid }}</span> | 
 				<span>volume {{ pair.volume }}</span> | 
+				<span>tax {{ pair.analyticsResult.values.tax }} ({{ pair.analyticsResult.values.tax / pair.analyticsResult.values.sell_price * 100 | number:2 }})%</span>
 				<p>
 					<span>spread {{ pair.spread_value | number:2 }}</span> |
 					<span>diff {{ pair.diff_value | number:2 }}</span> |

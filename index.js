@@ -911,9 +911,36 @@ TRADER.prototype.syncRemoteOrdersWithLocal = function (next) {
 	})
 }
 
+function getTraderByName(name) {
+	return bot.TRADERS.filter(function (el) {
+		return el.exchange.name == name
+	})[0];
+}
+
+function prepareBotSend() {
+
+	let result = {
+		TRADERS : []
+	}
+
+	for (let trader of bot.TRADERS) {
+		result.TRADERS.push({
+			closed_orders_by_curr : trader.closed_orders_by_curr,
+			exchange : trader.exchange,
+			active : trader.active,
+			total_balances : trader.total_balances,
+			btc_usd : trader.btc_usd,
+			exchange_pairs : trader.exchange_pairs,
+			analyticsModule : trader.analyticsModule
+		});
+	}
+
+	return result;
+}
+
 app.get('/', function (req, res, next) {
 	res.render('index', {
-		bot : bot
+		bot : prepareBotSend()
 	});
 });
 
@@ -976,9 +1003,7 @@ app.post('/saveTraderAnalyticsChanges', function (req, res ,next) {
 app.post('/removeOrder', function (req, res, next) {
 	data = req.body;
 	console.log(data);
-	var trader = bot.TRADERS.filter(function (el) {
-		return el.exchange.name == data.exchangeName
-	})[0];
+	var trader = getTraderByName(data.exchangeName);
 
 	trader.cancelOrder(data, function (err, data) {
 		if (err) console.log(err);
@@ -990,17 +1015,47 @@ app.post('/removeOrder', function (req, res, next) {
 app.post('/checkCycle', function (req, res, next) {
 	bot.checkCycle(function () {
 		res.json({
-			bot : bot
+			bot : prepareBotSend()
 		});
 	});
+});
+
+app.post('/able_to_buy_pairs', function (req, res, next) {
+	data = req.body;
+
+	var trader = getTraderByName(data.exchangeName);
+
+	res.json(trader.able_to_buy_pairs);
+});
+
+app.post('/pairs_graph_data', function (req, res, next) {
+	data = req.body;
+
+	var trader = getTraderByName(data.exchangeName);
+
+	res.json(trader.pairs_graph_data);
+});
+
+app.post('/closed_orders', function (req, res, next) {
+	data = req.body;
+
+	var trader = getTraderByName(data.exchangeName);
+
+	res.json(trader.closed_orders_by_curr);
+});
+
+app.post('/lastBaseToFiatChart', function (req, res, next) {
+	data = req.body;
+
+	var trader = getTraderByName(data.exchangeName);
+
+	res.json(trader.lastBaseToFiatChart);
 });
 
 app.post('/balance', function (req, res, next) {
 	data = req.body;
 
-	var trader = bot.TRADERS.filter(function (el) {
-		return el.exchange.name == data.exchangeName
-	})[0];
+	var trader = getTraderByName(data.exchangeName);
 
 	trader.baseConnector.getBalance(function (err, data) {
 		res.json(data);
@@ -1010,9 +1065,7 @@ app.post('/balance', function (req, res, next) {
 app.post('/toggleExchange', function (req, res, next) {
 	data = req.body;
 
-	var trader = bot.TRADERS.filter(function (el) {
-		return el.exchange.name == data.exchangeName
-	})[0];
+	var trader = getTraderByName(data.exchangeName);
 	
 	trader.active = !trader.active;
 

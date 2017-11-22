@@ -15,7 +15,7 @@ function AnalyticsModule() {
 		// процент от минимальной границы относительно общего коридора вниз
 		stop_loss_percent_from_min : 10,
 		// минимальный процент профита чтоб совершить сделку
-		min_profit_percent : 1.5,
+		min_profit_percent : 2,
 		graph_hours : 4
 	}
 }
@@ -154,11 +154,12 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 		// sell_price_min = last_base_y + (last_max_y - last_base_y) * this.params.percent_from_base_to_max_to_buy_min / 100;
 		// sell_price_max = last_base_y + (last_max_y - last_base_y) * this.params.percent_from_base_to_max_to_buy_max / 100;
 
-		tax = (sell_price * quantity) * (trader.exchange.exchange_fee * 2);
+		tax = sell_price * (trader.exchange.exchange_fee * 2);
 		// tax_min = (sell_price_min * quantity) * (trader.exchange.exchange_fee * 2);
 		// tax_max = (sell_price_max * quantity) * (trader.exchange.exchange_fee * 2);
 
 		new_price_in_btc = (sell_price + tax) * quantity;
+
 		// new_price_in_btc_min = (sell_price_min + tax_min) * quantity;
 		// new_price_in_btc_max = (sell_price_max + tax_max) * quantity;
 
@@ -234,6 +235,7 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 		percent_from_min_to_max,
 		sell_price,
 		stop_loss_price,
+		tax,
 		percent_graph_raise_value : pair.percent_graph_raise_value,
 		normalize_baseline_m : pair.normalize_baseline_m
 	} }
