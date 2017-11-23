@@ -507,6 +507,7 @@ TRADER.prototype.stopLossCycle = function (callback) {
 
 		let closed_buy_orders = self.closed_buy_orders_by_curr[each_open_sell_order.currencyPair];
 		if (closed_buy_orders) {
+			closed_buy_orders = closed_buy_orders.filter(el => el.analyticsResult);
 			each_open_sell_order.buy_order = _.sortBy(closed_buy_orders, ['lastModificationTime']).reverse()[0];
 		}
 		let currency = this.total_balances.filter(function (el) {
@@ -647,6 +648,8 @@ TRADER.prototype.makeTradeData = function (next) {
 		let closed_buy_orders = self.closed_buy_orders_by_curr[el.currency + '/BTC'];
 
 		if (closed_buy_orders) {
+			
+			closed_buy_orders = closed_buy_orders.filter(el => el.analyticsResult);
 
 			// el.buy_order = closed_buy_orders.filter(curr => curr.quantity == el.value)[0];
 			// if (!el.buy_order) {
