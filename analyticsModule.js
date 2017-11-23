@@ -15,7 +15,7 @@ function AnalyticsModule() {
 		// процент от минимальной границы относительно общего коридора вниз
 		stop_loss_percent_from_min : 10,
 		// минимальный процент профита чтоб совершить сделку
-		min_profit_percent : 2,
+		min_profit_percent : 2.5,
 		graph_hours : 4
 	}
 }
