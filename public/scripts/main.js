@@ -522,6 +522,10 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 			}
 		}
 
+		trader.balances_by_date = trader.balances_by_date.sort((a,b) => {
+			return +b.date > +a.date;
+		});
+
 		console.log(trader.balances_by_date);
 
 		let total_data = trader.btc_balances.data.map(el => {
