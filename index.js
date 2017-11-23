@@ -415,10 +415,11 @@ TRADER.prototype.getUserSummaries = function (next) {
 
 		self.exchange_pairs = _exchange_pairs.filter(function(el) {
 			ex1 = el.rank > self.exchange.ok_rank_value;
-			ex2 = el.best_ask > 10000 * satoshi;
+			// ex2 = el.best_ask > 10000 * satoshi;
 			ex3 = ((el.best_ask - el.best_bid)/el.best_bid) * 100 > self.exchange.ok_spread_value;
 
-			if (ex1 && ex2 && ex3) {
+			// if (ex1 && ex2 && ex3) {
+			if (ex1 && ex3) {
 				el.tradeable = true;
 			}
 
@@ -525,6 +526,10 @@ TRADER.prototype.stopLossCycle = function (callback) {
 				let diff = (currency.best_ask * each_open_sell_order.buy_order.quantity) - each_open_sell_order.buy_order.inBTC;
 				let diff_perc = (diff / each_open_sell_order.buy_order.inBTC) * 100;
 				each_open_sell_order.is_sellable = (diff_perc < -this.exchange.stop_loss_koef);
+			}
+
+			if (each_open_sell_order.price < each_open_sell_order.buy_order.price) {
+				each_open_sell_order.is_sellable = false;
 			}
 		}
 	}
@@ -648,7 +653,7 @@ TRADER.prototype.makeTradeData = function (next) {
 		let closed_buy_orders = self.closed_buy_orders_by_curr[el.currency + '/BTC'];
 
 		if (closed_buy_orders) {
-			
+
 			closed_buy_orders = closed_buy_orders.filter(el => el.analyticsResult);
 
 			// el.buy_order = closed_buy_orders.filter(curr => curr.quantity == el.value)[0];
