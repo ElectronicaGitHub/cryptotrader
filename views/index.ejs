@@ -529,28 +529,30 @@
 
 					<span>{{ moment(pair.lastModificationTime).locale('ru').format('HH:mm') }}</span>
 
-					<div class="each-closed-pair-info" ng-show="show_full_closed_orders_info">
-						<p>buy 
-							<span>q: {{ pair.buy_order.quantity | number:8 }}</span>
-							<span>pr: {{ pair.buy_order.price | number:8 }}</span>
-							<span>time: {{ moment(pair.buy_order.lastModificationTime).locale('ru').format('LLL') }}</span>
-						</p>
-						<p>sell 
-							<span>q: {{ pair.quantity | number:8 }}</span>
-							<span>pr: {{ pair.price | number:8 }}</span>
-							<span>time: {{ moment(pair.lastModificationTime).locale('ru').format('LLL') }}</span>
-							<span>r: {{ pair.reason }}</span>
-						</p>
+					<div ng-show="show_full_closed_orders_info">
+						<div class="each-closed-pair-info">
+							<p>buy 
+								<span>q: {{ pair.buy_order.quantity | number:8 }}</span>
+								<span>pr: {{ pair.buy_order.price | number:8 }}</span>
+								<span>time: {{ moment(pair.buy_order.lastModificationTime).locale('ru').format('LLL') }}</span>
+							</p>
+							<p>sell 
+								<span>q: {{ pair.quantity | number:8 }}</span>
+								<span>pr: {{ pair.price | number:8 }}</span>
+								<span>time: {{ moment(pair.lastModificationTime).locale('ru').format('LLL') }}</span>
+								<span>r: {{ pair.reason }}</span>
+							</p>
+						</div>
+						<div class="closed-order-values" ng-if="pair.buy_order && pair.buy_order.analyticsResult">
+							<span>norm k: {{ pair.buy_order.analyticsResult.values.normalize_baseline_m }}</span> | 
+							<span>relative graph raise val: {{ pair.buy_order.analyticsResult.values.percent_graph_raise_value | number:2 }}</span>
+							<span> || среднеквадр откл : {{ pair.std }} </span>
+							<span> || средняя между максимумом и минимумом {{ pair.buy_order.analyticsResult.values.average_float_value }}</span>
+							<span> || процент между минимум-база {{ pair.buy_order.analyticsResult.values.percent_from_min_to_base }}</span>
+						</div>
+						<div id="graph-{{trader.exchange.name}}-{{pair.currencyPair}}-{{pair.buy_order.exchangeId}}"></div>
+						<!-- <div id="graph-{{trader.exchange.name}}-{{pair.currencyPair}}-{{pair.buy_order.exchangeId}}" ng-init="makeGraphForClosedOrder(trader, pair)"></div> -->
 					</div>
-					<div class="closed-order-values" ng-if="pair.buy_order && pair.buy_order.analyticsResult">
-						<span>norm k: {{ pair.buy_order.analyticsResult.values.normalize_baseline_m }}</span> | 
-						<span>relative graph raise val: {{ pair.buy_order.analyticsResult.values.percent_graph_raise_value | number:2 }}</span>
-						<span> || среднеквадр откл : {{ pair.std }} </span>
-						<span> || средняя между максимумом и минимумом {{ pair.buy_order.analyticsResult.values.average_float_value }}</span>
-						<span> || процент между минимум-база {{ pair.buy_order.analyticsResult.values.percent_from_min_to_base }}</span>
-					</div>
-					<div id="graph-{{trader.exchange.name}}-{{pair.currencyPair}}-{{pair.buy_order.exchangeId}}"></div>
-					<!-- <div id="graph-{{trader.exchange.name}}-{{pair.currencyPair}}-{{pair.buy_order.exchangeId}}" ng-init="makeGraphForClosedOrder(trader, pair)"></div> -->
 				</div>
 			</div>
 
