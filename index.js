@@ -416,11 +416,11 @@ TRADER.prototype.getUserSummaries = function (next) {
 
 		self.exchange_pairs = _exchange_pairs.filter(function(el) {
 			ex1 = el.rank > self.exchange.ok_rank_value;
-			// ex2 = el.best_ask > 10000 * satoshi;
+			ex2 = el.best_ask > 1000 * satoshi;
 			ex3 = ((el.best_ask - el.best_bid)/el.best_bid) * 100 > self.exchange.ok_spread_value;
 
-			// if (ex1 && ex2 && ex3) {
-			if (ex1 && ex3) {
+			if (ex1 && ex2 && ex3) {
+			// if (ex1 && ex3) {
 				el.tradeable = true;
 			}
 

@@ -329,6 +329,10 @@
 						<label>graph_hours</label>
 						<input class="form-control" type="number" ng-model="selectedTrader.analyticsModule.params.graph_hours">
 					</div>
+					<div class="col-xs-6">
+						<label>max_average_float_value</label>
+						<input class="form-control" type="number" ng-model="selectedTrader.analyticsModule.params.max_average_float_value">
+					</div>
 					<div class="col-xs-12">
 						<button class="btn btn-xs btn-success" ng-click="saveTraderAnalyticsChanges(selectedTrader)">Применить</button>
 					</div>
@@ -386,6 +390,7 @@
 					<!-- <span>last_max_y: {{ pair.last_base_y }}</span> -->
 					<span>norm k: {{ pair.normalize_baseline_m }}</span> | 
 					<span>relative graph raise val: {{ pair.percent_graph_raise_value | number:2 }}</span>
+					<span> || средняя между максимумом и минимумом {{ pair.analyticsResult.values.average_float_value }}</span>
 				</p>
 				<div id="graph-{{trader.exchange.name}}-{{pair.symbol}}" ng-init="makeGraphForCurrentMarket(trader, pair)"></div>
 			</div>

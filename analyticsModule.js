@@ -16,7 +16,8 @@ function AnalyticsModule() {
 		stop_loss_percent_from_min : 10,
 		// минимальный процент профита чтоб совершить сделку
 		min_profit_percent : 2.5,
-		graph_hours : 4
+		graph_hours : 4,
+		max_average_float_value : 0.4 // результат деления мин-база / база-макс
 	}
 }
 
@@ -93,6 +94,9 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 	let diff_from_min_to_base = last_base_y - last_min_y;
 	let diff_from_min_to_max = last_max_y - last_min_y;
 	let diff_from_base_to_max = last_max_y - last_base_y;
+
+	let average_float_value = Math.abs(1 - (diff_from_min_to_base / diff_from_base_to_max));
+	// let average_float_value = Math.abs(diff_from_min_to_base - diff_from_base_to_max) /  diff_from_min_to_max * 100;
 	// процентная разница нашего значения в промежутке между минимумом и базой
 	let percent_from_min_to_base = (last_value_y - last_min_y)/(diff_from_min_to_base) * 100;
 	// процентная разница нашего значения в промежутке между минимумом и максимумом
@@ -193,6 +197,7 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 
 	exs.push(count_ex);
 
+	exs.push(average_float_value < this.params.max_average_float_value);
 	// текущее значение больше минимума регрессии
 	// exs.push(last_value_y >= last_min_y);
 	// текущее значение меньше базовой регрессии
@@ -236,6 +241,7 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 		sell_price,
 		stop_loss_price,
 		tax,
+		average_float_value,
 		percent_graph_raise_value : pair.percent_graph_raise_value,
 		normalize_baseline_m : pair.normalize_baseline_m
 	} }
