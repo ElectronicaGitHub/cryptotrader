@@ -321,7 +321,7 @@ TRADER.prototype.getUserOrders = function (next) {
 				.value();
 
 			// ORDERS = ORDERS.filter(el => moment(el.lastModificationTime).isSameOrAfter(moment().subtract(2, 'd'), 'd'));
-			ORDERS = ORDERS.filter(el => moment(el.lastModificationTime).isSameOrAfter(moment().subtract(2, 'd'), 'd') || el.orderStatus == 'OPEN');
+			// ORDERS = ORDERS.filter(el => moment(el.lastModificationTime).isSameOrAfter(moment().subtract(2, 'd'), 'd') || el.orderStatus == 'OPEN');
 
 			self.open_sell_orders = ORDERS.filter(el => {
 				return el.type == 'LIMIT_SELL' && el.orderStatus == 'OPEN';

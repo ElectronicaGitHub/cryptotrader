@@ -201,12 +201,16 @@
 	.exchange-settings-panel button {
 		margin-top: 10px;
 	}
+	.exchanges-panel button,
+	.exchanges-panel .button-wrapper {
+		margin-bottom: 5px;
+	}
+	.statistics-container {
 
-	@media (max-width: 400px) {
-		.exchanges-panel button,
-		.exchanges-panel .button-wrapper {
-			margin-bottom: 5px;
-		}
+	}
+	.statistics-container-order {
+		font-size: 12px;
+		margin-bottom: 10px;
 	}
 
 </style>
@@ -253,10 +257,10 @@
 			<button class="btn btn-xs btn-success" ng-click="show_balance = !show_balance">Баланс</button>
 			<button class="btn btn-xs btn-success" ng-click="show_settings = !show_settings">Настройки</button>
 			<button class="btn btn-xs btn-success" ng-click="show_base_trend = !show_base_trend">Базовый тренд</button>
-			
+			<button class="btn btn-xs btn-success" ng-click="show_statistics = !show_statistics">Статистика</button>	
+			<button class="btn btn-xs btn-warning" ng-click="show_full_closed_orders_info = !show_full_closed_orders_info">Показывать информацию сделок</button>	
 		</div>
 	</div>
-
 
 	<div ng-show="show_settings">
 		
@@ -369,6 +373,25 @@
 		<div class="container" ng-show="show_base_trend">
 			<p>Базовый тренд</p>
 			<div id="btc-graph-{{ trader.exchange.name }}" ng-init="makeBTCGraph(trader)"></div>
+		</div>
+
+		<div ng-if="show_statistics" class="statistics-container container">
+			<p>Статистика</p>
+
+			<div ng-repeat="(name, orders) in trader.closed_orders_by_curr" class="statistics-container-order">
+				<p ng-class="orders.profit > 0 ? 'ok' : 'not-ok'">
+					<b>{{ name }}</b>
+					<span>[ {{ orders.profit | number: 6 }} BTC ]</span>
+					<span> {{ inUSD(trader, orders.profit) | number:2 }} USD ]</span>
+					<span>[ Успешных: {{ orders.plus_count }} |
+						Нет: {{ orders.minus_count }} ]</span>
+				</p>
+
+				<!-- <div ng-repeat="order in orders.sell" ng-class="(order.price * order.quantity) - (order.buy_order.price * order.buy_order.quantity) > 0 ? 'ok' : 'not-ok'">
+					<div>{{ (order.price * order.quantity) - (order.buy_order.price * order.buy_order.quantity)}}</div>
+				</div> -->
+			</div>
+
 		</div>
 		
 		<div ng-if="show_info" class="info-container container">
@@ -496,17 +519,17 @@
 				<div class="title">Закрытые сделки</div>
 
 
-				<div class="each-closed-pair">
-					<b>Итого</b> [ {{ trader.summary.closed_ordersInBTC | number:6 }} BTC / {{ inUSD(trader, trader.summary.closed_ordersInBTC) | number:2 }} USD ]
+				<div class="each-closed-pair" ng-class="trader.summary.today_incomeInBTC > 0 ? 'ok' : 'not-ok'">
+					<b>Итого</b> [ {{ trader.summary.today_incomeInBTC | number:6 }} BTC / {{ inUSD(trader, trader.summary.today_incomeInBTC) | number:2 }} USD ]
 				</div>
 				
 				<div class="each-closed-pair" ng-repeat="pair in trader.closed_orders | orderBy:'-lastModificationTime'" ng-class="{ gold : moment(date_long).isSame(pair.lastModificationTime, 'd'), yesterday : moment(date_long).isSame(moment(pair.lastModificationTime).add(1, 'd'), 'd') }" ng-click="makeGraphForClosedOrder(trader, pair)">
 					{{ $index + 1 }}. <b>{{ pair.currencyPair }}</b> / 
 					<span ng-class="pair.pairProfit > 0 ? 'ok' : 'not-ok'">{{pair.pairProfit | number:6 }} BTC [ {{ inUSD(trader, pair.pairProfit) | number:2 }} USD]</span>
 
-					<span>{{ moment(pair.lastModificationTime).locale('ru').format('LLL') }}</span>
+					<span>{{ moment(pair.lastModificationTime).locale('ru').format('HH:mm') }}</span>
 
-					<div class="each-closed-pair-info">
+					<div class="each-closed-pair-info" ng-show="show_full_closed_orders_info">
 						<p>buy 
 							<span>q: {{ pair.buy_order.quantity | number:8 }}</span>
 							<span>pr: {{ pair.buy_order.price | number:8 }}</span>

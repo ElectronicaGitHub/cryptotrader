@@ -101,6 +101,29 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 			return pair;
 		})
 		calcSummaries(trader);
+		makeStatisticsData(trader);
+	}
+
+	function makeStatisticsData(trader) {
+		let data = trader.closed_orders_by_curr;
+
+		for (let i in data) {
+			for (let pair of data[i].sell) {
+				b_order = pair.buy_order;
+				if (b_order) {
+					pair.pairProfit = b_order.quantity * pair.price - b_order.quantity * b_order.price;
+					pair.std = calcStandartDeviation(pair);
+				}
+			}
+		}
+		for (let i in data) {
+			if (data[i].sell.length) {
+				data[i].profit = data[i].sell.map(el => +el.pairProfit).reduce((a, b) => a+b);
+				data[i].plus_count = data[i].sell.filter(el => el.pairProfit > 0).length;
+				data[i].minus_count = data[i].sell.filter(el => el.pairProfit < 0).length;
+			}
+		}
+		console.log(data);
 	}
 
 	function calcStandartDeviation(pair) {
@@ -170,6 +193,8 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 			} else {
 				trader.summary.today_incomeInBTC = 0;
 			}
+
+			// console.log(trader.exchange.name, trader.summary);
 
 		}
 	}
@@ -525,8 +550,6 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 		trader.balances_by_date = trader.balances_by_date.sort((a,b) => {
 			return +b.date > +a.date;
 		});
-
-		console.log(trader.balances_by_date);
 
 		let total_data = trader.btc_balances.data.map(el => {
 			return [+new Date(el.timestamp), el.total, 1];
