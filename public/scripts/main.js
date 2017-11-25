@@ -117,12 +117,14 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 			}
 		}
 		for (let i in data) {
+			if (data[i].buy.length == 0) return;
 			if (data[i].sell.length) {
-				data[i].profit = data[i].sell.map(el => +el.pairProfit).reduce((a, b) => a+b);
+				data[i].profit = data[i].sell.map(el => +el.pairProfit).filter(Number).reduce((a, b) => a+b);
 				data[i].plus_count = data[i].sell.filter(el => el.pairProfit > 0).length;
 				data[i].minus_count = data[i].sell.filter(el => el.pairProfit < 0).length;
 			}
 		}
+		console.log(data);
 	}
 
 	function calcStandartDeviation(pair) {

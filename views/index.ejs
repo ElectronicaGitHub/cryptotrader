@@ -376,22 +376,28 @@
 		</div>
 
 		<div ng-if="show_statistics" class="statistics-container container">
-			<p>Статистика</p>
-
-			<div ng-repeat="(name, orders) in trader.closed_orders_by_curr" class="statistics-container-order">
-				<p ng-class="orders.profit > 0 ? 'ok' : 'not-ok'">
-					<b>{{ name }}</b>
-					<span>[ {{ orders.profit | number: 6 }} BTC ]</span>
-					<span> {{ inUSD(trader, orders.profit) | number:2 }} USD ]</span>
-					<span>[ Успешных: {{ orders.plus_count }} |
-						Нет: {{ orders.minus_count }} ]</span>
-				</p>
-
-				<!-- <div ng-repeat="order in orders.sell" ng-class="(order.price * order.quantity) - (order.buy_order.price * order.buy_order.quantity) > 0 ? 'ok' : 'not-ok'">
-					<div>{{ (order.price * order.quantity) - (order.buy_order.price * order.buy_order.quantity)}}</div>
-				</div> -->
+			<div class="col-xs-6">
+				<div ng-repeat="(name, orders) in trader.closed_orders_by_curr" class="statistics-container-order" ng-if="orders.profit > 0">
+					<p ng-class="orders.profit > 0 ? 'ok' : 'not-ok'">
+						<b>{{ name }}</b>
+						<span>[ {{ orders.profit | number: 6 }} BTC ]</span>
+						<span> {{ inUSD(trader, orders.profit) | number:2 }} USD ]</span>
+						<span>[ Успешных: {{ orders.plus_count }} |
+							Нет: {{ orders.minus_count }} ]</span>
+					</p>
+				</div>
 			</div>
-
+			<div class="col-xs-6">
+				<div ng-repeat="(name, orders) in trader.closed_orders_by_curr" class="statistics-container-order" ng-if="orders.profit < 0">
+					<p ng-class="orders.profit > 0 ? 'ok' : 'not-ok'">
+						<b>{{ name }}</b>
+						<span>[ {{ orders.profit | number: 6 }} BTC ]</span>
+						<span> {{ inUSD(trader, orders.profit) | number:2 }} USD ]</span>
+						<span>[ Успешных: {{ orders.plus_count }} |
+							Нет: {{ orders.minus_count }} ]</span>
+					</p>
+				</div>
+			</div>
 		</div>
 		
 		<div ng-if="show_info" class="info-container container">
