@@ -933,7 +933,7 @@ function prepareBotSend() {
 
 	for (let trader of bot.TRADERS) {
 		result.TRADERS.push({
-			closed_orders_by_curr : trader.closed_orders_by_curr,
+			// closed_orders_by_curr : trader.closed_orders_by_curr,
 			exchange : trader.exchange,
 			active : trader.active,
 			total_balances : trader.total_balances,

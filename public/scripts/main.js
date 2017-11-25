@@ -123,7 +123,6 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 				data[i].minus_count = data[i].sell.filter(el => el.pairProfit < 0).length;
 			}
 		}
-		console.log(data);
 	}
 
 	function calcStandartDeviation(pair) {
