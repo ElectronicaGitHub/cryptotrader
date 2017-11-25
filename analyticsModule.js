@@ -80,6 +80,9 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 	// последнее значение x и y
 	let last_value_x = data[data.length - 1][0];
 	let last_value_y = data[data.length - 1][1];
+
+	let pre_last_value_y = data[data.length - 2][1];
+	let pre_pre_last_value_y = data[data.length - 3][1];
 	// первое значение y на базовой регрессии
 	let first_base_y = pair.first_base_y = lines.baseLine.m * first_value_x + lines.baseLine.b;
 	let first_min_y = lines.minLine.m * first_value_x + lines.minLine.b;
@@ -206,10 +209,14 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 	// exs.push(pair.percent_graph_raise_value > -this.params.percent_graph_raise_value);
 	// затухание тренда по тренду не больше чем коэффициент
 	exs.push(Math.abs(pair.percent_graph_raise_value) < this.params.percent_graph_raise_value);
+
+	// предпоследняя выше чем прежняя
+	exs.push(pre_last_value_y > pre_pre_last_value_y)
 	// последняя точка выше предыдущей
-	exs.push(last_value_y > data[data.length - 2][1]);
+	exs.push(last_value_y > pre_last_value_y);
+
 	// нахождение в зоне между минимумом и базой !!!
-	// exs.push(percent_from_min_to_base < this.params.percent_from_min_to_base);
+	exs.push(percent_from_min_to_base < this.params.percent_from_min_to_base);
 	// профит больше чем минимально допустимый
 	exs.push(percent_profit > this.params.min_profit_percent);
 

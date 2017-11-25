@@ -25,7 +25,6 @@ process.on('uncaughtException', function (err) {
 
 var port = process.env.PORT || 8888;
 
-
 String.prototype.endsWith = String.prototype.endsWith || function(suffix) {
     return this.indexOf(suffix, this.length - suffix.length) !== -1;
 };
