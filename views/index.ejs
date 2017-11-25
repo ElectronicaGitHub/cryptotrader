@@ -377,9 +377,9 @@
 
 		<div ng-if="show_statistics" class="statistics-container container">
 			<div class="col-xs-6">
-				<div ng-repeat="(name, orders) in trader.closed_orders_by_curr" class="statistics-container-order" ng-if="orders.profit > 0">
+				<div ng-repeat="orders in trader.closed_orders_ordered_by_currency | orderBy:'-plus_count'" class="statistics-container-order" ng-if="orders.profit > 0">
 					<p ng-class="orders.profit > 0 ? 'ok' : 'not-ok'">
-						<b>{{ name }}</b>
+						<b>{{ order.currencyPair }}</b>
 						<span>[ {{ orders.profit | number: 6 }} BTC ]</span>
 						<span> {{ inUSD(trader, orders.profit) | number:2 }} USD ]</span>
 						<span>[ Успешных: {{ orders.plus_count }} |
@@ -388,9 +388,9 @@
 				</div>
 			</div>
 			<div class="col-xs-6">
-				<div ng-repeat="(name, orders) in trader.closed_orders_by_curr" class="statistics-container-order" ng-if="orders.profit < 0">
+				<div ng-repeat="orders in trader.closed_orders_ordered_by_currency | orderBy:'-minus_count'" class="statistics-container-order" ng-if="orders.profit < 0">
 					<p ng-class="orders.profit > 0 ? 'ok' : 'not-ok'">
-						<b>{{ name }}</b>
+						<b>{{ order.currencyPair }}</b>
 						<span>[ {{ orders.profit | number: 6 }} BTC ]</span>
 						<span> {{ inUSD(trader, orders.profit) | number:2 }} USD ]</span>
 						<span>[ Успешных: {{ orders.plus_count }} |
