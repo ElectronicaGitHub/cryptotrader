@@ -57,7 +57,10 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 
 	data = trader.pairs_graph_data[pair.symbol];
 
-	if (!data) return;
+	if (!data || data.length < 10) {
+		pair.is_pair_acceptable = false;
+		return;
+	}
 
 	data = data.map((el, n) => [el.timestamp, +el.best_ask, 1]);
 
