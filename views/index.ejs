@@ -572,7 +572,7 @@
 							<span> || среднеквадр откл : {{ pair.std }} </span>
 							<span> || средняя между максимумом и минимумом {{ pair.buy_order.analyticsResult.values.average_float_value }}</span>
 							<span> || процент между минимум-база {{ pair.buy_order.analyticsResult.values.percent_from_min_to_base }}</span>
-							<span> || локальный минимум {{ pair.analyticsResult.values.local_min_to_last }}</span>
+							<span> || локальный минимум {{ pair.buy_order.analyticsResult.values.local_min_to_last }}</span>
 						</div>
 						<div id="graph-{{trader.exchange.name}}-{{pair.currencyPair}}-{{pair.buy_order.exchangeId}}"></div>
 						<!-- <div id="graph-{{trader.exchange.name}}-{{pair.currencyPair}}-{{pair.buy_order.exchangeId}}" ng-init="makeGraphForClosedOrder(trader, pair)"></div> -->

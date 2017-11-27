@@ -21,7 +21,7 @@ function Bittrex() {
 	this.max_buy_order_price = 0.0006;
 	this.stop_loss_koef = 5;
 	this.profit_koef = 3;
-	this.ok_rank_value = 0.4;
+	this.ok_rank_value = 0.1;
 	this.min_req_interval = 300;
 	this.max_req_interval = 500
 	this.ok_spread_value = 0.1;
