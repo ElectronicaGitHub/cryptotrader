@@ -17,7 +17,8 @@ function AnalyticsModule() {
 		// минимальный процент профита чтоб совершить сделку
 		min_profit_percent : 2.5,
 		graph_hours : 4,
-		max_average_float_value : 0.4 // результат деления мин-база / база-макс
+		max_average_float_value : 0.4, // результат деления мин-база / база-макс, где находится кароче средняя линия 
+		local_min_to_last_max : 10 // процент на сколько ушло наверх после локального максимума
 	}
 }
 
@@ -42,6 +43,16 @@ AnalyticsModule.prototype.getPower = function (val) {
 
 	}
 	return { val, n }
+}
+
+AnalyticsModule.prototype.getLocalMin = function(data) {
+	let local_min = data[data.length - 1]; 
+	let stop = false;
+	for (let i = data.length - 1; i>0; i--) {
+		if ((data[i] < local_min) && !stop) { local_min = data[i]; }
+    	if (data[i] > local_min) { stop = true; }
+	}
+	return local_min;
 }
 
 AnalyticsModule.prototype.setParams = function (params) {
@@ -100,6 +111,9 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 	let diff_from_min_to_base = last_base_y - last_min_y;
 	let diff_from_min_to_max = last_max_y - last_min_y;
 	let diff_from_base_to_max = last_max_y - last_base_y;
+
+	let local_min = this.getLocalMin(data.map(el => el[1]));
+	let local_min_to_last = (last_value_y - local_min) / (last_max_y - last_min_y) * 100;
 
 	let average_float_value = Math.abs(1 - (diff_from_min_to_base / diff_from_base_to_max));
 	// let average_float_value = Math.abs(diff_from_min_to_base - diff_from_base_to_max) /  diff_from_min_to_max * 100;
@@ -203,25 +217,30 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 
 	exs.push(count_ex);
 
+	// минимальный процент прохода с последнего локального минимума до последнего значения
+	exs.push(local_min_to_last > this.params.local_min_to_last_max)
+	// насколько средняя в коридоре средняя
 	exs.push(average_float_value < this.params.max_average_float_value);
-	// текущее значение больше минимума регрессии
-	// exs.push(last_value_y >= last_min_y);
-	// текущее значение меньше базовой регрессии
-	exs.push(last_value_y < last_base_y);
 	// затухание тренда не больше чем коэффициент
-	// exs.push(pair.percent_graph_raise_value > -this.params.percent_graph_raise_value);
-	// затухание тренда по тренду не больше чем коэффициент
 	exs.push(Math.abs(pair.percent_graph_raise_value) < this.params.percent_graph_raise_value);
-
-	// предпоследняя выше чем прежняя
-	exs.push(pre_last_value_y > pre_pre_last_value_y)
-	// последняя точка выше предыдущей
-	exs.push(last_value_y > pre_last_value_y);
-
 	// нахождение в зоне между минимумом и базой !!!
 	exs.push(percent_from_min_to_base < this.params.percent_from_min_to_base);
 	// профит больше чем минимально допустимый
 	exs.push(percent_profit > this.params.min_profit_percent);
+	
+	// текущее значение больше минимума регрессии
+	// exs.push(last_value_y >= last_min_y);
+	// текущее значение меньше базовой регрессии
+	// exs.push(last_value_y < last_base_y);
+	// затухание тренда не больше чем коэффициент
+	// exs.push(pair.percent_graph_raise_value > -this.params.percent_graph_raise_value);
+
+
+	// последняя точка выше предыдущей
+	// exs.push(last_value_y > pre_last_value_y);
+	// предпоследняя выше чем прежняя
+	// exs.push(pre_last_value_y > pre_pre_last_value_y)
+
 
 	pair.is_pair_acceptable = exs.reduce((a, b) => a && b);
 
@@ -251,6 +270,7 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 		sell_price,
 		stop_loss_price,
 		tax,
+		local_min_to_last,
 		average_float_value,
 		percent_graph_raise_value : pair.percent_graph_raise_value,
 		normalize_baseline_m : pair.normalize_baseline_m
