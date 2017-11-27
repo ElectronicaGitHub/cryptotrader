@@ -95,7 +95,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 		trader.closed_orders.map(pair => {
 			b_order = pair.buy_order;
 			if (b_order) {
-				pair.pairProfit = pair.quantity * pair.price - b_order.quantity * b_order.price;
+				pair.pairProfit = b_order.quantity * pair.price - b_order.quantity * b_order.price;
 				pair.std = calcStandartDeviation(pair);
 			}
 			return pair;
@@ -111,7 +111,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 			for (let pair of data[i].sell) {
 				b_order = pair.buy_order;
 				if (b_order) {
-					pair.pairProfit = pair.quantity * pair.price - b_order.quantity * b_order.price;
+					pair.pairProfit = b_order.quantity * pair.price - b_order.quantity * b_order.price;
 					pair.std = calcStandartDeviation(pair);
 				}
 			}
