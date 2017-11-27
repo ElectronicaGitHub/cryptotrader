@@ -854,6 +854,7 @@ TRADER.prototype.buyCycle = function (next) {
 		return;		
 	}
 
+	// var work_buy_pairs = this.able_to_buy_pairs.filter(el => el.is_pair_acceptable && el.analyticsResult);
 	var work_buy_pairs = this.able_to_buy_pairs.filter(el => el.is_pair_acceptable && el.analyticsResult);
 
 	console.log('Цикл покупки', this.btc_value, work_buy_pairs.map(function (el) {
