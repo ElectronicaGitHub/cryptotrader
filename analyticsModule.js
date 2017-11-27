@@ -45,15 +45,15 @@ AnalyticsModule.prototype.getPower = function (val) {
 	return { val, n }
 }
 
-AnalyticsModule.prototype.getLocalMin = function(data) {
-	let local_min = data[data.length - 1]; 
-	let stop = false;
-	for (let i = data.length - 1; i>0; i--) {
-		if ((data[i] < local_min) && !stop) { local_min = data[i]; }
-    	if (data[i] > local_min) { stop = true; }
-	}
-	return local_min;
-}
+// AnalyticsModule.prototype.getLocalMin = function(data) {
+// 	let local_min = data[data.length - 1]; 
+// 	let stop = false;
+// 	for (let i = data.length - 1; i>0; i--) {
+// 		if ((data[i] < local_min) && !stop) { local_min = data[i]; }
+//     	if (data[i] > local_min) { stop = true; }
+// 	}
+// 	return local_min;
+// }
 
 AnalyticsModule.prototype.setParams = function (params) {
 
@@ -112,7 +112,17 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 	let diff_from_min_to_max = last_max_y - last_min_y;
 	let diff_from_base_to_max = last_max_y - last_base_y;
 
-	let local_min = this.getLocalMin(data.map(el => el[1]));
+	// let local_min = this.getLocalMin(data.map(el => el[1]));
+
+	let made_data = data.map(el => el[1]);
+
+	let local_min = made_data[made_data.length - 1]; 
+	let stop = false;
+	for (let i = made_data.length - 1; i>0; i--) {
+		if ((made_data[i] < local_min) && !stop) { local_min = made_data[i]; }
+    	if (made_data[i] > local_min) { stop = true; }
+	}
+
 	let local_min_to_last = (last_value_y - local_min) / (last_max_y - last_min_y) * 100;
 
 	let average_float_value = Math.abs(1 - (diff_from_min_to_base / diff_from_base_to_max));

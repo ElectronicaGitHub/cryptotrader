@@ -46,6 +46,18 @@
 	}
 	.each-closed-pair {
 		margin: 5px 0;
+		position: relative;
+		
+	}
+	.has-analytics {
+		position: absolute;
+		top: 5px;
+		right: 5px;
+		background: green;
+		height: 8px;
+		width: 8px;
+		display: inline-block;
+		border-radius: 50%;
 	}
 	.each-closed-pair-info {
 		padding: 5px;
@@ -534,6 +546,7 @@
 				</div>
 				
 				<div class="each-closed-pair" ng-repeat="pair in trader.closed_orders | orderBy:'-lastModificationTime'" ng-class="{ gold : moment(date_long).isSame(pair.lastModificationTime, 'd'), yesterday : moment(date_long).isSame(moment(pair.lastModificationTime).add(1, 'd'), 'd') }" ng-click="makeGraphForClosedOrder(trader, pair)">
+					<span class="has-analytics" ng-show="pair.buy_order.analyticsResult"></span>
 					{{ $index + 1 }}. <b>{{ pair.currencyPair }}</b> / 
 					<span ng-class="pair.pairProfit > 0 ? 'ok' : 'not-ok'">{{pair.pairProfit | number:6 }} BTC [ {{ inUSD(trader, pair.pairProfit) | number:2 }} USD]</span>
 

@@ -573,7 +573,7 @@ TRADER.prototype.normalizeBalances = function (next) {
 		return el.currency != 'BTC';	
 	})
 	.filter(function (el) {
-		return el.value * el.best_ask <= self.exchange.max_buy_order_price;
+		return el.value * el.best_ask <= self.exchange.min_buy_order_price;
 	});
 
 	console.log('Нужно докупить', need_to_buy_currencies.map(function (el) {
@@ -610,6 +610,12 @@ TRADER.prototype.makeTradeData = function (next) {
 		if (self.open_sell_orders_by_curr[el.symbol]) {
 			el.in_trade = self.open_sell_orders_by_curr[el.symbol] && self.open_sell_orders_by_curr[el.symbol].length;
 		}
+		// чтобы не покупались те которые уже щас есть на балансе
+
+		// let mapped_available_balance = self.available_balances.map(el => (el.currency + '/BTC'));
+		// if (mapped_available_balance.indexOf(el.symbol) > -1) {
+		// 	el.in_trade = 1;
+		// }
 
 		return el;
 	});
@@ -629,16 +635,17 @@ TRADER.prototype.makeTradeData = function (next) {
 		return isFinite(el.rank);
 	})
 	.filter(function (el) {
-		var value; 
-		var currencyName = el.symbol.split('/')[0];
-		var currency = self.total_balances.filter(function (_curr) {
-			return _curr.currency == currencyName;
-		})[0];
-		if (currency) {
-			value = currency.value;
-		}
+		// чтобы не покупались те которые уже щас есть на балансе
+		// let value; 
+		let currencyName = el.symbol.split('/')[0];
+		// let currency = self.total_balances.filter(function (_curr) {
+		// 	return _curr.currency == currencyName;
+		// })[0];
+		// if (currency) {
+		// 	value = currency.value;
+		// }
 
-		var _curr_arr = self.available_balances.map(function (el) {
+		let _curr_arr = self.available_balances.map(function (el) {
 			return el.currency;
 		}).filter(function (el) {
 			return el != 'BTC';
@@ -656,10 +663,7 @@ TRADER.prototype.makeTradeData = function (next) {
 
 			closed_buy_orders = closed_buy_orders.filter(el => el.analyticsResult);
 
-			// el.buy_order = closed_buy_orders.filter(curr => curr.quantity == el.value)[0];
-			// if (!el.buy_order) {
 			el.buy_order = _.sortBy(closed_buy_orders, ['lastModificationTime']).reverse()[0];
-			// }
 		}
 
 		return el.currency != 'BTC';
@@ -850,7 +854,7 @@ TRADER.prototype.buyCycle = function (next) {
 		return;		
 	}
 
-	var work_buy_pairs = this.able_to_buy_pairs.filter(el => el.is_pair_acceptable);
+	var work_buy_pairs = this.able_to_buy_pairs.filter(el => el.is_pair_acceptable && el.analyticsResult);
 
 	console.log('Цикл покупки', this.btc_value, work_buy_pairs.map(function (el) {
 		return el.symbol;

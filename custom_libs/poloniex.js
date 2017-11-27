@@ -1,3 +1,5 @@
+moment = require('moment');
+
 module.exports = (function() {
     'use strict';
 
@@ -193,7 +195,7 @@ module.exports = (function() {
         },
 
         returnTradeHistory: function(callback) {
-            var parameters = { currencyPair: 'all' };
+            var parameters = { currencyPair: 'all',  end : +new Date()/1000, start : +(moment(new Date()).subtract(3, 'd'))/1000};
             return this._private('returnTradeHistory', parameters, callback);
         },
         
