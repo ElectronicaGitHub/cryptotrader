@@ -798,7 +798,7 @@ TRADER.prototype.sellPair = function (currency, quantity, buy_order, quick_sell,
 			sell_price = buy_order.analyticsResult.values.sell_price;
 		} else if (reason == 'stop_loss') {
 			if (buy_order.analyticsResult.values.stop_loss_price) {
-				sell_price = buy_order.analyticsResult.values.stop_loss_price;
+				sell_price = buy_order.analyticsResult.values.best_ask;
 			} else {
 				sell_price = self.calculateSellPrice(currency, buy_order, quantity, quick_sell);
 			}
