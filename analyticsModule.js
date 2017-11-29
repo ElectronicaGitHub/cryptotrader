@@ -15,7 +15,7 @@ function AnalyticsModule() {
 		// процент от минимальной границы относительно общего коридора вниз
 		stop_loss_percent_from_min : 10,
 		// минимальный процент профита чтоб совершить сделку
-		min_profit_percent : 2.5,
+		min_profit_percent : 1,
 		graph_hours : 4,
 		max_average_float_value : 0.4, // результат деления мин-база / база-макс, где находится кароче средняя линия 
 		local_min_to_last_max : 10 // процент на сколько ушло наверх после локального максимума

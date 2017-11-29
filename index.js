@@ -793,6 +793,7 @@ TRADER.prototype.sellPair = function (currency, quantity, buy_order, quick_sell,
 				currencyPair : currency_pair,
 				type : 'LIMIT_SELL',
 				reason : reason,
+				balance : self.btc_balance && self.btc_balance.total,
 				orderStatus : 'OPEN'
 			}, function (err, data) {
 				if (!err) console.log('Ордер сохранен в базу');
@@ -897,6 +898,7 @@ TRADER.prototype.buyPair = function (pair, next) {
 				currencyPair : pair_name,
 				type : 'LIMIT_BUY',
 				orderStatus : 'OPEN',
+				balance : self.btc_balance && self.btc_balance.total,
 				analyticsResult : pair.analyticsResult,
 				analyticsParams : self.analyticsModule.params,
 				buyMomentChartData : pair.buyMomentChartData
