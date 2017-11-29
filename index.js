@@ -621,11 +621,17 @@ TRADER.prototype.makeTradeData = function (next) {
 		return el.in_trade < 1 || !el.in_trade;
 	})
 
+
+
+
 	// WARNING =)))
 	// для теста статистики новой
 	.filter(function (el) {
-		return !self.open_sell_orders.length && !self.open_buy_orders.length
+		return !self.open_sell_orders.length && !self.open_buy_orders.length;
 	})
+
+
+
 
 	// .filter(function (el) {
 	// 	return el.rank >= self.exchange.ok_rank_value && isFinite(el.rank);

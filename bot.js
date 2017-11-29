@@ -19,7 +19,7 @@ var BaseConnector = require('./baseConnector');
 
 var BOT = function() {
 	this.TRADERS = [];
-	this.trade_cycle_time = 1000 * 60 * 6;
+	this.trade_cycle_time = 1000 * 60 * 3;
 	this.collect_cycle_time = 1000 * 60 * 1;
 }
 
