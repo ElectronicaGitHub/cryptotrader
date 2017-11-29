@@ -562,13 +562,17 @@
 								<span>q: {{ pair.buy_order.quantity | number:8 }}</span>
 								<span>pr: {{ pair.buy_order.price | number:8 }}</span>
 								<span>time: {{ moment(pair.buy_order.lastModificationTime).locale('ru').format('LLL') }}</span>
+								<span> || баланс {{  (pair.balance - pair.buy_order.balance) | number:6 }}</span>
 							</p>
 							<p>sell 
 								<span>q: {{ pair.quantity | number:8 }}</span>
 								<span>pr: {{ pair.price | number:8 }}</span>
 								<span>time: {{ moment(pair.lastModificationTime).locale('ru').format('LLL') }}</span>
 								<span>r: {{ pair.reason }}</span>
+								<span> || баланс {{  (pair.balance - pair.buy_order.balance) | number:6 }}</span>
 							</p>
+							<p>разница баланса с учетом цены пары {{ ((pair.balance + pair.inBTC) - pair.buy_order.balance) | number:6 }}</p>	
+							<p>разница баланса без учета цены пары {{ (pair.balance - pair.buy_order.balance) | number:6 }}</p>	
 						</div>
 						<div class="closed-order-values" ng-if="pair.buy_order && pair.buy_order.analyticsResult">
 							<span>norm k: {{ pair.buy_order.analyticsResult.values.normalize_baseline_m }}</span> | 

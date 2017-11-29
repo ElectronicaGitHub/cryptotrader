@@ -610,13 +610,6 @@ TRADER.prototype.makeTradeData = function (next) {
 		if (self.open_sell_orders_by_curr[el.symbol]) {
 			el.in_trade = self.open_sell_orders_by_curr[el.symbol] && self.open_sell_orders_by_curr[el.symbol].length;
 		}
-		// чтобы не покупались те которые уже щас есть на балансе
-
-		// let mapped_available_balance = self.available_balances.map(el => (el.currency + '/BTC'));
-		// if (mapped_available_balance.indexOf(el.symbol) > -1) {
-		// 	el.in_trade = 1;
-		// }
-
 		return el;
 	});
 
@@ -627,6 +620,13 @@ TRADER.prototype.makeTradeData = function (next) {
 	.filter(function (el) {
 		return el.in_trade < 1 || !el.in_trade;
 	})
+
+	// WARNING =)))
+	// для теста статистики новой
+	.filter(function (el) {
+		return !self.open_sell_orders.length && !self.open_buy_orders.length
+	})
+
 	// .filter(function (el) {
 	// 	return el.rank >= self.exchange.ok_rank_value && isFinite(el.rank);
 	// })
