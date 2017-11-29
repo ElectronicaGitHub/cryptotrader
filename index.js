@@ -271,8 +271,9 @@ TRADER.prototype.tradeCycle = function (callback) {
 
 			console.log('Валюта падает: Стандартный прогон');
 			async.series([
-				// отмена открытых покупок
+				// отмена открытых продаж и покупок
 				self.cancelOpenBuyOrdersCycle.bind(self),
+				self.closeOpenSellOrders.bind(self),
 				self.wrapWait(self.checkCycle.bind(self, false)),
 
 				// нормализация невалидных к сделкам балансов
@@ -289,6 +290,28 @@ TRADER.prototype.tradeCycle = function (callback) {
 				console.log('Торговый цикл завершен');
 				callback();
 			});
+
+			// async.series([
+
+			// 	// отмена открытых покупок
+			// 	self.cancelOpenBuyOrdersCycle.bind(self),
+			// self.closeOpenSellOrders.bind(self),
+			// 	self.wrapWait(self.checkCycle.bind(self, false)),
+
+			// 	// нормализация невалидных к сделкам балансов
+			// 	self.normalizeBalances.bind(self),
+			// 	self.wrapWait(self.checkCycle.bind(self, false)),
+
+			// 	self.sellCycle.bind(self),
+			// 	self.buyCycle.bind(self),
+
+			// 	self.stopLossCycle.bind(self),
+			// 	self.checkCycle.bind(self, false)
+
+			// ], function (error, data) {
+			// 	console.log('Торговый цикл завершен');
+			// 	callback();
+			// });
 		}
 	});
 
@@ -520,7 +543,7 @@ TRADER.prototype.stopLossCycle = function (callback) {
 			if (each_open_sell_order.buy_order.analyticsResult && 
 				each_open_sell_order.buy_order.analyticsResult.values.stop_loss_price) {
 				// то сравниваем цену
-				each_open_sell_order.is_sellable = (currency.best_ask <= each_open_sell_order.buy_order.analyticsResult.values.stop_loss_price);
+				each_open_sell_order.is_sellable = (currency.best_bid <= each_open_sell_order.buy_order.analyticsResult.values.stop_loss_price);
 			} else {
 				// иначе смотрим стандартно через стоп-лосс коэффициент
 				let diff = (currency.best_ask * each_open_sell_order.buy_order.quantity) - each_open_sell_order.buy_order.inBTC;
