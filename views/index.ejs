@@ -636,6 +636,8 @@
 											<span>time: {{ moment(pair.sell_order.lastModificationTime).locale('ru').format('LLL') }}</span>
 										</p>
 									</span>
+									<p>r: {{ pair.reason }}</p>
+
 									<!-- <span ng-class="balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC > 0 ? 'ok' : 'not-ok'">
 										 [ {{ inUSD(trader, balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC) | number:2 }} USD / </span> -->
 
