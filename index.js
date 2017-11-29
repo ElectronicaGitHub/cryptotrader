@@ -273,7 +273,8 @@ TRADER.prototype.tradeCycle = function (callback) {
 			async.series([
 				// отмена открытых продаж и покупок
 				self.cancelOpenBuyOrdersCycle.bind(self),
-				self.closeOpenSellOrders.bind(self),
+				// self.closeOpenSellOrders.bind(self),
+				self.stopLossCycle.bind(self),
 				self.wrapWait(self.checkCycle.bind(self, false)),
 
 				// нормализация невалидных к сделкам балансов
@@ -283,7 +284,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 				self.sellCycle.bind(self),
 				self.buyCycle.bind(self),
 
-				self.stopLossCycle.bind(self),
+				// self.stopLossCycle.bind(self),
 				self.checkCycle.bind(self, false)
 
 			], function (error, data) {
