@@ -111,7 +111,6 @@ TRADER.prototype.checkCycle = function (saveBalance, callback) {
 		self.getUserOrders.bind(self),
 		self.makeTradeData.bind(self),
 		self.syncRemoteOrdersWithLocal.bind(self),
-		self.stopLossCycle.bind(self)
 	]
 
 	if (saveBalance) {
@@ -124,8 +123,6 @@ TRADER.prototype.checkCycle = function (saveBalance, callback) {
 	}
 
 	async.waterfall(fnArr, function (error, pairs_data) {
-
-
 		callback();
 	});
 }
@@ -567,25 +564,24 @@ TRADER.prototype.stopLossCycle = function (callback) {
 		return;
 	}
 
-	// async.eachSeries(stop_loss_orders_can_sell, function (order, serie_callback) {
+	async.eachSeries(stop_loss_orders_can_sell, function (order, serie_callback) {
 
-	// 	async.series([
-	// 		self.cancelOrder.bind(self, order),
-	// 		self.wrapWait(self.sellPair.bind(
-	// 			self, 
-	// 			order.currencyPair,
-	// 			order.quantity,
-	// 			order.buy_order,
-	// 			'stop_loss'
-	// 		))
-	// 	], function (err, data) {
-	// 		serie_callback();
-	// 	});
+		async.series([
+			self.cancelOrder.bind(self, order),
+			self.wrapWait(self.sellPair.bind(
+				self, 
+				order.currencyPair,
+				order.quantity,
+				order.buy_order,
+				'stop_loss'
+			))
+		], function (err, data) {
+			serie_callback();
+		});
 		
-	// }, function (err, data) {
-	// 	callback();
-	// });
-	callback();
+	}, function (err, data) {
+		callback();
+	});
 }
 
 TRADER.prototype.normalizeBalances = function (next) {
