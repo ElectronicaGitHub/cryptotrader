@@ -172,10 +172,11 @@ BaseConnector.prototype.removeOrder = function (exchangeId, next) {
 }
 
 BaseConnector.prototype.updateOrder = function (exchangeId, order, next) {
+	console.log('Обновление оредар', exchangeId, order);
 	var self = this;
 	Order.findOneAndUpdate({ exchangeId : exchangeId, exchangeName : self.exchangeName}, order, function (err, result) {
 		if (err) return next(err);
-		console.log('Ордер', exchangeId, 'успешно обновлен', result);
+		console.log('Ордер', exchangeId, 'успешно обновлен');
 		next(null);
 	});
 }
