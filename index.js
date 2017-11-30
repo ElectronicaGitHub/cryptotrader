@@ -338,8 +338,8 @@ TRADER.prototype.analyzeMarket = function (next) {
 
 		let price = balance.buy_order.price * (1 + (2 * self.exchange.exchange_fee));
 
-		let current_profit_value = (balance.buy_order.lastBestAsk - price; 
-		balance.current_profit = (current_profit_value / balance.buy_order.price * 100);
+		let current_profit_value = balance.buy_order.lastBestAsk - price; 
+		balance.current_profit = current_profit_value / balance.buy_order.price * 100;
 		balance.stop_loss_diff = ((balance.buy_order.analyticsResult.values.stop_loss_price - price ) / balance.buy_order.price * 100);
 		balance.max_profit = ((balance.buy_order.analyticsResult.values.sell_price - price) / balance.buy_order.price * 100);
 		console.log('current_profit', balance.current_profit);
