@@ -353,6 +353,8 @@ TRADER.prototype.analyzeMarket = function (next) {
 			}
 		}
 
+		console.log(self.total_balances.map(el => el.current_profit));
+
 		// let price = balance.buy_order.price;
 		
 		// ?? текущие значения рынка больше этого ?
