@@ -336,7 +336,8 @@ TRADER.prototype.analyzeMarket = function (next) {
 			lastBestAsk : balance.best_ask 
 		}));
 
-		let price = balance.buy_order.price * (1 + (2 * self.exchange.exchange_fee));
+		// let price = balance.buy_order.price * (1 + (2 * self.exchange.exchange_fee));
+		let price = balance.buy_order.price;
 
 		balance.current_profit = ((balance.buy_order.lastBestAsk - price) / price * 100);
 		balance.stop_loss_diff = ((balance.buy_order.analyticsResult.values.stop_loss_price - price ) / price * 100);
