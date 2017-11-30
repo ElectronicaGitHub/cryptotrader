@@ -390,6 +390,11 @@ TRADER.prototype.makeParams = function(balance) {
 	console.log('current_profit', balance.current_profit);
 	console.log('stop_loss_diff', balance.stop_loss_diff);
 	console.log('max_profit', balance.max_profit);
+
+	let total = self.total_balances.filter(el => el.currency == balance.currency)[0];
+	total.current_profit = balance.current_profit;
+	total.stop_loss_diff = balance.stop_loss_diff;
+	total.max_profit = balance.max_profit;
 }
 
 TRADER.prototype.getUserOrders = function (next) {
