@@ -125,6 +125,7 @@ BaseConnector.prototype.saveOrder = function (order, next) {
 }
 
 BaseConnector.prototype.updateOrder = function (order, update_data, next) {
+	console.log('Обновление ордера', order.currencyPair);
 	order.exchangeName = this.exchangeName;
 	
 	Order.findOneAndUpdate({ 
