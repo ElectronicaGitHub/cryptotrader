@@ -609,11 +609,11 @@
 							<span>{{ balance.inBTC | number:6 }} BTC </span> 
 							/ 
 							<span>{{ inUSD(trader, balance.inBTC) | number:2 }} USD </span> ]
-							<p ng-if="balance.buy_order.analyticsResult">
+							<div ng-if="balance.buy_order && balance.buy_order.analyticsResult">
 								<div>profit diff: {{ ((balance.buy_order.analyticsResult.values.sell_price - balance.buy_order.price) / balance.buy_order.price * 100 ) | number:2 }}%</div>
 								<div>last value diff: {{ ((balance.buy_order.lastBestAsk - balance.buy_order.price) / balance.buy_order.price * 100) | number:2 }}%</div>
 								<div>stop loss diff: {{ ((balance.buy_order.price - balance.buy_order.analyticsResult.values.stop_loss_price ) / balance.buy_order.price * 100) | number:2 }}% </div>
-							</p>
+							</div>
 						</div>
 						<div class="each-balance-currency-pairs">
 							<div class="each-currency-pair" ng-repeat="pair in balance.order_pairs" ng-class="{ removed : pair.removed }">
