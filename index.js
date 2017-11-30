@@ -337,6 +337,7 @@ TRADER.prototype.analyzeMarket = function (next) {
 		}));
 
 		let price = balance.buy_order.price * (1 + (2 * self.exchange.exchange_fee));
+		console.log(balance.buy_order.price / price);
 		// let price = balance.buy_order.price;
 
 		balance.current_profit = ((balance.buy_order.lastBestAsk - price) / price * 100);
