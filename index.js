@@ -778,7 +778,7 @@ TRADER.prototype.makeTradeData = function (next) {
 		return el.currency != 'BTC';
 	});
 
-	self.total_balances.map(el => {
+	self.total_balances = self.total_balances.map(el => {
 		let closed_buy_orders = self.closed_buy_orders_by_curr[el.currency + '/BTC'];
 		if (closed_buy_orders) {
 			closed_buy_orders = closed_buy_orders.filter(el => el.analyticsResult);
