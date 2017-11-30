@@ -320,8 +320,10 @@ TRADER.prototype.tradeSeries2 = function (callback) {
 TRADER.prototype.analyzeMarket = function (next) {
 	let self = this;
 	// :: цикл, бежим по текущим парам на балансе ::
-	async.eachSeries(self.available_balances, function (balance, serie_callback) {
-		console.log('Баланс', balance.symbol, 'в количестве', balance.value);
+	let work_balances = self.available_balances.filter(el => el.currency != 'BTC');
+	console.log('work_balances', work_balances);
+	async.eachSeries(work_balances, function (balance, serie_callback) {
+		console.log('Баланс', balance.currency, 'в количестве', balance.value);
 		// let currency = self.total_balances.filter(function (el) { return balance.currency == el.currency; })[0];
 		let orders = self.closed_buy_orders_by_curr[balance.currency + '/BTC'];
 		let order = orders[0];
