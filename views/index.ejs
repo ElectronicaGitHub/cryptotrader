@@ -607,6 +607,11 @@
 							<span>{{ balance.inBTC | number:6 }} BTC </span> 
 							/ 
 							<span>{{ inUSD(trader, balance.inBTC) | number:2 }} USD </span> ]
+							<p ng-if="pair.buy_order.analyticsResult">
+								<p>pr d: {{(pair.buy_order.analyticsResult.values.sell_price - pair.buy_order.price) | number:6 }}</p>
+								<p>last d: {{(pair.buy_order.lastBestAsk - pair.buy_order.price) | number:6 }}</p>
+								<p>sl d: {{(pair.buy_order.analyticsResult.values.stop_loss_result - pair.buy_order.price) | number:6 }} </p>
+							</p>
 						</div>
 						<div class="each-balance-currency-pairs">
 							<div class="each-currency-pair" ng-repeat="pair in balance.order_pairs" ng-class="{ removed : pair.removed }">
