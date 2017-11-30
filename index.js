@@ -339,7 +339,8 @@ TRADER.prototype.analyzeMarket = function (next) {
 		let price = balance.buy_order.price * (1 + (2 * self.exchange.exchange_fee));
 
 		balance.current_profit = ((balance.buy_order.lastBestAsk - price) / price * 100);
-		balance.stop_loss_diff = ((balance.buy_order.analyticsResult.values.stop_loss_price - price ) / balance.buy_order.price * 100);
+		balance.stop_loss_diff = ((balance.buy_order.analyticsResult.values.stop_loss_price - price ) / price * 100);
+		balance.max_profit = ((balance.buy_order.analyticsResult.values.sell_price - price) / price * 100);
 		console.log('current_profit', current_profit);
 		
 		// ?? текущие значения рынка больше этого ?
