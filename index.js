@@ -253,8 +253,8 @@ TRADER.prototype.tradeCycle = function (callback) {
 
 			console.log('Валюта растет: Продаем все пары');
 			async.series([
-				self.sellCycle.bind(self),
 				self.stopLossCycle.bind(self),
+				self.sellCycle.bind(self),
 				self.checkCycle.bind(self, false),
 				
 				// self.closeOpenSellOrders.bind(self),
