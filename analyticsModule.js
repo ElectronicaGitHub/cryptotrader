@@ -4,7 +4,7 @@ var _ = require('lodash');
 function AnalyticsModule() {
 	this.params = {
 		// насколько от нижней границы в процентах заходить на покупку
-		percent_from_min_to_base : 60,
+		percent_from_min_to_base : 30,
 		// процент разницы в значениях в начале и в конце графа
 		percent_graph_raise_value : 2,
 		// куда стараемся переставить переставить
@@ -233,8 +233,8 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 	exs.push(average_float_value < this.params.max_average_float_value);
 	// затухание тренда не больше чем коэффициент
 	exs.push(Math.abs(pair.percent_graph_raise_value) < this.params.percent_graph_raise_value);
-	// нахождение в зоне между минимумом и базой !!!
-	exs.push(percent_from_min_to_base < this.params.percent_from_min_to_base);
+	// нахождение значения выше чем параметр
+	exs.push(percent_from_min_to_base > this.params.percent_from_min_to_base);
 	// профит больше чем минимально допустимый
 	exs.push(percent_profit > this.params.min_profit_percent);
 	

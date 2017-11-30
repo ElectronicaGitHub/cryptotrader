@@ -562,14 +562,14 @@
 								<span>q: {{ pair.buy_order.quantity | number:8 }}</span>
 								<span>pr: {{ pair.buy_order.price | number:8 }}</span>
 								<span>time: {{ moment(pair.buy_order.lastModificationTime).locale('ru').format('LLL') }}</span>
-								<span> || баланс {{  (pair.balance - pair.buy_order.balance) | number:6 }}</span>
+								<span> || баланс {{ pair.buy_order.balance | number:6 }}</span>
 							</p>
 							<p>sell 
 								<span>q: {{ pair.quantity | number:8 }}</span>
 								<span>pr: {{ pair.price | number:8 }}</span>
 								<span>time: {{ moment(pair.lastModificationTime).locale('ru').format('LLL') }}</span>
 								<span>r: {{ pair.reason }}</span>
-								<span> || баланс {{  (pair.balance - pair.buy_order.balance) | number:6 }}</span>
+								<span> || баланс {{ pair.balance | number:6 }}</span>
 							</p>
 							<p>разница баланса с учетом цены пары {{ ((pair.balance + pair.inBTC) - pair.buy_order.balance) | number:6 }}</p>	
 							<p>разница баланса без учета цены пары {{ (pair.balance - pair.buy_order.balance) | number:6 }}</p>	
@@ -635,8 +635,8 @@
 											<span>pr: {{ pair.sell_order.price | number:8 }}</span>
 											<span>time: {{ moment(pair.sell_order.lastModificationTime).locale('ru').format('LLL') }}</span>
 										</p>
+										<p>r: {{ pair.sell_order.reason }}</p>
 									</span>
-									<p>r: {{ pair.sell_order.reason }}</p>
 
 									<!-- <span ng-class="balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC > 0 ? 'ok' : 'not-ok'">
 										 [ {{ inUSD(trader, balance.best_ask * pair.sell_order.quantity - pair.sell_order.inBTC) | number:2 }} USD / </span> -->

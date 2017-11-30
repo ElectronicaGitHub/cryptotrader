@@ -8,6 +8,7 @@ var Order = new Schema({
 	currencyPair : String,
 	quantity : Number,
 	price : Number,
+	lastBestAsk : Number,
 	type : String,
 	inBTC : String,
 	reason : String,
