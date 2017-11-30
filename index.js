@@ -275,8 +275,8 @@ TRADER.prototype.tradeSeries = function (callback) {
 	let self = this;
 	async.series([
 		// отмена открытых продаж и покупок
-		self.cancelOpenBuyOrdersCycle.bind(self),
-		// self.closeOpenSellOrders.bind(self),
+		self.cancelOpenBuyOrders.bind(self),
+		// self.cancelOpenSellOrders.bind(self),
 		self.stopLossCycle.bind(self),
 		self.wrapWait(self.checkCycle.bind(self, false)),
 
@@ -299,6 +299,8 @@ TRADER.prototype.tradeSeries = function (callback) {
 TRADER.prototype.tradeSeries2 = function (callback) {
 	let self = this;
 	async.series([
+		self.cancelOpenSellOrders.bind(self),
+		self.wrapWait(self.checkCycle.bind(self, false)),
 		// нормализация невалидных к сделкам балансов
 		self.normalizeBalances.bind(self),
 		self.wrapWait(self.checkCycle.bind(self, false)),
@@ -323,7 +325,7 @@ TRADER.prototype.analyzeMarket = function (next) {
 	let work_balances = self.available_balances.filter(el => el.currency != 'BTC');
 
 	console.log('Анализ баланса', work_balances.map(el => el.currency));
-	
+
 	async.eachSeries(work_balances, function (balance, serie_callback) {
 		console.log('Баланс', balance.currency, 'в количестве', balance.value);
 		// let currency = self.total_balances.filter(function (el) { return balance.currency == el.currency; })[0];
@@ -557,7 +559,7 @@ TRADER.prototype.getUserBalances = function (next) {
 var satoshi = 0.00000001;
 var currenciesRankMap = {};
 
-TRADER.prototype.closeOpenSellOrders = function (callback) {
+TRADER.prototype.cancelOpenSellOrders = function (callback) {
 
 	console.log('Цикл закрытия ордеров');
 
@@ -898,7 +900,7 @@ TRADER.prototype.sellPair = function (currency, quantity, buy_order, quick_sell,
 	});
 }
 
-TRADER.prototype.cancelOpenBuyOrdersCycle = function (next) {
+TRADER.prototype.cancelOpenBuyOrders = function (next) {
 
 	var self = this;
 
