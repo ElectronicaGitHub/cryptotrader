@@ -250,24 +250,24 @@ TRADER.prototype.tradeCycle = function (callback) {
 			isRaising = raisingValue > 0;
 		}
 
-		if (isRaising && ((raisingValue/arr[3][check_parameter]) >= self.exchange.base_currency_diff_value)) {
+		// if (isRaising && ((raisingValue/arr[3][check_parameter]) >= self.exchange.base_currency_diff_value)) {
 
-			console.log('Валюта растет: Продаем все пары');
-			async.series([
-				self.stopLossCycle.bind(self),
-				self.sellCycle.bind(self),
-				self.checkCycle.bind(self, false),
-			], function (err, data) {
-				console.log('Торговый цикл завершен');
-				callback();
-			});
+		// 	console.log('Валюта растет: Продаем все пары');
+		// 	async.series([
+		// 		self.stopLossCycle.bind(self),
+		// 		self.sellCycle.bind(self),
+		// 		self.checkCycle.bind(self, false),
+		// 	], function (err, data) {
+		// 		console.log('Торговый цикл завершен');
+		// 		callback();
+		// 	});
 
-		} else {
+		// } else {
 
 			console.log('Валюта падает: Стандартный прогон');
 			// self.tradeSeries(callback);
 			self.tradeSeries2(callback);
-		}
+		// }
 	});
 }
 
