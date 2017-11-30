@@ -326,6 +326,11 @@ TRADER.prototype.analyzeMarket = function (next) {
 
 	console.log('Анализ баланса', work_balances.map(el => el.currency));
 
+	self.total_balances.map(el => {
+		self.makeParams(el);
+		return el;
+	})
+
 	async.eachSeries(work_balances, function (balance, serie_callback) {
 		console.log('Баланс', balance.currency, 'в количестве', balance.value);
 		let orders = self.closed_buy_orders_by_curr[balance.currency + '/BTC'];
@@ -336,16 +341,8 @@ TRADER.prototype.analyzeMarket = function (next) {
 			lastBestAsk : balance.best_ask 
 		}));
 
-		let price = balance.buy_order.price * (1 + (2 * self.exchange.exchange_fee));
-		console.log(balance.buy_order.price / price);
+		self.makeParams(balance);
 		// let price = balance.buy_order.price;
-
-		balance.current_profit = ((balance.buy_order.lastBestAsk - price) / balance.buy_order.price * 100);
-		balance.stop_loss_diff = ((balance.buy_order.analyticsResult.values.stop_loss_price - price ) / balance.buy_order.price * 100);
-		balance.max_profit = ((balance.buy_order.analyticsResult.values.sell_price - price) / balance.buy_order.price * 100);
-		console.log('current_profit', balance.current_profit);
-		console.log('stop_loss_diff', balance.stop_loss_diff);
-		console.log('max_profit', balance.max_profit);
 		
 		// ?? текущие значения рынка больше этого ?
 		// if (currency.best_ask > order.lastBestAsk) {
@@ -383,6 +380,21 @@ TRADER.prototype.analyzeMarket = function (next) {
 	}, function (err, data) {
 		next(null);
 	});
+
+}
+
+TRADER.prototype.makeParams = function(balance) {
+	let self = this;
+
+	let price = balance.buy_order.price * (1 + (2 * self.exchange.exchange_fee));
+	console.log(balance.buy_order.price / price);
+
+	balance.current_profit = ((balance.buy_order.lastBestAsk - price) / balance.buy_order.price * 100);
+	balance.stop_loss_diff = ((balance.buy_order.analyticsResult.values.stop_loss_price - price ) / balance.buy_order.price * 100);
+	balance.max_profit = ((balance.buy_order.analyticsResult.values.sell_price - price) / balance.buy_order.price * 100);
+	console.log('current_profit', balance.current_profit);
+	console.log('stop_loss_diff', balance.stop_loss_diff);
+	console.log('max_profit', balance.max_profit);
 }
 
 TRADER.prototype.getUserOrders = function (next) {
@@ -758,16 +770,22 @@ TRADER.prototype.makeTradeData = function (next) {
 	self.able_to_sell_pairs = self.available_balances.filter(function (el) {
 
 		let closed_buy_orders = self.closed_buy_orders_by_curr[el.currency + '/BTC'];
-
 		if (closed_buy_orders) {
-
 			closed_buy_orders = closed_buy_orders.filter(el => el.analyticsResult);
-
 			el.buy_order = _.sortBy(closed_buy_orders, ['lastModificationTime']).reverse()[0];
 		}
 
 		return el.currency != 'BTC';
 	});
+
+	self.total_balances.map(el => {
+		let closed_buy_orders = self.closed_buy_orders_by_curr[el.currency + '/BTC'];
+		if (closed_buy_orders) {
+			closed_buy_orders = closed_buy_orders.filter(el => el.analyticsResult);
+			el.buy_order = _.sortBy(closed_buy_orders, ['lastModificationTime']).reverse()[0];
+		}		
+		return el;
+	})
 
 	// Тех Анализ
 	self.analyzeChartData(function (err, data) {
