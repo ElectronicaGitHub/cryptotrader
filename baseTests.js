@@ -8,61 +8,61 @@ var _ = require('lodash');
 var baseConnector = new BaseConnector('Bittrex');
 
 
-var Rollbar = require("rollbar");
-var rollbar = new Rollbar("d1f871271f6840859895328aa1b65114");
+// var Rollbar = require("rollbar");
+// var rollbar = new Rollbar("d1f871271f6840859895328aa1b65114");
 
 
-var a = function (value, next) {
-	setTimeout(function () {
-		console.log('value is', value);
-		rr = z.t;
-		next();
+// var a = function (value, next) {
+// 	setTimeout(function () {
+// 		console.log('value is', value);
+// 		rr = z.t;
+// 		next();
 		
-	}, 100);
-}
+// 	}, 100);
+// }
 
-var b = function (next) {
-	setTimeout(function () {
-		var x = getY();
-	}, 100);
-}
+// var b = function (next) {
+// 	setTimeout(function () {
+// 		var x = getY();
+// 	}, 100);
+// }
 
-function getY(y) {
-	var a = z.x;
-	return a;
-}
+// function getY(y) {
+// 	var a = z.x;
+// 	return a;
+// }
 
-function run() {
-	async.series([
-		a.bind(null, 1),
-		a.bind(null, 2),
-		a.bind(null, 3),
-		b.bind(null),
-	], function (err, data) {
-		console.log(data, err);
-	})
-}
+// function run() {
+// 	async.series([
+// 		a.bind(null, 1),
+// 		a.bind(null, 2),
+// 		a.bind(null, 3),
+// 		b.bind(null),
+// 	], function (err, data) {
+// 		console.log(data, err);
+// 	})
+// }
 
-var start = function () {
-	console.log('start');
-	try {
-		run();
+// var start = function () {
+// 	console.log('start');
+// 	try {
+// 		run();
 
-		setTimeout(run, 1000);
-	} catch (err) {
-		rollbar.error(e);
-		callback({
-			success : false, 
-			error : e
-		});
-	}
-}
+// 		setTimeout(run, 1000);
+// 	} catch (err) {
+// 		rollbar.error(e);
+// 		callback({
+// 			success : false, 
+// 			error : e
+// 		});
+// 	}
+// }
 
-process.on('uncaughtException', function (err) {
-	rollbar.error(err);
-});
+// process.on('uncaughtException', function (err) {
+// 	rollbar.error(err);
+// });
 
-start();
+// start();
 
 
 
@@ -76,8 +76,15 @@ console.log('baseConnector', baseConnector);
 // 	{exchangeId : '4', exchangeName : "Bittrex", orderStatus : 'EXECUTED', quantity : 444},
 // 	{exchangeId : '3', exchangeName : "Bittrex", orderStatus : 'EXECUTED', quantity : 333},
 // ]
+// baseConnector.saveOrder({exchangeId : '1', exchangeName : "Bittrex", orderStatus : 'EXECUTED'}, function (err, res) { 
+// 	console.log(err, res);
+// });
+baseConnector.updateOrder("1", { lastBestAsk : 0.000111 }, function (err, res) {	
+	console.log(err, res);
+})
+
 // async.waterfall([
-// 	baseConnector.saveOrder.bind(baseConnector, {exchangeId : '1', exchangeName : "Bittrex", orderStatus : 'OPEN'}),
+	// baseConnector.saveOrder.bind(baseConnector, {exchangeId : '1', exchangeName : "Bittrex", orderStatus : 'EXECUTED'}),
 // 	baseConnector.saveOrder.bind(baseConnector, {exchangeId : '2', exchangeName : "Bittrex", orderStatus : 'OPEN'}),
 // 	baseConnector.saveOrder.bind(baseConnector, {exchangeId : '3', exchangeName : "Bittrex", orderStatus : 'OPEN'}),
 // 	baseConnector.saveOrder.bind(baseConnector, {exchangeId : '4', exchangeName : "Bittrex", orderStatus : 'OPEN'}),
@@ -95,7 +102,7 @@ console.log('baseConnector', baseConnector);
 
 // 	findOrders
 // ], function (err, res) {
-// 	console.log('res ok');
+	// console.log('res ok');
 // });
 
 // remoteClosedOrders2 = [

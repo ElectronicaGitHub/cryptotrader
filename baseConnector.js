@@ -174,7 +174,7 @@ BaseConnector.prototype.removeOrder = function (exchangeId, next) {
 BaseConnector.prototype.updateOrder = function (exchangeId, order, next) {
 	console.log('Обновление ордера', exchangeId, order);
 	var self = this;
-	Order.findOneAndUpdate({ exchangeId : exchangeId, exchangeName : self.exchangeName}, { $set : order }, function (err, result) {
+	Order.findOneAndUpdate({ exchangeId, exchangeName : self.exchangeName}, { $set : order }, function (err, result) {
 		if (err) return next(err);
 		console.log('Ордер', exchangeId, 'успешно обновлен');
 		next(null);
