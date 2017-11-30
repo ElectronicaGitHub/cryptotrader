@@ -124,19 +124,19 @@ BaseConnector.prototype.saveOrder = function (order, next) {
 	});
 }
 
-BaseConnector.prototype.updateOrder = function (order, update_data, next) {
-	console.log('Обновление ордера', order.currencyPair);
-	order.exchangeName = this.exchangeName;
+// BaseConnector.prototype.updateOrder = function (order, update_data, next) {
+// 	console.log('Обновление ордера', order.currencyPair);
+// 	order.exchangeName = this.exchangeName;
 	
-	Order.findOneAndUpdate({ 
-		exchangeName : this.exchangeName,
-		exchangeId : order.exchangeId 
-	}, update_data, function (err, result) {
-		if (err) return next(err);
-		console.log('Ордер', order.exchangeId, 'успешно обновлен');
-		next(null);
-	});
-}
+// 	Order.findOneAndUpdate({ 
+// 		exchangeName : this.exchangeName,
+// 		exchangeId : order.exchangeId 
+// 	}, update_data, function (err, result) {
+// 		if (err) return next(err);
+// 		console.log('Ордер', order.exchangeId, 'успешно обновлен');
+// 		next(null);
+// 	});
+// }
 
 BaseConnector.prototype.updateOpenOrders = function (remote_closed_orders, next) {
 	var self = this;
@@ -172,9 +172,11 @@ BaseConnector.prototype.removeOrder = function (exchangeId, next) {
 }
 
 BaseConnector.prototype.updateOrder = function (exchangeId, order, next) {
+	console.log('Обновление ордера', order.currencyPair);
 	var self = this;
 	Order.findOneAndUpdate({ exchangeId : exchangeId, exchangeName : self.exchangeName}, order, function (err, result) {
 		if (err) return next(err);
+		console.log('Ордер', order.exchangeId, 'успешно обновлен');
 		next(null);
 	});
 }
