@@ -333,6 +333,11 @@ TRADER.prototype.analyzeMarket = function (next) {
 
 		let order = _.sortBy(orders, ['lastModificationTime']).reverse()[0];
 		let fnStack = [];
+		// перезаписываем lastBestAsk значение
+		fnStack.push(self.baseConnector.updateOrder.bind(
+			self,
+			order, 
+			{ lastBestAsk : currency.best_ask }));
 		
 		// ?? текущие значения рынка больше этого ?
 		if (currency.best_ask > order.lastBestAsk) {
@@ -362,12 +367,6 @@ TRADER.prototype.analyzeMarket = function (next) {
 				// console.log('stop loss');
 			}
 		}
-
-		// перезаписываем lastBestAsk значение
-		fnStack.push(self.baseConnector.updateOrder.bind(
-			self,
-			order, 
-			{ lastBestAsk : currency.best_ask }));
 
 		async.series(fnStack, function (err, data) {
 			serie_callback();
