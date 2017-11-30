@@ -110,7 +110,8 @@ TRADER.prototype.checkCycle = function (saveBalance, callback) {
 		self.getUserBalances.bind(self),
 		self.getUserOrders.bind(self),
 		self.makeTradeData.bind(self),
-		self.syncRemoteOrdersWithLocal.bind(self)
+		self.syncRemoteOrdersWithLocal.bind(self),
+		self.stopLossCycle.bind(self)
 	]
 
 	if (saveBalance) {
@@ -545,6 +546,10 @@ TRADER.prototype.stopLossCycle = function (callback) {
 				each_open_sell_order.buy_order.analyticsResult.values.stop_loss_price) {
 				// то сравниваем цену
 				each_open_sell_order.is_sellable = (currency.best_bid <= each_open_sell_order.buy_order.analyticsResult.values.stop_loss_price);
+				console.log('есть аналитика', each_open_sell_order.is_sellable);
+				console.log('best_bid', currency.best_bid);
+				console.log('stop_loss_price', each_open_sell_order.buy_order.analyticsResult.values.stop_loss_price);
+				console.log('======');
 			} else {
 				// иначе смотрим стандартно через стоп-лосс коэффициент
 				let diff = (currency.best_ask * each_open_sell_order.buy_order.quantity) - each_open_sell_order.buy_order.inBTC;
@@ -570,24 +575,25 @@ TRADER.prototype.stopLossCycle = function (callback) {
 		return;
 	}
 
-	async.eachSeries(stop_loss_orders_can_sell, function (order, serie_callback) {
+	// async.eachSeries(stop_loss_orders_can_sell, function (order, serie_callback) {
 
-		async.series([
-			self.cancelOrder.bind(self, order),
-			self.wrapWait(self.sellPair.bind(
-				self, 
-				order.currencyPair,
-				order.quantity,
-				order.buy_order,
-				'stop_loss'
-			))
-		], function (err, data) {
-			serie_callback();
-		});
+	// 	async.series([
+	// 		self.cancelOrder.bind(self, order),
+	// 		self.wrapWait(self.sellPair.bind(
+	// 			self, 
+	// 			order.currencyPair,
+	// 			order.quantity,
+	// 			order.buy_order,
+	// 			'stop_loss'
+	// 		))
+	// 	], function (err, data) {
+	// 		serie_callback();
+	// 	});
 		
-	}, function (err, data) {
-		callback();
-	});
+	// }, function (err, data) {
+	// 	callback();
+	// });
+	callback();
 }
 
 TRADER.prototype.normalizeBalances = function (next) {
