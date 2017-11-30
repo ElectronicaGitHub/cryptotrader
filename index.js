@@ -257,10 +257,6 @@ TRADER.prototype.tradeCycle = function (callback) {
 				self.stopLossCycle.bind(self),
 				self.sellCycle.bind(self),
 				self.checkCycle.bind(self, false),
-				
-				// self.closeOpenSellOrders.bind(self),
-				// self.checkCycle.bind(self),
-				// self.quickSellCycle.bind(self),
 			], function (err, data) {
 				console.log('Торговый цикл завершен');
 				callback();
@@ -304,12 +300,12 @@ TRADER.prototype.tradeSeries2 = function (callback) {
 	let self = this;
 	async.series([
 		// нормализация невалидных к сделкам балансов
-		// self.normalizeBalances.bind(self),
+		self.normalizeBalances.bind(self),
 		self.wrapWait(self.checkCycle.bind(self, false)),
 		// анализируем текущие валюты на балансе
 		self.analyzeMarket.bind(self),
 		// покупка по аналитике валюты
-		// self.buyCycle.bind(self),
+		self.buyCycle.bind(self),
 
 		self.checkCycle.bind(self, false)
 
