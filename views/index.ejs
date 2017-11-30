@@ -608,9 +608,9 @@
 							/ 
 							<span>{{ inUSD(trader, balance.inBTC) | number:2 }} USD </span> ]
 							<p ng-if="balance.buy_order.analyticsResult">
-								<div>pr d: {{(balance.buy_order.analyticsResult.values.sell_price - balance.buy_order.price) | number:6 }}</div>
-								<div>last d: {{(balance.buy_order.lastBestAsk - balance.buy_order.price) | number:6 }}</div>
-								<div>sl d: {{(balance.buy_order.analyticsResult.values.stop_loss_result - balance.buy_order.price) | number:6 }} </div>
+								<div>profit diff: {{(balance.buy_order.analyticsResult.values.sell_price - balance.buy_order.price) | number:6 }}</div>
+								<div>last value diff: {{(balance.buy_order.lastBestAsk - balance.buy_order.price) | number:6 }}</div>
+								<div>stop loss diff: {{(balance.buy_order.analyticsResult.values.stop_loss_price - balance.buy_order.price) | number:6 }} </div>
 							</p>
 						</div>
 						<div class="each-balance-currency-pairs">
