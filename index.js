@@ -542,7 +542,7 @@ TRADER.prototype.stopLossCycle = function (callback) {
 			if (each_open_sell_order.buy_order.analyticsResult && 
 				each_open_sell_order.buy_order.analyticsResult.values.stop_loss_price) {
 				// то сравниваем цену
-				each_open_sell_order.is_sellable = (currency.best_bid <= each_open_sell_order.buy_order.analyticsResult.values.stop_loss_price);
+				each_open_sell_order.is_sellable = (currency.best_ask <= each_open_sell_order.buy_order.analyticsResult.values.stop_loss_price);
 			} else {
 				// иначе смотрим стандартно через стоп-лосс коэффициент
 				let diff = (currency.best_ask * each_open_sell_order.buy_order.quantity) - each_open_sell_order.buy_order.inBTC;
