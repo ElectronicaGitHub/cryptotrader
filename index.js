@@ -342,41 +342,41 @@ TRADER.prototype.analyzeMarket = function (next) {
 		balance.current_profit = current_profit_value / balance.buy_order.price * 100;
 		balance.stop_loss_diff = ((balance.buy_order.analyticsResult.values.stop_loss_price - price ) / balance.buy_order.price * 100);
 		balance.max_profit = ((balance.buy_order.analyticsResult.values.sell_price - price) / balance.buy_order.price * 100);
-		console.log('current_profit', balance.current_profit);
-		console.log('stop_loss_diff', balance.stop_loss_diff);
-		console.log('max_profit', balance.max_profit);
+		// console.log('current_profit', balance.current_profit);
+		// console.log('stop_loss_diff', balance.stop_loss_diff);
+		// console.log('max_profit', balance.max_profit);
 
-		console.log('current_profit in btc', current_profit_value * balance.value);
+		// console.log('current_profit in btc', current_profit_value * balance.value);
 
 		
 		// ?? текущие значения рынка больше этого ?
-		// if (balance.best_ask > order.lastBestAsk) {
+		if (balance.best_ask > order.lastBestAsk) {
 			
-		// } else {
-		// 	// нет => 
-		// 	//	 ?? текущая цена больше нашего минимального профита?
-		// 	if (balance.best_ask > order.analyticsResult.values.sell_price) {
-		// 		// да, продаем как профит селл
-		// 		fnStack.push(self.sellPair.bind(
-		// 			self, 
-		// 			order.currencyPair, 
-		// 			order.quantity, 
-		// 			order,
-		// 			false));
-		// 		// console.log('profit');
-		// 	}
-		// 	//   ?? текущая цена меньше чем наша стоп лосс цена?
-		// 	if (balance.best_ask < order.analyticsResult.values.stop_loss_price) {
-		// 		// да, продаем как стоп лосс
-		// 		fnStack.push(self.sellPair.bind(
-		// 			self,
-		// 			order.currencyPair,
-		// 			order.quantity,
-		// 			order,
-		// 			'stop_loss'));
-		// 		// console.log('stop loss');
-		// 	}
-		// }
+		} else {
+			// нет => 
+			//	 ?? текущая цена больше нашего минимального профита?
+			if (balance.best_ask > order.analyticsResult.values.sell_price) {
+				// да, продаем как профит селл
+				fnStack.push(self.sellPair.bind(
+					self, 
+					order.currencyPair, 
+					order.quantity, 
+					order,
+					false));
+				// console.log('profit');
+			}
+			//   ?? текущая цена меньше чем наша стоп лосс цена?
+			if (balance.best_ask < order.analyticsResult.values.stop_loss_price) {
+				// да, продаем как стоп лосс
+				fnStack.push(self.sellPair.bind(
+					self,
+					order.currencyPair,
+					order.quantity,
+					order,
+					'stop_loss'));
+				// console.log('stop loss');
+			}
+		}
 
 		async.series(fnStack, function (err, data) {
 			serie_callback();
