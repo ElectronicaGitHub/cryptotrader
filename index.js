@@ -299,6 +299,7 @@ TRADER.prototype.tradeSeries = function (callback) {
 TRADER.prototype.tradeSeries2 = function (callback) {
 	let self = this;
 	async.series([
+		self.cancelOpenBuyOrders.bind(self),
 		self.cancelOpenSellOrders.bind(self),
 		self.wrapWait(self.checkCycle.bind(self, false)),
 		// нормализация невалидных к сделкам балансов
