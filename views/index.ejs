@@ -10,12 +10,14 @@
 	.each-balance {
 		margin: 10px 0;
 		transition: background .1s;
+		padding: 5px 10px;
 	}
 	.each-balance.colored {
 		background: bisque;
 	}
 	.balance-info {
 		font-size: 12px;
+		padding: 5px;
 	}
 	.orange {
 		background: #f5c163;
@@ -608,11 +610,9 @@
 							/ 
 							<span>{{ inUSD(trader, balance.inBTC) | number:2 }} USD </span> ]
 							<p ng-if="balance.buy_order.analyticsResult">
-								<div>profit diff: {{ (balance.buy_order.analyticsResult.values.sell_price - balance.buy_order.price) | number:6 }}</div>
-								<div>last value diff: {{ (balance.buy_order.lastBestAsk - balance.buy_order.price) | number:6 }}</div>
-								<div>stop loss diff: {{ (balance.buy_order.lastBestAsk - balance.buy_order.analyticsResult.values.stop_loss_price ) | number:6 }} </div>
-								<div>lastBestAsk {{balance.buy_order.lastBestAsk}}</div>
-								<div>stop_loss_price {{balance.buy_order.analyticsResult.values.stop_loss_price}}</div>
+								<div>profit diff: {{ ((balance.buy_order.analyticsResult.values.sell_price - balance.buy_order.price) / balance.buy_order.price * 100 ) | number:2 }}%</div>
+								<div>last value diff: {{ ((balance.buy_order.lastBestAsk - balance.buy_order.price) / balance.buy_order.price * 100) | number:2 }}%</div>
+								<div>stop loss diff: {{ ((balance.buy_order.price - balance.buy_order.analyticsResult.values.stop_loss_price ) / balance.buy_order.price * 100) | number:2 }}% </div>
 							</p>
 						</div>
 						<div class="each-balance-currency-pairs">
