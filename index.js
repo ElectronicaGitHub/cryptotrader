@@ -326,11 +326,6 @@ TRADER.prototype.analyzeMarket = function (next) {
 
 	console.log('Анализ баланса', work_balances.map(el => el.currency));
 
-	self.total_balances.map(el => {
-		self.makeParams(el);
-		return el;
-	})
-
 	async.eachSeries(work_balances, function (balance, serie_callback) {
 		console.log('Баланс', balance.currency, 'в количестве', balance.value);
 		let orders = self.closed_buy_orders_by_curr[balance.currency + '/BTC'];
@@ -770,22 +765,16 @@ TRADER.prototype.makeTradeData = function (next) {
 	self.able_to_sell_pairs = self.available_balances.filter(function (el) {
 
 		let closed_buy_orders = self.closed_buy_orders_by_curr[el.currency + '/BTC'];
+
 		if (closed_buy_orders) {
+
 			closed_buy_orders = closed_buy_orders.filter(el => el.analyticsResult);
+
 			el.buy_order = _.sortBy(closed_buy_orders, ['lastModificationTime']).reverse()[0];
 		}
 
 		return el.currency != 'BTC';
 	});
-
-	self.total_balances = self.total_balances.map(el => {
-		let closed_buy_orders = self.closed_buy_orders_by_curr[el.currency + '/BTC'];
-		if (closed_buy_orders) {
-			closed_buy_orders = closed_buy_orders.filter(el => el.analyticsResult);
-			el.buy_order = _.sortBy(closed_buy_orders, ['lastModificationTime']).reverse()[0];
-		}		
-		return el;
-	})
 
 	// Тех Анализ
 	self.analyzeChartData(function (err, data) {
