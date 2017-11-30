@@ -219,6 +219,7 @@ TRADER.prototype.tradeCycle = function (callback) {
 
 	var self = this;
 
+	self.strategyName = 'default';
 
 	if (!this.active) {
 		console.log('Биржа неактивна', self.exchange.name);
@@ -268,97 +269,109 @@ TRADER.prototype.tradeCycle = function (callback) {
 		} else {
 
 			console.log('Валюта падает: Стандартный прогон');
-			async.series([
-				// отмена открытых продаж и покупок
-				self.cancelOpenBuyOrdersCycle.bind(self),
-				// self.closeOpenSellOrders.bind(self),
-				self.stopLossCycle.bind(self),
-				self.wrapWait(self.checkCycle.bind(self, false)),
-
-				// нормализация невалидных к сделкам балансов
-				self.normalizeBalances.bind(self),
-				self.wrapWait(self.checkCycle.bind(self, false)),
-
-				self.sellCycle.bind(self),
-				self.buyCycle.bind(self),
-
-				// self.stopLossCycle.bind(self),
-				self.checkCycle.bind(self, false)
-
-			], function (error, data) {
-				console.log('Торговый цикл завершен');
-				callback();
-			});
+			// self.tradeSeries(callback);
+			self.tradeSeries2(callback);
 		}
 	});
 }
 
-TRADER.prototype.tradeCycle2 = function (callback) {
+TRADER.prototype.tradeSeries = function (callback) {
+	let self = this;
 	async.series([
+		// отмена открытых продаж и покупок
+		self.cancelOpenBuyOrdersCycle.bind(self),
+		// self.closeOpenSellOrders.bind(self),
+		self.stopLossCycle.bind(self),
+		self.wrapWait(self.checkCycle.bind(self, false)),
+
 		// нормализация невалидных к сделкам балансов
 		self.normalizeBalances.bind(self),
 		self.wrapWait(self.checkCycle.bind(self, false)),
-		// анализируем текущие валюты на балансе
-		self.analyzeMarket.bind(self),
-		// покупка по аналитике валюты
+
+		self.sellCycle.bind(self),
 		self.buyCycle.bind(self),
 
 		// self.stopLossCycle.bind(self),
 		self.checkCycle.bind(self, false)
 
 	], function (error, data) {
-		console.log('Торговый цикл завершен');
+		console.log('Торговый цикл базовой стратегии завершен');
 		callback();
 	});
 }
 
+TRADER.prototype.tradeSeries2 = function (callback) {
+	let self = this;
+	async.series([
+		// нормализация невалидных к сделкам балансов
+		// self.normalizeBalances.bind(self),
+		self.wrapWait(self.checkCycle.bind(self, false)),
+		// анализируем текущие валюты на балансе
+		self.analyzeMarket.bind(self),
+		// покупка по аналитике валюты
+		// self.buyCycle.bind(self),
+
+		self.checkCycle.bind(self, false)
+
+	], function (error, data) {
+		console.log('Торговый цикл стратегии повышения завершен');
+		callback();
+	});
+	
+}
+
+
 TRADER.prototype.analyzeMarket = function (next) {
 	let self = this;
-		// :: цикл, бежим по текущим парам на балансе ::
-		async.eachSeries(self.available_balances, function (balance, serie_callback) {
-			let currency = this.total_balances.filter(function (el) { return balance.currency == el.currency; })[0];
-			let orders = this.closed_buy_orders_by_curr[currency + '/BTC'];
-			let order = orders[0];
+	// :: цикл, бежим по текущим парам на балансе ::
+	async.eachSeries(self.available_balances, function (balance, serie_callback) {
+		let currency = this.total_balances.filter(function (el) { return balance.currency == el.currency; })[0];
+		let orders = this.closed_buy_orders_by_curr[currency + '/BTC'];
+		let order = orders[0];
+		let fnStack = [];
+		
+		// ?? текущие значения рынка больше этого ?
+		if (currency.best_ask > order.lastBestAsk) {
 			
-			// ?? текущие значения рынка больше этого ?
-			if (currency.best_ask > order.lastBestAsk) {
-				
-			} else {
-				// нет => 
-				//	 ?? текущая цена больше нашего минимального профита?
-				if (currency.best_ask > order.analyticsResult.values.sell_price) {
-					// да, продаем как профит селл
-					self.wrapWait(self.sellPair.bind(
-						self, 
-						order.currencyPair, 
-						order.quantity, 
-						order,
-						false, 
-						serie_callback)
-					)();
-				}
-				//   ?? текущая цена меньше чем наша стоп лосс цена?
-				if (currency.best_ask < order.analyticsResult.values.stop_loss_price) {
-					// да, продаем как стоп лосс
-					self.wrapWait(self.sellPair.bind(
-						self,
-						order.currencyPair,
-						order.quantity,
-						order,
-						'stop_loss',
-						serie_callback)
-					)();
-				}
-				
+		} else {
+			// нет => 
+			//	 ?? текущая цена больше нашего минимального профита?
+			if (currency.best_ask > order.analyticsResult.values.sell_price) {
+				// да, продаем как профит селл
+				fnStack.push(self.wrapWait(self.sellPair.bind(
+					self, 
+					order.currencyPair, 
+					order.quantity, 
+					order,
+					false)));
+				// console.log('profit');
 			}
-			// перезаписываем все lastBestAsk значения
-		}, function (err, data) {
-			next(null);
-		});
-		// for (balance of self.available_balances) {
+			//   ?? текущая цена меньше чем наша стоп лосс цена?
+			if (currency.best_ask < order.analyticsResult.values.stop_loss_price) {
+				// да, продаем как стоп лосс
+				fnStack.push(self.wrapWait(self.sellPair.bind(
+					self,
+					order.currencyPair,
+					order.quantity,
+					order,
+					'stop_loss')));
+				// console.log('stop loss');
+			}
+		}
 
-			// let sell_price = +currency.best_ask + satoshi;
-		// }
+		// перезаписываем lastBestAsk значение
+		fnStack.push(self.baseConnector.updateOrder.bind(
+			self,
+			order, 
+			{ lastBestAsk : currency.best_ask }));
+
+		async.series(fnStack, function (err, data) {
+			serie_callback();
+		});
+
+	}, function (err, data) {
+		next(null);
+	});
 }
 
 TRADER.prototype.getUserOrders = function (next) {
@@ -633,7 +646,14 @@ TRADER.prototype.normalizeBalances = function (next) {
 	console.log('Нормализация недостающего баланса');
 
 	var need_to_buy_currencies = self.available_balances.filter(function (el) {
-		return el.currency != 'BTC';	
+		return el.currency != 'BTC';
+	})
+	.filter(function (el) {
+		let currencyName = el.currency + '/BTC';
+		if (self.open_buy_orders_by_curr[currencyName] && 
+			self.open_buy_orders_by_curr[currencyName].length) {
+			return false;
+		}
 	})
 	.filter(function (el) {
 		return el.value * el.best_ask <= self.exchange.min_buy_order_price;
@@ -863,6 +883,7 @@ TRADER.prototype.sellPair = function (currency, quantity, buy_order, quick_sell,
 				currencyPair : currency_pair,
 				type : 'LIMIT_SELL',
 				reason : reason,
+				strategyName : self.strategyName,
 				balance : self.btc_balance && self.btc_balance.total,
 				orderStatus : 'OPEN'
 			}, function (err, data) {
@@ -968,6 +989,7 @@ TRADER.prototype.buyPair = function (pair, next) {
 				currencyPair : pair_name,
 				type : 'LIMIT_BUY',
 				lastBestAsk : buy_price,
+				strategyName : self.strategyName,
 				orderStatus : 'OPEN',
 				balance : self.btc_balance && self.btc_balance.total,
 				analyticsResult : pair.analyticsResult,

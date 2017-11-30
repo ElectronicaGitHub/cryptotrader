@@ -124,6 +124,18 @@ BaseConnector.prototype.saveOrder = function (order, next) {
 	});
 }
 
+BaseConnector.prototype.updateOrder = function (order, update_data, next) {
+	order.exchangeName = this.exchangeName;
+	
+	Order.findOneAndUpdate({ 
+		exchangeName : this.exchangeName,
+		exchangeId : order.exchangeId 
+	}, update_data, function (err, result) {
+		if (err) return next(err);
+		next(null);
+	});
+}
+
 BaseConnector.prototype.updateOpenOrders = function (remote_closed_orders, next) {
 	var self = this;
 	var obj = { orderStatus : 'OPEN', exchangeName : self.exchangeName};

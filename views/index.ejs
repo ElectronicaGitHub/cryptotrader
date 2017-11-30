@@ -571,7 +571,7 @@
 								<span>r: {{ pair.reason }}</span>
 								<span> || баланс {{ pair.balance | number:6 }}</span>
 							</p>
-							<p>разница баланса с учетом цены пары {{ ((pair.balance + pair.inBTC) - pair.buy_order.balance) | number:6 }}</p>	
+							<p>разница баланса с учетом цены пары {{ ((pair.balance + pair.price * pair.quantity) - pair.buy_order.balance) | number:6 }}</p>	
 							<p>разница баланса без учета цены пары {{ (pair.balance - pair.buy_order.balance) | number:6 }}</p>	
 						</div>
 						<div class="closed-order-values" ng-if="pair.buy_order && pair.buy_order.analyticsResult">
