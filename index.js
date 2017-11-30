@@ -346,7 +346,7 @@ TRADER.prototype.analyzeMarket = function (next) {
 		console.log('stop_loss_diff', balance.stop_loss_diff);
 		console.log('max_profit', balance.max_profit);
 
-		console.log('current_profit_value', current_profit_value);
+		console.log('current_profit in btc', current_profit_value * balance.value);
 
 		
 		// ?? текущие значения рынка больше этого ?
