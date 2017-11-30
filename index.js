@@ -328,14 +328,12 @@ TRADER.prototype.analyzeMarket = function (next) {
 
 	async.eachSeries(work_balances, function (balance, serie_callback) {
 		console.log('Баланс', balance.currency, 'в количестве', balance.value);
-		// let currency = self.total_balances.filter(function (el) { return balance.currency == el.currency; })[0];
 		let orders = self.closed_buy_orders_by_curr[balance.currency + '/BTC'];
-
 		let order = _.sortBy(orders, ['lastModificationTime']).reverse()[0];
 		let fnStack = [];
 		// перезаписываем lastBestAsk значение
 		fnStack.push(self.baseConnector.updateOrder.bind(self, order.exchangeId, { 
-			lastBestAsk : currency.best_ask 
+			lastBestAsk : balance.best_ask 
 		}));
 		
 		// ?? текущие значения рынка больше этого ?
