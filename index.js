@@ -644,9 +644,9 @@ TRADER.prototype.makeTradeData = function (next) {
 
 	// WARNING =)))
 	// для теста статистики новой
-	.filter(function (el) {
-		return !self.open_sell_orders.length && !self.open_buy_orders.length;
-	})
+	// .filter(function (el) {
+		// return !self.open_sell_orders.length && !self.open_buy_orders.length;
+	// })
 
 
 
