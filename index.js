@@ -368,6 +368,8 @@ TRADER.prototype.analyzeMarket = function (next) {
 		// 	}
 		// }
 
+		console.log('fnStack', fnStack);
+
 		async.series(fnStack, function (err, data) {
 			serie_callback();
 		});
