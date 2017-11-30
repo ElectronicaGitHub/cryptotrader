@@ -9,7 +9,7 @@ function AnalyticsModule() {
 		percent_graph_raise_value : 2,
 		// куда стараемся переставить переставить
 		// от одной границы до другой, неподошло в одну смотрим другую и тд
-		percent_from_base_to_max_to_buy_min : 40,
+		percent_from_base_to_max_to_buy_min : 10,
 		percent_from_base_to_max_to_buy_max : 70,
 		percent_from_base_to_max_step : 10,
 		// процент от минимальной границы относительно общего коридора вниз
