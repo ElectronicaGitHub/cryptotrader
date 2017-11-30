@@ -132,6 +132,7 @@ BaseConnector.prototype.updateOrder = function (order, update_data, next) {
 		exchangeId : order.exchangeId 
 	}, update_data, function (err, result) {
 		if (err) return next(err);
+		console.log('Ордер', order.exchangeId, 'успешно обновлен');
 		next(null);
 	});
 }
