@@ -456,7 +456,7 @@ TRADER.prototype.getUserOrders = function (next) {
 			self.total_balances = self.total_balances.map(el => {
 
 				let orders = self.closed_buy_orders_by_curr[el.currency + '/BTC'];
-				let order = _.sortBy(orders, ['lastModificationTime']).reverse()[0];
+				el.buy_order = _.sortBy(orders, ['lastModificationTime']).reverse()[0];
 				let price = el.buy_order.price * (1 + (2 * self.exchange.exchange_fee));
 
 				el.current_profit = ((el.buy_order.lastBestAsk - price) / el.buy_order.price * 100);
