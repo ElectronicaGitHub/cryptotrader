@@ -321,7 +321,9 @@ TRADER.prototype.analyzeMarket = function (next) {
 	let self = this;
 	// :: цикл, бежим по текущим парам на балансе ::
 	let work_balances = self.available_balances.filter(el => el.currency != 'BTC');
-	console.log('Анализ баланса', work_balances);
+
+	console.log('Анализ баланса', work_balances.map(el => el.currency));
+	
 	async.eachSeries(work_balances, function (balance, serie_callback) {
 		console.log('Баланс', balance.currency, 'в количестве', balance.value);
 		// let currency = self.total_balances.filter(function (el) { return balance.currency == el.currency; })[0];
