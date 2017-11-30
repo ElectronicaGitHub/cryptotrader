@@ -336,7 +336,15 @@ TRADER.prototype.analyzeMarket = function (next) {
 			lastBestAsk : balance.best_ask 
 		}));
 
-		self.makeParams(balance);
+		let price = balance.buy_order.price * (1 + (2 * self.exchange.exchange_fee));
+
+		balance.current_profit = ((balance.buy_order.lastBestAsk - price) / balance.buy_order.price * 100);
+		balance.stop_loss_diff = ((balance.buy_order.analyticsResult.values.stop_loss_price - price ) / balance.buy_order.price * 100);
+		balance.max_profit = ((balance.buy_order.analyticsResult.values.sell_price - price) / balance.buy_order.price * 100);
+		console.log('current_profit', balance.current_profit);
+		console.log('stop_loss_diff', balance.stop_loss_diff);
+		console.log('max_profit', balance.max_profit);
+		
 		// let price = balance.buy_order.price;
 		
 		// ?? текущие значения рынка больше этого ?
@@ -376,27 +384,6 @@ TRADER.prototype.analyzeMarket = function (next) {
 		next(null);
 	});
 
-}
-
-TRADER.prototype.makeParams = function(balance) {
-	let self = this;
-
-	let price = balance.buy_order.price * (1 + (2 * self.exchange.exchange_fee));
-	console.log(balance.buy_order.price / price);
-
-	balance.current_profit = ((balance.buy_order.lastBestAsk - price) / balance.buy_order.price * 100);
-	balance.stop_loss_diff = ((balance.buy_order.analyticsResult.values.stop_loss_price - price ) / balance.buy_order.price * 100);
-	balance.max_profit = ((balance.buy_order.analyticsResult.values.sell_price - price) / balance.buy_order.price * 100);
-	console.log('current_profit', balance.current_profit);
-	console.log('stop_loss_diff', balance.stop_loss_diff);
-	console.log('max_profit', balance.max_profit);
-
-	let total = self.total_balances.filter(el => el.currency == balance.currency)[0];
-
-	console.log(total);
-	total.current_profit = balance.current_profit;
-	total.stop_loss_diff = balance.stop_loss_diff;
-	total.max_profit = balance.max_profit;
 }
 
 TRADER.prototype.getUserOrders = function (next) {
