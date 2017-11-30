@@ -342,23 +342,23 @@ TRADER.prototype.analyzeMarket = function (next) {
 			//	 ?? текущая цена больше нашего минимального профита?
 			if (currency.best_ask > order.analyticsResult.values.sell_price) {
 				// да, продаем как профит селл
-				fnStack.push(self.wrapWait(self.sellPair.bind(
+				fnStack.push(self.sellPair.bind(
 					self, 
 					order.currencyPair, 
 					order.quantity, 
 					order,
-					false)));
+					false));
 				// console.log('profit');
 			}
 			//   ?? текущая цена меньше чем наша стоп лосс цена?
 			if (currency.best_ask < order.analyticsResult.values.stop_loss_price) {
 				// да, продаем как стоп лосс
-				fnStack.push(self.wrapWait(self.sellPair.bind(
+				fnStack.push(self.sellPair.bind(
 					self,
 					order.currencyPair,
 					order.quantity,
 					order,
-					'stop_loss')));
+					'stop_loss'));
 				// console.log('stop loss');
 			}
 		}
