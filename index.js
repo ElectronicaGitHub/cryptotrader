@@ -546,19 +546,11 @@ TRADER.prototype.stopLossCycle = function (callback) {
 				each_open_sell_order.buy_order.analyticsResult.values.stop_loss_price) {
 				// то сравниваем цену
 				each_open_sell_order.is_sellable = (currency.best_bid <= each_open_sell_order.buy_order.analyticsResult.values.stop_loss_price);
-				console.log('есть аналитика', each_open_sell_order.is_sellable);
-				console.log('best_bid', currency.best_bid);
-				console.log('stop_loss_price', each_open_sell_order.buy_order.analyticsResult.values.stop_loss_price);
-				console.log('======');
 			} else {
 				// иначе смотрим стандартно через стоп-лосс коэффициент
 				let diff = (currency.best_ask * each_open_sell_order.buy_order.quantity) - each_open_sell_order.buy_order.inBTC;
 				let diff_perc = (diff / each_open_sell_order.buy_order.inBTC) * 100;
 				each_open_sell_order.is_sellable = (diff_perc < -this.exchange.stop_loss_koef);
-			}
-
-			if (each_open_sell_order.price < each_open_sell_order.buy_order.price) {
-				each_open_sell_order.is_sellable = false;
 			}
 		}
 	}
