@@ -175,19 +175,11 @@ BaseConnector.prototype.updateOrder = function (exchangeId, order, next) {
 	var self = this;
 	
 	console.log('Обновление ордера', exchangeId, order);
-
 	var req = { exchangeId, exchangeName : self.exchangeName};
-
-	console.log(req);
 	
 	Order.findOneAndUpdate(req, { $set : order }, function (err, result) {
 		if (err) return next(err);
 		console.log('Ордер', exchangeId, 'успешно обновлен', err);
-
-		Order.findOne(req, function (err, res) {
-			console.log(res);
-		});
-
 		next(null);
 	});
 }

@@ -332,7 +332,7 @@ TRADER.prototype.analyzeMarket = function (next) {
 		let order = _.sortBy(orders, ['lastModificationTime']).reverse()[0];
 		let fnStack = [];
 		// перезаписываем lastBestAsk значение
-		fnStack.push(self.baseConnector.updateOrder.bind(self, order.exchangeId, { 
+		fnStack.push(self.baseConnector.updateOrder.bind(self.baseConnector, order.exchangeId, { 
 			lastBestAsk : balance.best_ask 
 		}));
 		
