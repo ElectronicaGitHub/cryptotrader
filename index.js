@@ -326,7 +326,8 @@ TRADER.prototype.analyzeMarket = function (next) {
 		console.log('Баланс', balance.currency, 'в количестве', balance.value);
 		// let currency = self.total_balances.filter(function (el) { return balance.currency == el.currency; })[0];
 		let orders = self.closed_buy_orders_by_curr[balance.currency + '/BTC'];
-		let order = orders[0];
+
+		let order = _.sortBy(orders, ['lastModificationTime']).reverse()[0];
 		let fnStack = [];
 		
 		// ?? текущие значения рынка больше этого ?
