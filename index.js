@@ -321,8 +321,8 @@ TRADER.prototype.analyzeMarket = function (next) {
 	let self = this;
 	// :: цикл, бежим по текущим парам на балансе ::
 	async.eachSeries(self.available_balances, function (balance, serie_callback) {
-		let currency = self.total_balances.filter(function (el) { return balance.currency == el.currency; })[0];
-		let orders = self.closed_buy_orders_by_curr[currency + '/BTC'];
+		// let currency = self.total_balances.filter(function (el) { return balance.currency == el.currency; })[0];
+		let orders = self.closed_buy_orders_by_curr[balance.symbol];
 		let order = orders[0];
 		let fnStack = [];
 		
