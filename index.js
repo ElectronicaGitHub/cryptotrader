@@ -344,7 +344,15 @@ TRADER.prototype.analyzeMarket = function (next) {
 		console.log('current_profit', balance.current_profit);
 		console.log('stop_loss_diff', balance.stop_loss_diff);
 		console.log('max_profit', balance.max_profit);
-		
+
+		for (let tbalance of self.total_balances) {
+			if (tbalance.currency == balance.currency) {
+				tbalance.current_profit = balance.current_profit;
+				tbalance.stop_loss_diff = balance.stop_loss_diff;
+				tbalance.max_profit = balance.max_profit;
+			}
+		}
+
 		// let price = balance.buy_order.price;
 		
 		// ?? текущие значения рынка больше этого ?
