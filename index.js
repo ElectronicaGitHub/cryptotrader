@@ -335,6 +335,9 @@ TRADER.prototype.analyzeMarket = function (next) {
 		fnStack.push(self.baseConnector.updateOrder.bind(self.baseConnector, order.exchangeId, { 
 			lastBestAsk : balance.best_ask 
 		}));
+
+		let current_profit = ((balance.buy_order.lastBestAsk - balance.buy_order.price) / balance.buy_order.price * 100);
+		console.log('current_profit', current_profit);
 		
 		// ?? текущие значения рынка больше этого ?
 		// if (currency.best_ask > order.lastBestAsk) {
