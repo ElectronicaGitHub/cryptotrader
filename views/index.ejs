@@ -610,7 +610,7 @@
 							/ 
 							<span>{{ inUSD(trader, balance.inBTC) | number:2 }} USD </span> ]
 							<div ng-if="balance.buy_order && balance.buy_order.analyticsResult">
-								<div>current_profit: {{ balance.current_profit | number:2 }}%</div>
+								<div ng-class="balance.current_profit > 0 ? 'ok' : 'not-ok'">current_profit: {{ balance.current_profit | number:2 }}%</div>
 								<div>max_profit: {{ balance.max_profit | number:2 }}%</div>
 								<div>stop_loss_diff: {{ balance.stop_loss_diff | number:2 }}% </div>
 							</div>
