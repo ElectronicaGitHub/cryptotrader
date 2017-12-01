@@ -361,7 +361,7 @@ TRADER.prototype.analyzeMarket = function (next) {
 				fnStack.push(self.sellPair.bind(
 					self, 
 					order.currencyPair, 
-					order.quantity, 
+					balance.value, 
 					order,
 					false));
 				// console.log('profit');
@@ -372,7 +372,7 @@ TRADER.prototype.analyzeMarket = function (next) {
 				fnStack.push(self.sellPair.bind(
 					self,
 					order.currencyPair,
-					order.quantity,
+					balance.value,
 					order,
 					'stop_loss'));
 				// console.log('stop loss');
