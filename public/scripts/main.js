@@ -391,7 +391,8 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 		let data2 = trader.pairs_graph_data[sell_pair.currencyPair];
 		data2 = data2.map((el, n) => [el.timestamp, +el.best_ask, 1]);
 
-		let summary_data = data.concat(data2);
+		// let summary_data = data.concat(data2);
+		let summary_data = data;
 
 		$scope.makeGraph(graph_id, lines, values, summary_data);
 	}

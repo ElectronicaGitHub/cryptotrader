@@ -465,9 +465,12 @@ TRADER.prototype.getUserOrders = function (next) {
 					el.buy_order = _.sortBy(orders, ['lastModificationTime']).reverse()[0];
 					let price = el.buy_order.price * (1 + (2 * self.exchange.exchange_fee));
 
-					el.current_profit = ((el.buy_order.lastBestAsk - price) / el.buy_order.price * 100);
-					el.stop_loss_diff = ((el.buy_order.analyticsResult.values.stop_loss_price - price ) / el.buy_order.price * 100);
-					el.max_profit = ((el.buy_order.analyticsResult.values.sell_price - price) / el.buy_order.price * 100);
+					if (el.buy_order && el.buy_order.analyticsResult) {
+						el.current_profit = ((el.buy_order.lastBestAsk - price) / el.buy_order.price * 100);
+						el.stop_loss_diff = ((el.buy_order.analyticsResult.values.stop_loss_price - price ) / el.buy_order.price * 100);
+						el.max_profit = ((el.buy_order.analyticsResult.values.sell_price - price) / el.buy_order.price * 100);
+					}
+
 				}
 
 
