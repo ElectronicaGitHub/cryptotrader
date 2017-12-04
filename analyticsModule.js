@@ -4,7 +4,7 @@ var _ = require('lodash');
 function AnalyticsModule() {
 	this.params = {
 		// насколько от нижней границы в процентах заходить на покупку
-		percent_from_min_to_base : 30,
+		percent_from_min_to_base : 50,
 		// процент разницы в значениях в начале и в конце графа
 		percent_graph_raise_value : 2,
 		// куда стараемся переставить переставить
@@ -15,10 +15,10 @@ function AnalyticsModule() {
 		// процент от минимальной границы относительно общего коридора вниз
 		stop_loss_percent_from_min : 10,
 		// минимальный процент профита чтоб совершить сделку
-		min_profit_percent : 1,
-		graph_hours : 4,
+		min_profit_percent : 2,
+		graph_hours : 5,
 		max_average_float_value : 0.4, // результат деления мин-база / база-макс, где находится кароче средняя линия 
-		local_min_to_last_max : 10 // процент на сколько ушло наверх после локального максимума
+		local_min_to_last_max : 15 // процент на сколько ушло наверх после локального максимума
 	}
 }
 
@@ -229,12 +229,14 @@ AnalyticsModule.prototype.analyze = function (trader, pair) {
 
 	// минимальный процент прохода с последнего локального минимума до последнего значения
 	exs.push(local_min_to_last > this.params.local_min_to_last_max)
-	// насколько средняя в коридоре средняя
+	/5 насколько средняя в коридоре средняя
 	exs.push(average_float_value < this.params.max_average_float_value);
 	// затухание тренда не больше чем коэффициент
 	exs.push(Math.abs(pair.percent_graph_raise_value) < this.params.percent_graph_raise_value);
+	// разное может быть
 	// нахождение значения выше чем параметр
-	exs.push(percent_from_min_to_base > this.params.percent_from_min_to_base);
+	// нахождение значения ниже чем параметр
+	exs.push(percent_from_min_to_base < this.params.percent_from_min_to_base);
 	// профит больше чем минимально допустимый
 	exs.push(percent_profit > this.params.min_profit_percent);
 	

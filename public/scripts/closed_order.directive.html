@@ -1,0 +1,37 @@
+<div ng-click="makeGraphForClosedOrder(trader, pair)">
+	<span class="has-analytics" ng-class="{'not-filled' : !trader.pairs_graph_data }" ng-show="pair.buy_order.analyticsResult"></span>
+	{{ $index + 1 }}. <b>{{ pair.currencyPair }}</b> / 
+	<span ng-class="pair.pairProfit > 0 ? 'ok' : 'not-ok'">{{pair.pairProfit | number:6 }} BTC [ {{ inUSD(trader, pair.pairProfit) | number:2 }} USD]</span>
+
+	<span>{{ moment(pair.lastModificationTime).locale('ru').format('HH:mm') }}</span>
+
+	<div ng-show="show_full_closed_orders_info">
+		<div class="each-closed-pair-info">
+			<p>buy 
+				<span>q: {{ pair.buy_order.quantity | number:8 }}</span>
+				<span>pr: {{ pair.buy_order.price | number:8 }}</span>
+				<span>time: {{ moment(pair.buy_order.lastModificationTime).locale('ru').format('LLL') }}</span>
+				<span> || баланс {{ pair.buy_order.balance | number:6 }}</span>
+			</p>
+			<p>sell 
+				<span>q: {{ pair.quantity | number:8 }}</span>
+				<span>pr: {{ pair.price | number:8 }}</span>
+				<span>time: {{ moment(pair.lastModificationTime).locale('ru').format('LLL') }}</span>
+				<span>r: {{ pair.reason }}</span>
+				<span> || баланс {{ pair.balance | number:6 }}</span>
+			</p>
+			<p>разница баланса с учетом цены пары {{ ((pair.balance + pair.price * pair.quantity) - pair.buy_order.balance) | number:6 }}</p>	
+			<p>разница баланса без учета цены пары {{ (pair.balance - pair.buy_order.balance) | number:6 }}</p>	
+		</div>
+		<div class="closed-order-values" ng-if="pair.buy_order && pair.buy_order.analyticsResult">
+			<span>norm k: {{ pair.buy_order.analyticsResult.values.normalize_baseline_m }}</span> | 
+			<span>relative graph raise val: {{ pair.buy_order.analyticsResult.values.percent_graph_raise_value | number:2 }}</span>
+			<span> || среднеквадр откл : {{ pair.std }} </span>
+			<span> || средняя между максимумом и минимумом {{ pair.buy_order.analyticsResult.values.average_float_value }}</span>
+			<span> || процент между минимум-база {{ pair.buy_order.analyticsResult.values.percent_from_min_to_base }}</span>
+			<span> || локальный минимум {{ pair.buy_order.analyticsResult.values.local_min_to_last }}</span>
+		</div>
+		<div id="graph-{{trader.exchange.name}}-{{pair.currencyPair}}-{{pair.buy_order.exchangeId}}"></div>
+		<!-- <div id="graph-{{trader.exchange.name}}-{{pair.currencyPair}}-{{pair.buy_order.exchangeId}}" ng-init="makeGraphForClosedOrder(trader, pair)"></div> -->
+	</div>
+</div>

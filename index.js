@@ -995,7 +995,7 @@ TRADER.prototype.buyPair = function (pair, next) {
 	var pair_name = pair.symbol || pair.currency + '/BTC';
 	// var buy_price = +pair.best_ask + satoshi;
 	var buy_price = +pair.best_bid + satoshi;
-	var quantity = +((this.exchange.max_buy_order_price * 101 / 100) / buy_price);
+	var quantity = +(this.exchange.max_buy_order_price / buy_price);
 
 	if (this.btc_value < self.exchange.max_buy_order_price) {
 		console.log('Cлишком мало валюты для покупки', this.btc_value + ' BTC');
