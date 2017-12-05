@@ -450,13 +450,13 @@
 
 			<div class="col-xs-6">
 				<div class="each-closed-pair" ng-repeat="pair in trader.closed_orders | orderBy:'-lastModificationTime'" ng-class="{ gold : moment(date_long).isSame(pair.lastModificationTime, 'd'), yesterday : moment(date_long).isSame(moment(pair.lastModificationTime).add(1, 'd'), 'd') }" ng-if="pair.pairProfit > 0">
-					<closed-order pair="pair" trader="trader"></closed-order>
+					<closed-order graph-fn="makeGraphForClosedOrder" pair="pair" trader="trader"></closed-order>
 				</div>
 			</div>
 
 			<div class="col-xs-6">
 				<div class="each-closed-pair" ng-repeat="pair in trader.closed_orders | orderBy:'-lastModificationTime'" ng-class="{ gold : moment(date_long).isSame(pair.lastModificationTime, 'd'), yesterday : moment(date_long).isSame(moment(pair.lastModificationTime).add(1, 'd'), 'd') }" ng-if="pair.pairProfit <= 0">
-					<closed-order pair="pair" trader="trader"></closed-order>
+					<closed-order graph-fn="makeGraphForClosedOrder" pair="pair" trader="trader"></closed-order>
 				</div>
 			</div>
 		</div>
@@ -478,7 +478,7 @@
 					
 
 				<div class="each-closed-pair" ng-repeat="pair in trader.closed_orders | orderBy:'-lastModificationTime'" ng-class="{ gold : moment(date_long).isSame(pair.lastModificationTime, 'd'), yesterday : moment(date_long).isSame(moment(pair.lastModificationTime).add(1, 'd'), 'd') }">
-					<closed-order pair="pair" trader="trader"></closed-order>
+					<closed-order graph-fn="makeGraphForClosedOrder" pair="pair" trader="trader"></closed-order>
 				</div>
 
 			</div>

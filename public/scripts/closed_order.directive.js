@@ -6,7 +6,8 @@ angular.module('crypto').directive('closedOrder', [function() {
 		// terminal: true,
 		scope: { 
 			pair : '=pair',
-			trader : '=trader'
+			trader : '=trader',
+			graphFn : '&'
 		 }, // {} = isolate, true = child, false/undefined = no change
 		// controller: function($scope, $element, $attrs, $transclude) {},
 		// require: 'ngModel', // Array = multiple requires, ? = optional, ^ = check parent elements
@@ -26,7 +27,11 @@ angular.module('crypto').directive('closedOrder', [function() {
 			}
 			$scope.$parent.$watch('show_full_closed_orders_info', function () {
 				$scope.show_full_closed_orders_info = !$scope.show_full_closed_orders_info;
+
 			});
+			$scope.callMakeGraphForClosedOrder = function (trader, pair) {
+				$scope.graphFn()(trader, pair);
+			}
 					
 		}
 	};

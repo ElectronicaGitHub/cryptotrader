@@ -353,7 +353,7 @@ TRADER.prototype.analyzeMarket = function (next) {
 		// ?? текущие значения рынка больше этого ?
 		if (balance.best_ask > order.lastBestAsk) {
 			
-		} else {
+		} else if (order.analyticsResult) {
 			// нет => 
 			//	 ?? текущая цена больше нашего минимального профита?
 			if (balance.best_ask > order.analyticsResult.values.sell_price) {

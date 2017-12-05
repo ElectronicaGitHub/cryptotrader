@@ -1,4 +1,4 @@
-<div ng-click="makeGraphForClosedOrder(trader, pair)">
+<div ng-click="callMakeGraphForClosedOrder(trader, pair)">
 	<span class="has-analytics" ng-class="{'not-filled' : !trader.pairs_graph_data }" ng-show="pair.buy_order.analyticsResult"></span>
 	{{ $index + 1 }}. <b>{{ pair.currencyPair }}</b> / 
 	<span ng-class="pair.pairProfit > 0 ? 'ok' : 'not-ok'">{{pair.pairProfit | number:6 }} BTC [ {{ inUSD(trader, pair.pairProfit) | number:2 }} USD]</span>
