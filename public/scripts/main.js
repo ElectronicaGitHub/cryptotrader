@@ -194,15 +194,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 
 			if (today_closed_orders.length) {
 				trader.summary.pairsCount = today_closed_orders.length;
-				var sums = today_closed_orders.map(function (el) {
-					var b_order = el.buy_order;
-					if (b_order) {
-						return el.price * b_order.quantity - b_order.price * b_order.quantity;
-					} else {
-						return 0;
-					};
-				});
-				trader.summary.today_incomeInBTC = sums.reduce(function (a, b) {
+				trader.summary.today_incomeInBTC = today_closed_orders.map(el => el.pairProfit).reduce(function (a, b) {
 					return a + b;
 				});
 			} else {
