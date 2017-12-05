@@ -540,7 +540,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 		trader.balances_by_date_obj = {};
 		for (let balance of trader.btc_balances.data) {
 			let timestamp = +new Date(balance.timestamp);
-			let date = moment(balance.timestamp).format('L');
+			let date = moment(balance.timestamp).format('LL');
 			if (!trader.balances_by_date_obj[date] || trader.balances_by_date_obj[date].timestamp < balance.timestamp) {
 				trader.balances_by_date_obj[date] = {
 					total : balance.total,
@@ -551,7 +551,7 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 		trader.balances_by_date = [];
 		for (let i in trader.balances_by_date_obj) {
 			trader.balances_by_date.push({ 
-				date : moment(+new Date(i)), 
+				date : +new Date(trader.balances_by_date_obj[i].timestamp), 
 				value : trader.balances_by_date_obj[i].total
 			})
 		}
@@ -563,9 +563,11 @@ angular.module('crypto', []).controller('main', ['$scope', '$http', '$timeout', 
 			}
 		}
 
-		trader.balances_by_date = trader.balances_by_date.sort((a,b) => {
-			return +b.date > +a.date;
-		});
+		// trader.balances_by_date = trader.balances_by_date.sort((a,b) => {
+		// 	return +b.date - +a.date;
+		// });
+
+		trader.balances_by_date = _.sortBy(trader.balances_by_date, ['date']).reverse();
 
 		let total_data = trader.btc_balances.data.map(el => {
 			return [+new Date(el.timestamp), el.total, 1];

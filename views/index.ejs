@@ -427,7 +427,7 @@
 				<!-- <div class="col-xs-12"><p>Баланс</p></div> -->
 				<div class="col-xs-12 col-sm-4">
 					<div class="balance-row" ng-repeat="balance in trader.balances_by_date">
-						<span class="date">{{ moment(balance.date).format('L') }}</span> |
+						<span class="date">{{ moment(balance.date).format('DD.MM.YYYY') }}</span> |
 						<span class="balance">{{ balance.value | number:6 }}</span>
 						<span ng-if="balance.diff">
 							<span class="balance" ng-class="{ ok : balance.diff > 0, 'not-ok': balance.diff <= 0 }">{{ balance.diff | number:6 }}</span> | 
