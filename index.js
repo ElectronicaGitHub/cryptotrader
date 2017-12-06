@@ -848,7 +848,7 @@ TRADER.prototype.calculateSellPrice = function (currency, buy_order, quantity, q
 	if (quick_sell) {
 		// быстрая продажа, продаем по рынку
 		var currency = this.total_balances.filter(function (el) { return currency == el.currency; })[0];
-		sell_price = +currency.best_ask + satoshi;
+		sell_price = +currency.best_ask - satoshi;
 	} else {
 		// продаем с профитом
 		var tax = (buy_order.price * quantity) * ( 2 * this.exchange.exchange_fee);
