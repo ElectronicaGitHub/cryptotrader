@@ -779,7 +779,10 @@ TRADER.prototype.makeTradeData = function (next) {
 
 		if (closed_buy_orders) {
 
-			closed_buy_orders = closed_buy_orders.filter(el => el.analyticsResult);
+			closed_buy_orders_filtered = closed_buy_orders.filter(el => el.analyticsResult);
+			
+			console.log('closed_buy_orders', closed_buy_orders);
+			console.log('closed_buy_orders_filtered', closed_buy_orders_filtered);
 
 			el.buy_order = _.sortBy(closed_buy_orders, ['lastModificationTime']).reverse()[0];
 		}
