@@ -781,8 +781,8 @@ TRADER.prototype.makeTradeData = function (next) {
 
 			closed_buy_orders_filtered = closed_buy_orders.filter(el => el.analyticsResult);
 			
-			console.log('closed_buy_orders', closed_buy_orders);
-			console.log('closed_buy_orders_filtered', closed_buy_orders_filtered);
+			console.log('closed_buy_orders', closed_buy_orders.map(el => [el.lastModificationTime, !!el.analyticsResult]));
+			console.log('closed_buy_orders_filtered', closed_buy_orders_filtered.map(el => [el.lastModificationTime, !!el.analyticsResult]));
 
 			el.buy_order = _.sortBy(closed_buy_orders, ['lastModificationTime']).reverse()[0];
 		}
