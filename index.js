@@ -337,7 +337,10 @@ TRADER.prototype.analyzeMarket = function (next) {
 			lastBestAsk : balance.best_ask 
 		}));
 
+		console.log('order', order);
+
 		let price = balance.buy_order.price * (1 + (2 * self.exchange.exchange_fee));
+
 
 		let current_profit_value = balance.buy_order.lastBestAsk - price; 
 		balance.current_profit = current_profit_value / balance.buy_order.price * 100;
@@ -351,33 +354,35 @@ TRADER.prototype.analyzeMarket = function (next) {
 
 		
 		// ?? текущие значения рынка больше этого ?
-		if (balance.best_ask > order.lastBestAsk) {
+		// if (balance.best_ask > order.lastBestAsk) {
 			
-		} else if (order.analyticsResult) {
-			// нет => 
-			//	 ?? текущая цена больше нашего минимального профита?
-			if (balance.best_ask > order.analyticsResult.values.sell_price) {
-				// да, продаем как профит селл
-				fnStack.push(self.sellPair.bind(
-					self, 
-					order.currencyPair, 
-					balance.value, 
-					order,
-					false));
-				// console.log('profit');
-			}
-			//   ?? текущая цена меньше чем наша стоп лосс цена?
-			if (balance.best_ask < order.analyticsResult.values.stop_loss_price) {
-				// да, продаем как стоп лосс
-				fnStack.push(self.sellPair.bind(
-					self,
-					order.currencyPair,
-					balance.value,
-					order,
-					'stop_loss'));
-				// console.log('stop loss');
-			}
-		}
+		// } else if (order.analyticsResult) {
+		// 	// нет => 
+		// 	//	 ?? текущая цена больше нашего минимального профита?
+		// 	if (balance.best_ask > order.analyticsResult.values.sell_price) {
+		// 		// да, продаем как профит селл
+		// 		fnStack.push(self.sellPair.bind(
+		// 			self, 
+		// 			order.currencyPair, 
+		// 			balance.value, 
+		// 			order,
+		// 			false));
+		// 		// console.log('profit');
+		// 	}
+		// 	//   ?? текущая цена меньше чем наша стоп лосс цена?
+		// 	if (balance.best_ask < order.analyticsResult.values.stop_loss_price) {
+		// 		// да, продаем как стоп лосс
+		// 		fnStack.push(self.sellPair.bind(
+		// 			self,
+		// 			order.currencyPair,
+		// 			balance.value,
+		// 			order,
+		// 			'stop_loss'));
+		// 		// console.log('stop loss');
+		// 	}
+		// } else {
+
+		// }
 
 		async.series(fnStack, function (err, data) {
 			serie_callback();
@@ -780,9 +785,6 @@ TRADER.prototype.makeTradeData = function (next) {
 		if (closed_buy_orders) {
 
 			closed_buy_orders_filtered = closed_buy_orders.filter(el => el.analyticsResult);
-			
-			console.log('closed_buy_orders', closed_buy_orders.map(el => [el.lastModificationTime, !!el.analyticsResult]));
-			console.log('closed_buy_orders_filtered', closed_buy_orders_filtered.map(el => [el.lastModificationTime, !!el.analyticsResult]));
 
 			el.buy_order = _.sortBy(closed_buy_orders, ['lastModificationTime']).reverse()[0];
 		}
