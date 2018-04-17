@@ -5,14 +5,17 @@ var moment = require('moment');
 
 function Poloniex() {
 
+// 	poloniex
+// key : D9YG7RNC-0873L17S-RFDYRPUJ-UVAVIWKM	
+// secret : 16ee5eb11ccf9c6adba472377090404237880090506ba18c4b80721b17feac2075a0e33459e9dbd302585023a0d9a79f337ca143052e32b98930f02df631ff34
+
 	var self = this;
 
 	this.name = 'Poloniex';
 
-	this.key = 'RRHZ462K-8AMMIPKL-UDNEAHM6-0K6K8ZWP'; // Api-key
-	this.secretKey = '10a502b157bf5e98f922b29f9a7653548061f43fb512efd1d32ced212b8cc56ae875ef98b0d864206106eb9e87b19cfd3de2bac580d2204763c69339f203f72d'; // Sign
-
-	this.poloniex = new PoloniexAPI(this.key, this.secretKey);
+	// my
+	// this.key = 'RRHZ462K-8AMMIPKL-UDNEAHM6-0K6K8ZWP'; // Api-key
+	// this.secretKey = '10a502b157bf5e98f922b29f9a7653548061f43fb512efd1d32ced212b8cc56ae875ef98b0d864206106eb9e87b19cfd3de2bac580d2204763c69339f203f72d'; // Sign
 
 	this.usdName = 'USDT';
 	this.min_buy_order_price = 0.00015;
@@ -25,6 +28,16 @@ function Poloniex() {
 	this.ok_spread_value = 0.1;
 	this.exchange_fee = 0.0025;
 	this.base_currency_diff_value = 0.005;
+
+
+	this.init = (key, secret) => {
+
+		this.key = key;
+		this.secretKey = secret;
+
+		this.poloniex = new PoloniexAPI(this.key, this.secretKey);
+
+	}
 
 	this.formatter = {
 		makeCurrencyName : function (currencyName) {
@@ -52,6 +65,16 @@ function Poloniex() {
 				}
 				console.log('Получен баланс Poloniex');
 				callback(self.pipes.makeBalances(data));
+			});
+		},
+		check : function (callback) {
+			self.poloniex.returnCompleteBalances(function (err, data) {
+				if (err) {
+					console.log('err', err);
+					return callback(err);
+				}
+				console.log('no err Получен баланс Poloniex');
+				callback(data);
 			});
 		},
 		getOrders : function (data, callback) {

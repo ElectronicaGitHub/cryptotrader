@@ -27,6 +27,9 @@ TRADER.prototype.randomTime = function (min, max) {
     return Math.random() * (max - min) + min;
 }
 
+TRADER.prototype.check = function (callback) {
+	this.exchange.methods.check(callback);
+}
 TRADER.prototype.buyLimit = function (currencyPair, price, quantity, callback) {
 	this.exchange.methods.buyLimit(currencyPair, price, quantity, callback);
 }

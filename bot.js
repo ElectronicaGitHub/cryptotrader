@@ -3,12 +3,12 @@ var TRADER = require('./tradeMethods');
 
 var AnalyticsModule = require('./analyticsModule');
 
-var Rollbar = require("rollbar");
-var rollbar = new Rollbar({
-	accessToken: "d1f871271f6840859895328aa1b65114",
-	captureUncaught: true,
-	captureUnhandledRejections: true
-});
+// var Rollbar = require("rollbar");
+// var rollbar = new Rollbar({
+// 	accessToken: "d1f871271f6840859895328aa1b65114",
+// 	captureUncaught: true,
+// 	captureUnhandledRejections: true
+// });
 
 var connectors = {
 	LiveCoin : require('./connectors/livecoin'),
@@ -86,7 +86,7 @@ BOT.prototype.loopTradeCycle = function (callback) {
 				}, function (err, data) {});
 			} catch (e) {
 
-				rollbar.error(e);
+				// rollbar.error(e);
 				callback({
 					success : false, 
 					error : e
