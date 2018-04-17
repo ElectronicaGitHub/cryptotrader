@@ -52,6 +52,7 @@ app.post('/check', function (req, res, next) {
 	// this.secretKey = '16ee5eb11ccf9c6adba472377090404237880090506ba18c4b80721b17feac2075a0e33459e9dbd302585023a0d9a79f337ca143052e32b98930f02df631ff34'; // Sign
 	tr.useExchange(newConn);
 	tr.check(data => {
+		console.log(data);
 		res.json({
 			success : !data.error
 		});
